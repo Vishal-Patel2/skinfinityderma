@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Treatment Editor | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .nav-tabs-custom .nav-link {
+      font-weight: 600;
+      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.25rem;
+    }
+    .nav-tabs-custom .nav-link.active {
+      color: var(--primary);
+      border-bottom-color: var(--secondary);
+      background: transparent;
+    }
+    .repeater-card {
+      background: #FDFEFE;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+    }
+    .repeater-remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+            <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link active"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff & Roles (RBAC)</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="header-title-wrap">
+            <h1 id="pageTitleHeading">Add New Treatment</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a>
+              <span class="sep">/</span>
+              <a href="treatments.html">Treatments</a>
+              <span class="sep">/</span>
+              <span id="breadcrumbCurrent">New Treatment</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="treatments.html" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Treatments</span>
+          </a>
+
+          <div class="dropdown header-profile-dropdown">
+            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/img/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
+              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
+              <i class="bi bi-chevron-down text-muted small ms-1"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+              <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Clinic Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2 text-danger action-logout" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <form id="treatmentForm" novalidate>
+          <input type="hidden" id="treatmentId">
+
+          <div class="row g-4">
+            <!-- Left Column: Tabs & Detailed Configuration -->
+            <div class="col-xl-12 col-lg-12">
+              <div class="skin-card">
+                <div class="skin-card-header p-0 bg-white">
+                  <ul class="nav nav-tabs nav-tabs-custom px-3" id="treatmentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link active" id="tab-general" data-bs-toggle="tab" data-bs-target="#tab-pane-general" type="button" role="tab">
+                        <i class="bi bi-info-circle me-1"></i> General Info
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="tab-pricing" data-bs-toggle="tab" data-bs-target="#tab-pane-pricing" type="button" role="tab">
+                        <i class="bi bi-currency-rupee me-1"></i> Pricing & Meta
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="tab-sections" data-bs-toggle="tab" data-bs-target="#tab-pane-sections" type="button" role="tab">
+                        <i class="bi bi-journal-medical me-1"></i> Clinical Sections
+                      </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                      <button class="nav-link" id="tab-seo" data-bs-toggle="tab" data-bs-target="#tab-pane-seo" type="button" role="tab">
+                        <i class="bi bi-globe me-1"></i> SEO
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="skin-card-body p-4">
+                  <div class="tab-content" id="treatmentTabsContent">
+                    <!-- Tab 1: General Info -->
+                    <div class="tab-pane fade show active" id="tab-pane-general" role="tabpanel">
+                      <div class="mb-3">
+                        <label for="treatmentName" class="form-label">Treatment Name <span class="required">*</span></label>
+                        <input type="text" class="form-control" id="treatmentName" placeholder="e.g. HydraFacial Elite MD" required>
+                        <div class="invalid-feedback">Treatment name is required.</div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="treatmentSlug" class="form-label">URL Slug <span class="required">*</span></label>
+                        <div class="input-group">
+                          <span class="input-group-text bg-light text-muted small">/treatments/</span>
+                          <input type="text" class="form-control" id="treatmentSlug" placeholder="hydrafacial-elite-md" required>
+                          <button class="btn btn-outline-secondary" type="button" id="btnRegenerateSlug" title="Re-slugify from name">
+                            <i class="bi bi-arrow-repeat"></i>
+                          </button>
+                        </div>
+                        <div class="form-text">Unique URL path used on the public clinic website.</div>
+                      </div>
+
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label for="treatmentCategory" class="form-label">Category <span class="required">*</span></label>
+                          <select class="form-select" id="treatmentCategory" required>
+                            <option value="">Select Category...</option>
+                            <!-- Populated dynamically -->
+                          </select>
+                          <div class="invalid-feedback">Please select a primary category.</div>
+                        </div>
+
+                        <div class="col-md-6">
+                          <label for="treatmentConcerns" class="form-label">Target Concerns (Multi-Select)</label>
+                          <select class="form-select select2-concerns" id="treatmentConcerns" multiple="multiple">
+                            <!-- Populated dynamically -->
+                          </select>
+                          <div class="form-text">Patients searching these concerns will find this treatment.</div>
+                        </div>
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="treatmentShortDesc" class="form-label">Short Description / Card Summary <span class="required">*</span></label>
+                        <textarea class="form-control" id="treatmentShortDesc" rows="2" placeholder="Concise 1-2 sentence overview shown on treatment cards and listings..." required></textarea>
+                      </div>
+
+                      <div class="mb-3">
+                        <label for="treatmentFullDesc" class="form-label">Full Clinical Description</label>
+                        <textarea class="form-control" id="treatmentFullDesc" rows="4" placeholder="Detailed clinical description of how the procedure functions, benefits, and expected outcomes..."></textarea>
+                      </div>
+
+                      <!-- Featured Image Upload -->
+                      <div class="mb-3">
+                        <label class="form-label">Featured Hero Image <span class="required">*</span></label>
+                        <input type="hidden" id="treatmentFeaturedImageUrl">
+                        <div class="image-upload-dropzone mb-2" id="treatmentDropzone">
+                          <i class="bi bi-cloud-arrow-up dropzone-icon"></i>
+                          <div class="fw-semibold small">Upload Treatment Image</div>
+                          <div class="text-muted small">16:9 or 4:3 high-res image (JPG, PNG, WEBP, max 5MB)</div>
+                          <input type="file" id="treatmentFeaturedFile" class="d-none" accept="image/*">
+                        </div>
+                        <div class="image-preview-wrapper d-none" id="treatmentPreviewWrap">
+                          <img id="treatmentPreviewImg" src="" alt="Featured Preview">
+                          <button type="button" class="image-preview-remove" id="btnRemoveTreatmentImg"><i class="bi bi-x"></i></button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tab 2: Pricing & Meta -->
+                    <div class="tab-pane fade" id="tab-pane-pricing" role="tabpanel">
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                          <label for="treatmentPrice" class="form-label">Offer / Effective Price (₹)</label>
+                          <input type="number" class="form-control" id="treatmentPrice" placeholder="e.g. 6500" min="0">
+                        </div>
+
+                        <div class="col-md-4">
+                          <label for="treatmentOriginalPrice" class="form-label">Original Price (₹)</label>
+                          <input type="number" class="form-control" id="treatmentOriginalPrice" placeholder="e.g. 8500" min="0">
+                        </div>
+
+                        <div class="col-md-4">
+                          <label for="treatmentDiscount" class="form-label">Discount Badge Label</label>
+                          <input type="text" class="form-control" id="treatmentDiscount" placeholder="e.g. 23% OFF">
+                        </div>
+                      </div>
+
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label for="treatmentDuration" class="form-label">Estimated Session Duration</label>
+                          <input type="text" class="form-control" id="treatmentDuration" placeholder="e.g. 45 - 60 Mins">
+                        </div>
+
+                        <div class="col-md-6">
+                          <label for="treatmentRating" class="form-label">Display Rating (Genuine Data)</label>
+                          <input type="number" class="form-control" id="treatmentRating" placeholder="e.g. 4.9" step="0.1" min="1.0" max="5.0">
+                          <div class="form-text">Leave blank if no verified reviews recorded.</div>
+                        </div>
+                      </div>
+
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                          <label for="treatmentOrder" class="form-label">Catalog Display Order</label>
+                          <input type="number" class="form-control" id="treatmentOrder" min="1" value="1">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                          <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="treatmentIsActive" checked>
+                            <label class="form-check-label fw-semibold" for="treatmentIsActive">Active on Website</label>
+                          </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                          <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="treatmentIsFeatured">
+                            <label class="form-check-label fw-semibold" for="treatmentIsFeatured">Featured Treatment</label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tab 3: Clinical Sections (Process, Suitability, FAQs) -->
+                    <div class="tab-pane fade" id="tab-pane-sections" role="tabpanel">
+                      <!-- Suitability -->
+                      <div class="mb-4">
+                        <label for="treatmentSuitability" class="form-label fw-bold">Candidate Suitability & Indications</label>
+                        <textarea class="form-control" id="treatmentSuitability" rows="2" placeholder="Who is this treatment ideal for? (e.g. Individuals with dullness, enlarged pores, or sun damage)..."></textarea>
+                      </div>
+
+                      <!-- Aftercare -->
+                      <div class="mb-4">
+                        <label for="treatmentAftercare" class="form-label fw-bold">Post-Treatment Aftercare Instructions</label>
+                        <textarea class="form-control" id="treatmentAftercare" rows="2" placeholder="Post-procedure instructions (e.g. Avoid direct sunlight for 24 hours, apply SPF 50+, no makeup for 6 hours)..."></textarea>
+                      </div>
+
+                      <!-- Treatment Process Steps Repeater -->
+                      <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <label class="form-label fw-bold mb-0">Treatment Process Steps</label>
+                          <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddProcessStep">
+                            <i class="bi bi-plus-circle me-1"></i> Add Step
+                          </button>
+                        </div>
+                        <div id="processStepsContainer">
+                          <!-- Repeater items appended here -->
+                        </div>
+                      </div>
+
+                      <!-- Treatment FAQs Repeater -->
+                      <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <label class="form-label fw-bold mb-0">Frequently Asked Questions (FAQs)</label>
+                          <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddFaq">
+                            <i class="bi bi-plus-circle me-1"></i> Add FAQ
+                          </button>
+                        </div>
+                        <div id="faqsContainer">
+                          <!-- Repeater items appended here -->
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Tab 4: SEO Meta -->
+                    <div class="tab-pane fade" id="tab-pane-seo" role="tabpanel">
+                      <!-- Section 1: Core On-Page & Meta SEO -->
+                      <div class="mb-4 pb-3 border-bottom">
+                        <h6 class="fw-bold text-dark mb-3">
+                          <i class="bi bi-search text-secondary me-1"></i> On-Page &amp; Meta SEO Settings
+                        </h6>
+
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label for="treatmentSeoH1" class="form-label">Page H1 Tag (Main Heading)</label>
+                            <input type="text" class="form-control" id="treatmentSeoH1" placeholder="e.g. Best HydraFacial Treatment in Delhi NCR">
+                            <div class="form-text">Primary <code>&lt;h1&gt;</code> heading displayed on the treatment page.</div>
+                          </div>
+
+                          <div class="col-md-6">
+                            <label for="treatmentSeoUrl" class="form-label">Page / Canonical URL</label>
+                            <input type="url" class="form-control" id="treatmentSeoUrl" placeholder="https://www.skinfinityderma.com/treatments/hydrafacial-elite-md">
+                            <div class="form-text">Full canonical URL for search engine indexing.</div>
+                          </div>
+                        </div>
+
+                        <div class="mb-3">
+                          <label for="treatmentSeoTitle" class="form-label">Meta Title (SEO Page Title)</label>
+                          <input type="text" class="form-control" id="treatmentSeoTitle" placeholder="HydraFacial Treatment in Delhi | Skinfinity Derma">
+                          <div class="form-text">Recommended length: 50–60 characters.</div>
+                        </div>
+
+                        <div class="mb-3">
+                          <label for="treatmentSeoDesc" class="form-label">Meta Description</label>
+                          <textarea class="form-control" id="treatmentSeoDesc" rows="3" placeholder="Get radiant, clear skin with US-FDA approved HydraFacial at Skinfinity Derma clinic..."></textarea>
+                          <div class="form-text">Recommended length: 140–160 characters.</div>
+                        </div>
+
+                        <div class="row g-3">
+                          <div class="col-md-8">
+                            <label for="treatmentSeoKeywords" class="form-label">Meta Keywords / Focus Keywords</label>
+                            <input type="text" class="form-control" id="treatmentSeoKeywords" placeholder="hydrafacial delhi, skin glow treatment, medi-facial gurugram, dermatologist">
+                            <div class="form-text">Comma-separated target keywords for this treatment.</div>
+                          </div>
+
+                          <div class="col-md-4">
+                            <label for="treatmentSeoRobots" class="form-label">Meta Robots Directive</label>
+                            <select class="form-select" id="treatmentSeoRobots">
+                              <option value="index, follow" selected>index, follow (Default)</option>
+                              <option value="noindex, follow">noindex, follow</option>
+                              <option value="index, nofollow">index, nofollow</option>
+                              <option value="noindex, nofollow">noindex, nofollow</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Section 2: Open Graph (OG) & Social Sharing -->
+                      <div class="mb-4 pb-3 border-bottom">
+                        <h6 class="fw-bold text-dark mb-3">
+                          <i class="bi bi-share text-secondary me-1"></i> Open Graph (OG) &amp; Social Media Tags
+                        </h6>
+
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label for="treatmentOgTitle" class="form-label">OG Title (<code>og:title</code>)</label>
+                            <input type="text" class="form-control" id="treatmentOgTitle" placeholder="HydraFacial Elite MD | Skinfinity Derma">
+                          </div>
+
+                          <div class="col-md-3">
+                            <label for="treatmentOgType" class="form-label">OG Type (<code>og:type</code>)</label>
+                            <select class="form-select" id="treatmentOgType">
+                              <option value="website" selected>website</option>
+                              <option value="article">article</option>
+                              <option value="product">product</option>
+                            </select>
+                          </div>
+
+                          <div class="col-md-3">
+                            <label for="treatmentOgSiteName" class="form-label">OG Site Name</label>
+                            <input type="text" class="form-control" id="treatmentOgSiteName" placeholder="Skinfinity Derma" value="Skinfinity Derma">
+                          </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label for="treatmentOgUrl" class="form-label">OG URL (<code>og:url</code>)</label>
+                            <input type="url" class="form-control" id="treatmentOgUrl" placeholder="https://www.skinfinityderma.com/treatments/hydrafacial-elite-md">
+                          </div>
+
+                          <div class="col-md-6">
+                            <label for="treatmentOgImage" class="form-label">OG Image URL (<code>og:image</code>)</label>
+                            <input type="url" class="form-control" id="treatmentOgImage" placeholder="https://www.skinfinityderma.com/uploads/hydrafacial-og.jpg">
+                            <div class="form-text">Recommended size: 1200 &times; 630 px.</div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label for="treatmentOgDesc" class="form-label">OG Description (<code>og:description</code>)</label>
+                          <textarea class="form-control" id="treatmentOgDesc" rows="2" placeholder="Social media preview description when shared on WhatsApp, Facebook, LinkedIn..."></textarea>
+                        </div>
+                      </div>
+
+                      <!-- Section 3: Schema Markup (JSON-LD) -->
+                      <div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                          <h6 class="fw-bold text-dark mb-0">
+                            <i class="bi bi-code-slash text-secondary me-1"></i> Schema Markup (Structured Data JSON-LD)
+                          </h6>
+                        </div>
+
+                        <div class="mb-3">
+                          <label for="treatmentSchemaType" class="form-label">Primary Schema Type</label>
+                          <select class="form-select" id="treatmentSchemaType">
+                            <option value="MedicalProcedure" selected>MedicalProcedure / MedicalWebPage</option>
+                            <option value="Service">Service</option>
+                            <option value="Product">Product</option>
+                            <option value="FAQPage">FAQPage</option>
+                            <option value="Custom">Custom JSON-LD</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label for="treatmentSchemaMarkup" class="form-label">Schema JSON-LD Script / Payload</label>
+                          <textarea class="form-control font-monospace small" id="treatmentSchemaMarkup" rows="7" placeholder='{
+  "@context": "https://schema.org",
+  "@type": "MedicalProcedure",
+  "name": "HydraFacial Elite MD",
+  "description": "Medical-grade hydradermabrasion skin resurfacing treatment.",
+  "procedureType": "NoninvasiveProcedure"
+}'></textarea>
+                          <div class="form-text">Paste valid JSON-LD structured data for Google Rich Results.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Treatment Card Preview & Publish Actions -->
+            <!-- <div class="col-xl-4 col-lg-5">
+              <div class="sticky-top" style="top: 85px; z-index: 10;">
+                <div class="skin-card mb-4">
+                  <div class="skin-card-header">
+                    <span class="skin-card-title small">Publication Status</span>
+                    <span class="badge badge-active" id="previewStatusBadge">Active</span>
+                  </div>
+                  <div class="skin-card-body">
+                    <div class="d-grid gap-2">
+                      <button type="submit" class="btn btn-primary" id="btnSaveTreatment">
+                        <i class="bi bi-cloud-check-fill me-1"></i> Save & Publish Treatment
+                      </button>
+                      <button type="button" class="btn btn-outline-danger d-none" id="btnDeleteTreatment">
+                        <i class="bi bi-trash me-1"></i> Delete Treatment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="skin-card">
+                  <div class="skin-card-header">
+                    <span class="skin-card-title small">
+                      <i class="bi bi-eye text-secondary"></i> Live Website Card Preview
+                    </span>
+                    <span class="badge badge-featured d-none" id="previewFeaturedTag">Featured</span>
+                  </div>
+                  <div class="p-0">
+                    <div class="treatment-preview-card border-0 rounded-0">
+                      <div class="position-relative">
+                        <img id="cardPreviewImg" src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&auto=format&fit=crop&q=80" alt="Preview Image" class="treatment-preview-img">
+                        <span class="badge bg-secondary position-absolute top-0 start-0 m-2" id="cardPreviewCat">Category</span>
+                        <span class="badge bg-danger position-absolute top-0 end-0 m-2 d-none" id="cardPreviewDiscount">20% OFF</span>
+                      </div>
+                      <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <h6 class="fw-bold mb-0 text-dark" id="cardPreviewName">HydraFacial Elite MD</h6>
+                          <span class="small text-warning fw-bold" id="cardPreviewRating"><i class="bi bi-star-fill me-1"></i>4.9</span>
+                        </div>
+                        <p class="small text-muted mb-2 text-truncate-2" id="cardPreviewShortDesc" style="min-height: 38px;">Medical-grade hydradermabrasion that cleanses, exfoliates, and infuses antioxidant serums.</p>
+                        <div class="d-flex flex-wrap gap-1 mb-2" id="cardPreviewConcerns">
+                          <span class="badge badge-pill-soft">Glow</span>
+                          <span class="badge badge-pill-soft">Anti-Ageing</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                          <div>
+                            <span class="fw-bold text-dark fs-6" id="cardPreviewPrice">₹6,500</span>
+                            <del class="text-muted small ms-1" id="cardPreviewOrigPrice">₹8,500</del>
+                          </div>
+                          <span class="small text-muted" id="cardPreviewDuration"><i class="bi bi-clock me-1"></i>45 Mins</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+          </div>
+        </form>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
+        <div class="text-muted">Clinical Treatment Detail Configurator</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/treatment-form.js"></script>
+</body>
+</html>

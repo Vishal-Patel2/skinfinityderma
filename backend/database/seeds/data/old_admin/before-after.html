@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Before & After Cases | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/images/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Management</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link">
+              <i class="bi bi-grid-1x2-fill"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="banners.html" class="nav-link">
+              <i class="bi bi-images"></i>
+              <span>Banners</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="doctors.html" class="nav-link">
+              <i class="bi bi-person-badge"></i>
+              <span>Doctors</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="treatments.html" class="nav-link">
+              <i class="bi bi-capsule"></i>
+              <span>Treatments</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Taxonomy & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="categories.html" class="nav-link">
+              <i class="bi bi-folder2"></i>
+              <span>Categories</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="concerns.html" class="nav-link">
+              <i class="bi bi-heart-pulse"></i>
+              <span>Concerns</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="gallery.html" class="nav-link">
+              <i class="bi bi-camera"></i>
+              <span>Gallery</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="before-after.html" class="nav-link active">
+              <i class="bi bi-layout-split"></i>
+              <span>Before & After</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Patient Social Proof</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="reviews.html" class="nav-link">
+              <i class="bi bi-google"></i>
+              <span>Google Reviews</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="video-testimonials.html" class="nav-link">
+              <i class="bi bi-play-btn-fill"></i>
+              <span>Video Testimonials</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="settings.html" class="nav-link">
+              <i class="bi bi-gear"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link text-danger action-logout">
+              <i class="bi bi-box-arrow-right text-danger"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/images/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Dr. Johar</div>
+            <div class="sidebar-user-role">Super Administrator</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="header-title-wrap">
+            <h1>Before & After Clinical Cases</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a>
+              <span class="sep">/</span>
+              <span>Before & After</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button type="button" class="btn btn-primary btn-sm" id="btnOpenAddBAModal">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Comparison Case</span>
+          </button>
+
+          <div class="dropdown header-profile-dropdown">
+            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/images/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
+              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
+              <i class="bi bi-chevron-down text-muted small ms-1"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+              <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Clinic Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2 text-danger action-logout" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <!-- Consent Compliance Notice -->
+        <div class="alert alert-light border d-flex align-items-center justify-content-between p-3 mb-4 rounded-3">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-shield-check text-secondary fs-3 me-3"></i>
+            <div>
+              <div class="fw-semibold text-dark">Patient Privacy & Clinical Consent Protocol</div>
+              <div class="text-muted small">All before-and-after photographs require explicit documented patient consent and physician publication approval before appearing publicly on the website.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="skin-card mb-4">
+          <div class="skin-card-body py-3">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-5">
+                <label class="form-label small text-muted mb-1">Filter by Treatment</label>
+                <select id="filterBATreatment" class="form-select form-select-sm">
+                  <option value="">All Treatments</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div class="col-md-5">
+                <label class="form-label small text-muted mb-1">Filter by Concern</label>
+                <input type="text" id="filterBAConcern" class="form-control form-control-sm" placeholder="e.g. Acne Scars, Hair Fall, Melasma...">
+              </div>
+
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="btnResetBAFilters">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Before & After Grid / Card List -->
+        <div id="baListContainer" class="row g-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
+        <div class="text-muted">Clinical Transformation Comparisons & Consent Tracking</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Add/Edit Before & After Modal -->
+  <div class="modal fade" id="baModal" tabindex="-1" aria-labelledby="baModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="baModalLabel">Add Before & After Case</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="baForm" novalidate>
+          <input type="hidden" id="baId" name="id">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label for="baTitle" class="form-label">Case Title / Treatment Protocol <span class="required">*</span></label>
+              <input type="text" class="form-control" id="baTitle" placeholder="e.g. Severe Atrophic Acne Scars - 4 Sessions Fractional CO2 Laser" required>
+              <div class="invalid-feedback">Case title is required.</div>
+            </div>
+
+            <!-- Side-by-Side Image Uploads -->
+            <div class="row g-3 mb-3">
+              <!-- Before Image -->
+              <div class="col-md-6">
+                <label class="form-label">Before Photograph <span class="required">*</span></label>
+                <input type="hidden" id="baBeforeImageUrl">
+                <div class="image-upload-dropzone mb-2" id="baBeforeDropzone">
+                  <i class="bi bi-camera dropzone-icon mb-1 text-danger"></i>
+                  <div class="fw-semibold small">Upload Before Photo</div>
+                  <div class="text-muted small">Standardized clinical baseline</div>
+                  <input type="file" id="baBeforeFile" class="d-none" accept="image/*">
+                </div>
+                <div class="image-preview-wrapper d-none w-100 text-center" id="baBeforePreviewWrap">
+                  <img id="baBeforePreviewImg" src="" alt="Before image preview" style="max-height: 160px; border-radius: 6px;">
+                  <button type="button" class="image-preview-remove" id="btnRemoveBABefore"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="mt-2">
+                  <input type="text" class="form-control form-control-sm" id="baBeforeAlt" placeholder="Alt text for Before image">
+                </div>
+              </div>
+
+              <!-- After Image -->
+              <div class="col-md-6">
+                <label class="form-label">After Photograph <span class="required">*</span></label>
+                <input type="hidden" id="baAfterImageUrl">
+                <div class="image-upload-dropzone mb-2" id="baAfterDropzone">
+                  <i class="bi bi-camera dropzone-icon mb-1 text-success"></i>
+                  <div class="fw-semibold small">Upload After Photo</div>
+                  <div class="text-muted small">Post-treatment transformation</div>
+                  <input type="file" id="baAfterFile" class="d-none" accept="image/*">
+                </div>
+                <div class="image-preview-wrapper d-none w-100 text-center" id="baAfterPreviewWrap">
+                  <img id="baAfterPreviewImg" src="" alt="After image preview" style="max-height: 160px; border-radius: 6px;">
+                  <button type="button" class="image-preview-remove" id="btnRemoveBAAfter"><i class="bi bi-x"></i></button>
+                </div>
+                <div class="mt-2">
+                  <input type="text" class="form-control form-control-sm" id="baAfterAlt" placeholder="Alt text for After image">
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="baTreatment" class="form-label">Associated Treatment <span class="required">*</span></label>
+                <select id="baTreatment" class="form-select" required>
+                  <option value="">Select Treatment...</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div class="col-md-6">
+                <label for="baCategoryOrConcern" class="form-label">Category or Concern Tag</label>
+                <input type="text" class="form-control" id="baCategoryOrConcern" placeholder="e.g. Acne Scars, Hair Fall, Melasma">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="baCaption" class="form-label">Clinical Observations & Improvement Notes</label>
+              <textarea class="form-control" id="baCaption" rows="2" placeholder="e.g. 80% scar depth reduction observed after 4 sessions over 5 months..."></textarea>
+            </div>
+
+            <!-- Patient Consent & Approval Card -->
+            <div class="p-3 mb-3 rounded-3 bg-light border">
+              <div class="fw-bold text-dark small mb-2"><i class="bi bi-shield-check text-success me-1"></i> Consent & Legal Approval Checklist</div>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="baPatientConsent" required checked>
+                <label class="form-check-label small fw-semibold" for="baPatientConsent">
+                  Patient Written Consent Confirmed (Required for identifiable medical photos)
+                </label>
+              </div>
+
+              <div class="row g-2 align-items-center">
+                <div class="col-sm-6">
+                  <label for="baApprovalStatus" class="form-label small mb-1">Publication Approval Status</label>
+                  <select id="baApprovalStatus" class="form-select form-select-sm">
+                    <option value="Approved">Approved for Website Display</option>
+                    <option value="Pending Review">Pending Physician Review</option>
+                    <option value="Restricted">Restricted / Archive Only</option>
+                  </select>
+                </div>
+
+                <div class="col-sm-3">
+                  <label for="baOrder" class="form-label small mb-1">Display Order</label>
+                  <input type="number" class="form-control form-control-sm" id="baOrder" min="1" value="1">
+                </div>
+
+                <div class="col-sm-3 d-flex align-items-end">
+                  <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" id="baIsActive" checked>
+                    <label class="form-check-label small fw-semibold" for="baIsActive">Published</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveBA">
+              <i class="bi bi-check-lg me-1"></i> Save Comparison Case
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison Visualizer Modal -->
+  <div class="modal fade" id="baVisualizerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="visualizerTitle">Case Comparison</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <div class="p-1 border rounded-3 bg-light">
+                <div class="badge bg-secondary mb-2">BEFORE</div>
+                <img id="visBeforeImg" src="" alt="Before" class="img-fluid rounded-2" style="max-height: 380px; object-fit: cover;">
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-1 border rounded-3 bg-light">
+                <div class="badge bg-success mb-2">AFTER</div>
+                <img id="visAfterImg" src="" alt="After" class="img-fluid rounded-2" style="max-height: 380px; object-fit: cover;">
+              </div>
+            </div>
+          </div>
+          <div class="text-muted small fst-italic" id="visCaption"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/before-after.js"></script>
+</body>
+</html>

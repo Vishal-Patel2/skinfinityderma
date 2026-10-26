@@ -1,0 +1,118 @@
+/* ===================================================================
+   Skinfinity Derma Custom Admin Dashboard
+   Responsive Media Queries & Mobile Drawer Styles
+   =================================================================== */
+
+@media (max-width: 991.98px) {
+  :root {
+    --sidebar-width: 260px;
+    --header-height: 64px;
+  }
+
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.show {
+    transform: translateX(0);
+  }
+
+  .admin-main {
+    margin-left: 0 !important;
+  }
+
+  .header-toggle-btn {
+    display: inline-flex !important;
+  }
+
+  .sidebar-backdrop.show {
+    display: block !important;
+  }
+
+  .admin-content {
+    padding: 1.25rem;
+  }
+
+  .header-title-wrap h1 {
+    font-size: 1.1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 1.35rem;
+  }
+
+  .stat-value {
+    font-size: 1.45rem;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) {
+  .admin-content {
+    padding: 1rem;
+  }
+
+  .header-breadcrumb {
+    display: none;
+  }
+
+  .admin-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ba-split-view {
+    height: 180px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-page-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .dataTables_wrapper .dataTables_length,
+  .dataTables_wrapper .dataTables_filter {
+    text-align: left !important;
+    float: none !important;
+  }
+
+  .dataTables_wrapper .dataTables_filter input {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .header-profile-name {
+    display: none;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .stat-card::after {
+    width: 100%;
+    height: 4px;
+    top: 0;
+    left: 0;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+}

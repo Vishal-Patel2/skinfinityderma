@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /*.html
+Disallow: /*.shtml
+Disallow: /*.htm
+Disallow: /cgi-bin/
+Disallow: /*?id=
+Disallow: /index.php
+Allow: /
+Sitemap: https://www.skinfinityderma.com/sitemap.xml

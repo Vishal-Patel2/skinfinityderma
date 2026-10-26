@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Overview | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/images/logo.png">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- SweetAlert2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+
+  <!-- Mobile Backdrop -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/images/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Management</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="index.html" class="nav-link active">
+              <i class="bi bi-grid-1x2-fill"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="banners.html" class="nav-link">
+              <i class="bi bi-images"></i>
+              <span>Banners</span>
+              <span class="badge badge-pill-soft" id="navBadgeBanners">-</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="doctors.html" class="nav-link">
+              <i class="bi bi-person-badge"></i>
+              <span>Doctors</span>
+              <span class="badge badge-pill-soft" id="navBadgeDoctors">-</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="treatments.html" class="nav-link">
+              <i class="bi bi-capsule"></i>
+              <span>Treatments</span>
+              <span class="badge badge-pill-soft" id="navBadgeTreatments">-</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Taxonomy & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="categories.html" class="nav-link">
+              <i class="bi bi-folder2"></i>
+              <span>Categories</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="concerns.html" class="nav-link">
+              <i class="bi bi-heart-pulse"></i>
+              <span>Concerns</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="gallery.html" class="nav-link">
+              <i class="bi bi-camera"></i>
+              <span>Gallery</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="before-after.html" class="nav-link">
+              <i class="bi bi-layout-split"></i>
+              <span>Before & After</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Patient Social Proof</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="reviews.html" class="nav-link">
+              <i class="bi bi-google"></i>
+              <span>Google Reviews</span>
+              <span class="badge badge-pill-soft" id="navBadgeReviews">-</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="video-testimonials.html" class="nav-link">
+              <i class="bi bi-play-btn-fill"></i>
+              <span>Video Testimonials</span>
+              <span class="badge badge-pill-soft" id="navBadgeVideoTestimonials">-</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item">
+            <a href="settings.html" class="nav-link">
+              <i class="bi bi-gear"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link text-danger action-logout">
+              <i class="bi bi-box-arrow-right text-danger"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/images/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Dr. Johar</div>
+            <div class="sidebar-user-role">Super Administrator</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+      <!-- Top Navigation Bar -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="header-title-wrap">
+            <h1>Clinic Overview</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a>
+              <span class="sep">/</span>
+              <span>Dashboard</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="treatment-form.html" class="btn btn-primary btn-sm d-none d-sm-inline-flex">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Treatment</span>
+          </a>
+
+          <div class="dropdown header-profile-dropdown">
+            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/images/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
+              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
+              <i class="bi bi-chevron-down text-muted small ms-1"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+              <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Clinic Settings</a></li>
+              <li><a class="dropdown-item py-2" href="settings.html#adminPassword"><i class="bi bi-shield-lock me-2"></i>Change Password</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2 text-danger action-logout" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main class="admin-content">
+        <!-- Quick Action Shortcuts Bar -->
+        <div class="skin-card mb-4">
+          <div class="skin-card-body py-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fw-semibold">
+                  <i class="bi bi-lightning-charge-fill me-1"></i> Quick Actions
+                </span>
+                <!-- <span class="text-muted small d-none d-md-inline">Rapidly publish dynamic website content:</span> -->
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <a href="banners.html?action=new" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-plus-circle"></i> Add Banner
+                </a>
+                <a href="doctors.html?action=new" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-person-plus"></i> Add Doctor
+                </a>
+                <a href="treatment-form.html" class="btn btn-primary btn-sm">
+                  <i class="bi bi-plus-square"></i> Add Treatment
+                </a>
+                <a href="gallery.html?action=new" class="btn btn-soft btn-sm">
+                  <i class="bi bi-upload"></i> Upload Gallery
+                </a>
+                <a href="before-after.html?action=new" class="btn btn-soft btn-sm">
+                  <i class="bi bi-layout-split"></i> Add Before & After
+                </a>
+                <a href="reviews.html?action=new" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-google"></i> Add Google Review
+                </a>
+                <a href="video-testimonials.html?action=new" class="btn btn-primary btn-sm">
+                  <i class="bi bi-play-circle"></i> Add Video Story
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 Summary Metric Cards -->
+        <div class="row g-3 mb-4">
+          <!-- Total Banners -->
+          <div class="col-xl-4 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-images"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Total Banners</div>
+                <div class="stat-value" id="statBannersCount">-</div>
+                <!-- <div class="stat-meta">
+                  <span class="badge badge-active me-1" id="statActiveBanners">- Active</span>
+                  <span>configured for website</span>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Doctors -->
+          <div class="col-xl-4 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-person-badge"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Active Doctors</div>
+                <div class="stat-value" id="statDoctorsCount">-</div>
+                <!-- <div class="stat-meta">
+                  <span class="badge badge-active me-1" id="statActiveDoctors">- Active</span>
+                  <span>specialist physicians</span>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Treatments -->
+          <div class="col-xl-4 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-capsule"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Total Treatments</div>
+                <div class="stat-value" id="statTreatmentsCount">-</div>
+                <!-- <div class="stat-meta">
+                  <span class="badge badge-featured me-1" id="statFeaturedTreatments">- Featured</span>
+                  <span class="text-muted" id="statActiveTreatments">- Active</span>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Categories & Concerns -->
+          <div class="col-xl-4 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-folder2-open"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Categories & Concerns</div>
+                <div class="stat-value" id="statCategoriesCount">-</div>
+                <!-- <div class="stat-meta">
+                  <span class="badge badge-pill-soft me-1" id="statConcernsCount">- Concerns</span>
+                  <span>taxonomy mappings</span>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Gallery Items -->
+          <div class="col-xl-4 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-camera"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Gallery Images</div>
+                <div class="stat-value" id="statGalleryCount">-</div>
+                <!-- <div class="stat-meta">
+                  <span>Aesthetic clinical photographs</span>
+                </div> -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Before & After -->
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="bi bi-layout-split"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Before & After</div>
+                <div class="stat-value" id="statBeforeAfterCount">-</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Google Reviews -->
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon" style="color: #1A73E8; background: #E8F0FE;">
+                <i class="bi bi-google"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Google Reviews</div>
+                <div class="stat-value" id="statReviewsCount">-</div>
+                <div class="stat-meta">
+                  <span class="badge badge-active me-1" id="statActiveReviews">- Active</span>
+                  <span class="text-warning fw-bold">4.7+ ★</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Video Stories -->
+          <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+              <div class="stat-icon" style="color: #E63946; background: #FDE8EA;">
+                <i class="bi bi-play-btn-fill"></i>
+              </div>
+              <div class="stat-content">
+                <div class="stat-label">Patient Stories</div>
+                <div class="stat-value" id="statVideoCount">-</div>
+                <div class="stat-meta">
+                  <span class="badge badge-featured me-1" id="statActiveVideo">- Active</span>
+                  <span>Video Reviews</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Treatments Breakdown & Recently Updated Records -->
+        <div class="row g-4">
+          <!-- Treatment Distribution by Category -->
+          <div class="col-lg-5">
+            <div class="skin-card h-100 mb-0">
+              <div class="skin-card-header">
+                <div class="skin-card-title">
+                  <i class="bi bi-bar-chart-fill text-secondary"></i>
+                  <span>Treatments by Category</span>
+                </div>
+                <a href="categories.html" class="btn btn-sm btn-link text-decoration-none">Manage Categories</a>
+              </div>
+              <div class="skin-card-body">
+                <div id="categoryDistributionContainer" class="d-flex flex-column gap-3">
+                  <div class="text-center py-4 text-muted">
+                    <div class="loading-spinner mb-2"></div>
+                    <div>Loading distribution...</div>
+                  </div>
+                </div>
+              </div>
+              <div class="skin-card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center small text-muted">
+                  <span>Dynamic website catalog</span>
+                  <a href="treatments.html" class="fw-semibold text-secondary">View all treatments &rarr;</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recently Updated Records -->
+          <div class="col-lg-7">
+            <div class="skin-card h-100 mb-0">
+              <div class="skin-card-header">
+                <div class="skin-card-title">
+                  <i class="bi bi-clock-history text-secondary"></i>
+                  <span>Recently Updated Website Records</span>
+                </div>
+                <!-- <span class="badge badge-pill-soft" id="recentActivityCount">Live Sync</span> -->
+              </div>
+              <div class="skin-card-body p-0">
+                <div class="table-responsive">
+                  <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Module</th>
+                        <th>Record Name</th>
+                        <th>Status</th>
+                        <th>Last Modified</th>
+                        <th class="text-end">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recentActivityTableBody">
+                      <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                          <div class="loading-spinner mb-2"></div>
+                          <div>Loading recent updates...</div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="skin-card-footer bg-light">
+                <div class="small text-muted d-flex align-items-center justify-content-between">
+                  <!-- <span>Populated from persistent database records.</span> -->
+                  <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" id="refreshStatsBtn">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Page Footer -->
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma. All rights reserved.</div>
+        <div class="text-muted">Designed for Skinfinity Derma  </div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- jQuery & Dependencies -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <!-- API & Core JS -->
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/dashboard.js"></script>
+</body>
+</html>
