@@ -425,6 +425,40 @@ router.get(
 );
 
 /**
+ * GET /api/public/memberships
+ */
+router.get(
+  '/memberships',
+  asyncHandler(async (req, res) => {
+    setPublicCache(res);
+    const rows = await query(
+      `SELECT * FROM membership_plans WHERE is_active = 1 ORDER BY display_order ASC`
+    );
+    res.json({
+      success: true,
+      data: rows.map((m) => ({
+        id: m.slug || String(m.id),
+        slug: m.slug,
+        name: m.name,
+        price: m.price ? `₹${Number(m.price).toLocaleString('en-IN')}` : m.price_formatted,
+        rawPrice: Number(m.price),
+        period: m.period,
+        validity: m.validity,
+        tagline: m.tagline,
+        popular: Boolean(m.is_popular),
+        features: parseJson(m.features, []),
+        cardBg: m.card_bg,
+        passGradient: m.pass_gradient,
+        badgeStyle: m.badge_style,
+        buttonStyle: m.button_style,
+        accentText: m.accent_text,
+        subscribersCount: m.subscribers_count,
+      })),
+    });
+  })
+);
+
+/**
  * GET /api/public/faqs
  */
 router.get(

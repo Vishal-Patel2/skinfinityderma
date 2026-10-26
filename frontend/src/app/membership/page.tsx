@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Metadata } from "next";
 import { 
@@ -17,7 +17,23 @@ import { MEMBERSHIP_PLANS } from "@/data/clinicData";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 
 export default function MembershipPage() {
+  const [plans, setPlans] = useState(MEMBERSHIP_PLANS);
   const [selectedPlan, setSelectedPlan] = useState("gold");
+
+  useEffect(() => {
+    let active = true;
+    fetch("http://localhost:4000/api/public/memberships")
+      .then((res) => res.json())
+      .then((json) => {
+        if (active && json && json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setPlans(json.data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className="bg-white">
@@ -52,7 +68,7 @@ export default function MembershipPage() {
       <section className="py-16 bg-slate-50/70 border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {MEMBERSHIP_PLANS.map((plan, idx) => (
+            {plans.map((plan, idx) => (
               <div
                 key={plan.id}
                 className={`rounded-3xl p-6 sm:p-7 border-2 shadow-lg transition-all flex flex-col justify-between relative overflow-hidden ${

@@ -391,6 +391,21 @@
     },
     deleteCoupon: function (id) {
       return this.delete('/coupons/' + id);
+    },
+    validateCoupon: function (data) {
+      return this.post('/public/coupons/validate', data);
+    },
+    getMemberships: function () {
+      return this.get('/memberships');
+    },
+    createMembership: function (data) {
+      return this.post('/memberships', data);
+    },
+    updateMembership: function (id, data) {
+      return this.put('/memberships/' + id, data);
+    },
+    deleteMembership: function (id) {
+      return this.delete('/memberships/' + id);
     }
   };
 

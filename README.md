@@ -82,7 +82,8 @@ skinfinityderma/
 │   ├── index.html                  # Executive clinic overview & KPI cards
 │   ├── appointments.html           # Real-time appointment management & status workflow
 │   ├── enquiries.html              # Leads management (Franchise, EMI, Diagnostic tools)
-│   ├── coupons.html                # Offers & service-specific coupon code generator
+│   ├── memberships.html            # VIP Loyalty tiers management (Silver, Gold, Platinum)
+│   ├── coupons.html                # Offers & service-specific coupon code generator & simulator
 │   ├── users.html                  # Staff accounts & RBAC role assignments
 │   ├── treatments.html             # US-FDA treatments catalog management
 │   ├── doctors.html                # Medical board doctor profiles

@@ -15,7 +15,7 @@ router.get(
   '/dashboard/stats',
   requirePermission('dashboard.view'),
   asyncHandler(async (req, res) => {
-    const [banners, doctors, treatments, categories, concerns, appts, enqs, reviews] = await Promise.all([
+    const [banners, doctors, treatments, categories, concerns, appts, enqs, reviews, memberships, coupons] = await Promise.all([
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM banners'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM doctors'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(is_featured) AS featured FROM treatments'),
@@ -24,6 +24,8 @@ router.get(
       one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending FROM appointments'),
       one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="new" THEN 1 ELSE 0 END) AS newCount FROM enquiries'),
       one('SELECT COUNT(*) AS total FROM reviews'),
+      one('SELECT COUNT(*) AS total, SUM(subscribers_count) AS subscribers FROM membership_plans'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(used_count) AS total_uses FROM coupons'),
     ]);
 
     const recentAppts = await query(
@@ -53,6 +55,11 @@ router.get(
         totalEnquiries: enqs.total || 0,
         newEnquiries: enqs.newCount || 0,
         totalReviews: reviews.total || 0,
+        totalMemberships: memberships ? memberships.total || 0 : 0,
+        totalSubscribers: memberships ? memberships.subscribers || 0 : 0,
+        totalCoupons: coupons ? coupons.total || 0 : 0,
+        activeCoupons: coupons ? coupons.active || 0 : 0,
+        totalCouponUses: coupons ? coupons.total_uses || 0 : 0,
         recentAppointments: recentAppts,
         recentEnquiries: recentEnqs,
       },
@@ -666,6 +673,152 @@ router.post(
 
     await audit(req, { action: 'update', entity: 'settings', summary: 'Updated clinic settings' });
     res.json({ success: true, message: 'Settings saved successfully' });
+  })
+);
+
+/* -------------------------------------------------------------------------- */
+/* MEMBERSHIP PLANS CRUD                                                      */
+/* -------------------------------------------------------------------------- */
+
+router.get(
+  '/memberships',
+  requirePermission('treatments.view'),
+  asyncHandler(async (req, res) => {
+    const rows = await query('SELECT * FROM membership_plans ORDER BY display_order ASC, id ASC');
+    res.json({
+      success: true,
+      data: rows.map((m) => ({
+        id: String(m.id),
+        slug: m.slug,
+        name: m.name,
+        price: Number(m.price),
+        priceFormatted: m.price ? `₹${Number(m.price).toLocaleString('en-IN')}` : m.price_formatted,
+        period: m.period,
+        validity: m.validity,
+        tagline: m.tagline,
+        isPopular: Boolean(m.is_popular),
+        features: parseJson(m.features, []),
+        cardBg: m.card_bg,
+        passGradient: m.pass_gradient,
+        badgeStyle: m.badge_style,
+        buttonStyle: m.button_style,
+        accentText: m.accent_text,
+        displayOrder: m.display_order,
+        isActive: Boolean(m.is_active),
+        subscribersCount: m.subscribers_count || 0,
+        createdAt: m.created_at,
+        updatedAt: m.updated_at,
+      })),
+    });
+  })
+);
+
+router.post(
+  '/memberships',
+  requirePermission('treatments.create'),
+  asyncHandler(async (req, res) => {
+    const {
+      name,
+      slug,
+      price,
+      priceFormatted,
+      period = '/ year',
+      validity = '12 Months Validity',
+      tagline,
+      isPopular = 0,
+      features = [],
+      displayOrder = 0,
+      isActive = 1,
+    } = req.body;
+
+    if (!name) throw new HttpError(400, 'Plan name is required');
+    const finalSlug = slug || slugify(name);
+    const numPrice = Number(price) || 0;
+    const finalPriceFormatted = priceFormatted || `₹${numPrice.toLocaleString('en-IN')}`;
+
+    const result = await query(
+      `INSERT INTO membership_plans (
+        slug, name, price, price_formatted, period, validity, tagline,
+        is_popular, features, display_order, is_active
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        finalSlug,
+        name,
+        numPrice,
+        finalPriceFormatted,
+        period,
+        validity,
+        tagline || null,
+        isPopular ? 1 : 0,
+        JSON.stringify(Array.isArray(features) ? features : [features]),
+        Number(displayOrder) || 0,
+        isActive ? 1 : 0,
+      ]
+    );
+
+    await audit(req, { action: 'create', entity: 'membership_plans', entityId: result.insertId, summary: `Created membership plan ${name}` });
+    res.status(201).json({ success: true, message: 'Membership plan created successfully', data: { id: String(result.insertId) } });
+  })
+);
+
+router.put(
+  '/memberships/:id',
+  requirePermission('treatments.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const body = req.body;
+
+    const existing = await one('SELECT * FROM membership_plans WHERE id = ?', [id]);
+    if (!existing) throw new HttpError(404, 'Membership plan not found');
+
+    const numPrice = body.price !== undefined ? Number(body.price) : Number(existing.price);
+    const formatted = body.priceFormatted || (body.price !== undefined ? `₹${numPrice.toLocaleString('en-IN')}` : existing.price_formatted);
+
+    await query(
+      `UPDATE membership_plans SET
+        name = COALESCE(?, name),
+        slug = COALESCE(?, slug),
+        price = ?,
+        price_formatted = ?,
+        period = COALESCE(?, period),
+        validity = COALESCE(?, validity),
+        tagline = COALESCE(?, tagline),
+        is_popular = COALESCE(?, is_popular),
+        features = COALESCE(?, features),
+        display_order = COALESCE(?, display_order),
+        is_active = COALESCE(?, is_active),
+        subscribers_count = COALESCE(?, subscribers_count)
+      WHERE id = ?`,
+      [
+        body.name || null,
+        body.slug || null,
+        numPrice,
+        formatted,
+        body.period || null,
+        body.validity || null,
+        body.tagline || null,
+        body.isPopular !== undefined ? (body.isPopular ? 1 : 0) : null,
+        body.features !== undefined ? JSON.stringify(body.features) : null,
+        body.displayOrder !== undefined ? Number(body.displayOrder) : null,
+        body.isActive !== undefined ? (body.isActive ? 1 : 0) : null,
+        body.subscribersCount !== undefined ? Number(body.subscribersCount) : null,
+        id,
+      ]
+    );
+
+    await audit(req, { action: 'update', entity: 'membership_plans', entityId: id, summary: `Updated membership plan ${existing.name}` });
+    res.json({ success: true, message: 'Membership plan updated successfully' });
+  })
+);
+
+router.delete(
+  '/memberships/:id',
+  requirePermission('treatments.delete'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await query('DELETE FROM membership_plans WHERE id = ?', [id]);
+    await audit(req, { action: 'delete', entity: 'membership_plans', entityId: id, summary: `Deleted membership plan #${id}` });
+    res.json({ success: true, message: 'Membership plan deleted successfully' });
   })
 );
 

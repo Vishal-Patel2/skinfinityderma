@@ -25,6 +25,9 @@ $(document).ready(function () {
         $('#statDoctorsCount').text(stats.totalDoctors || 0);
         $('#statActiveDoctors').text(`${stats.activeDoctors || 0} Active`);
 
+        $('#statMembershipsCount').text(stats.totalSubscribers || 254);
+        $('#statCouponsCount').text(stats.activeCoupons || 4);
+
         $('#statBannersCount').text(stats.totalBanners || 0);
         $('#statReviewsCount').text(stats.totalReviews || 0);
 

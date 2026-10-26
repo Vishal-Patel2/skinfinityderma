@@ -28,6 +28,7 @@
           <li class="nav-item"><a href="index.html" class="nav-link active"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
           <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
           <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
         </ul>
 
         <div class="sidebar-section-title">Catalog & Doctors</div>
@@ -72,59 +73,117 @@
         <div class="header-left">
           <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
           <div class="header-title-wrap">
-            <h1>Clinic Overview & Operations</h1>
+            <h1 class="font-serif">Clinic Overview & Operations</h1>
             <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Dashboard</span></div>
           </div>
         </div>
-        <div class="header-right">
-          <a href="appointments.html" class="btn btn-primary btn-sm"><i class="bi bi-calendar2-plus me-1"></i> View Appointments</a>
+        <div class="header-right d-flex align-items-center gap-3">
+          <div class="clinic-duty-pill d-none d-sm-inline-flex">
+            <span class="duty-pulse"></span>
+            <span>Clinics Open • Dr. Ipshita Johri On Duty</span>
+          </div>
+          <a href="appointments.html" class="btn btn-luxury-emerald btn-sm"><i class="bi bi-calendar2-plus me-1"></i> View Appointments</a>
         </div>
       </header>
 
       <main class="admin-content">
-        <!-- Luxury KPI Stat Cards -->
+        <!-- Step-by-Step Clinic Operational Workflow Guidance -->
+        <div class="guide-flow-container">
+          <div class="guide-step-card active-step">
+            <div class="guide-step-header">
+              <span class="guide-step-num">1</span>
+              <h4 class="guide-step-title">Inbound Lead Queue</h4>
+            </div>
+            <p class="guide-step-desc">Diagnostic tools, Franchise enquiries & website consultation requests.</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">2</span>
+              <h4 class="guide-step-title">Doctor Scheduling</h4>
+            </div>
+            <p class="guide-step-desc">Slot allocation for Senior Dermatologists across Noida & Gurgaon.</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">3</span>
+              <h4 class="guide-step-title">Discounts & Loyalty Passes</h4>
+            </div>
+            <p class="guide-step-desc">Automated promo validation, VIP Membership perks & EMI options.</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">4</span>
+              <h4 class="guide-step-title">Follow-up & Reviews</h4>
+            </div>
+            <p class="guide-step-desc">Post-procedure photographic results tracking & verified Google reviews.</p>
+          </div>
+        </div>
+
+        <!-- Luxury 6-Card KPI Grid -->
         <div class="row g-3 mb-4">
-          <div class="col-xl-3 col-md-6">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="stat-card-luxury">
-              <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="text-muted small fw-semibold text-uppercase">Appointments</span>
-                <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-calendar2-check-fill"></i></div>
+                <div class="stat-icon-wrapper stat-icon-emerald" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-calendar2-check-fill"></i></div>
               </div>
-              <div class="fs-2 fw-bold text-dark" id="statAppointmentsCount">0</div>
-              <div class="small text-muted mt-1"><span class="badge bg-warning-subtle text-warning-emphasis me-1" id="statPendingAppointments">0 Pending</span> Action required</div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statAppointmentsCount">0</div>
+              <div class="small text-muted mt-1"><span class="badge bg-warning-subtle text-warning-emphasis" id="statPendingAppointments">0 Pending</span></div>
             </div>
           </div>
 
-          <div class="col-xl-3 col-md-6">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="stat-card-luxury">
-              <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
                 <span class="text-muted small fw-semibold text-uppercase">Leads & Enquiries</span>
-                <div class="stat-icon-wrapper stat-icon-blue"><i class="bi bi-chat-left-dots-fill"></i></div>
+                <div class="stat-icon-wrapper stat-icon-blue" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-chat-left-dots-fill"></i></div>
               </div>
-              <div class="fs-2 fw-bold text-dark" id="statEnquiriesCount">0</div>
-              <div class="small text-muted mt-1"><span class="badge bg-info-subtle text-info-emphasis me-1" id="statNewEnquiries">0 New</span> From website channels</div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statEnquiriesCount">0</div>
+              <div class="small text-muted mt-1"><span class="badge bg-info-subtle text-info-emphasis" id="statNewEnquiries">0 New</span></div>
             </div>
           </div>
 
-          <div class="col-xl-3 col-md-6">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="stat-card-luxury">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small fw-semibold text-uppercase">Active Treatments</span>
-                <div class="stat-icon-wrapper stat-icon-purple"><i class="bi bi-capsule"></i></div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-semibold text-uppercase">Treatments</span>
+                <div class="stat-icon-wrapper stat-icon-purple" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-capsule"></i></div>
               </div>
-              <div class="fs-2 fw-bold text-dark" id="statTreatmentsCount">0</div>
-              <div class="small text-muted mt-1"><span class="badge bg-success-subtle text-success me-1" id="statActiveTreatments">0 Active</span> US-FDA Catalog</div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statTreatmentsCount">0</div>
+              <div class="small text-muted mt-1"><span class="badge bg-success-subtle text-success" id="statActiveTreatments">0 Active</span></div>
             </div>
           </div>
 
-          <div class="col-xl-3 col-md-6">
+          <div class="col-xl-2 col-md-4 col-sm-6">
             <div class="stat-card-luxury">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small fw-semibold text-uppercase">Clinical Doctors</span>
-                <div class="stat-icon-wrapper stat-icon-amber"><i class="bi bi-person-badge"></i></div>
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-semibold text-uppercase">MD Doctors</span>
+                <div class="stat-icon-wrapper stat-icon-amber" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-person-badge"></i></div>
               </div>
-              <div class="fs-2 fw-bold text-dark" id="statDoctorsCount">0</div>
-              <div class="small text-muted mt-1"><span class="badge bg-secondary-subtle text-secondary me-1" id="statActiveDoctors">0 Active</span> Senior MD Specialists</div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statDoctorsCount">5</div>
+              <div class="small text-muted mt-1"><span class="badge bg-secondary-subtle text-secondary" id="statActiveDoctors">5 Active</span></div>
+            </div>
+          </div>
+
+          <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="stat-card-luxury">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-semibold text-uppercase">VIP Members</span>
+                <div class="stat-icon-wrapper stat-icon-amber" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-award-fill"></i></div>
+              </div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statMembershipsCount">254</div>
+              <div class="small text-muted mt-1"><span class="badge bg-warning-subtle text-warning-emphasis">Privilege Club</span></div>
+            </div>
+          </div>
+
+          <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="stat-card-luxury">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small fw-semibold text-uppercase">Promo Codes</span>
+                <div class="stat-icon-wrapper stat-icon-emerald" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="bi bi-tag-fill"></i></div>
+              </div>
+              <div class="fs-2 fw-bold font-serif text-dark" id="statCouponsCount">4</div>
+              <div class="small text-muted mt-1"><span class="badge bg-success-subtle text-success">Live in Cart</span></div>
             </div>
           </div>
         </div>
@@ -135,14 +194,15 @@
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
               <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-secondary-subtle text-secondary px-3 py-2 fw-semibold">
-                  <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Quick Operations
+                  <i class="bi bi-lightning-charge-fill me-1 text-warning"></i> Quick Operations Launchpad
                 </span>
               </div>
               <div class="d-flex flex-wrap gap-2">
                 <a href="treatment-form.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-plus-square"></i> Add Treatment</a>
                 <a href="doctors.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-person-plus"></i> Add Doctor</a>
                 <a href="banners.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-images"></i> Manage Banners</a>
-                <a href="coupons.html" class="btn btn-outline-warning btn-sm text-dark"><i class="bi bi-tag-fill text-warning"></i> Add Promo Code</a>
+                <a href="memberships.html" class="btn btn-outline-warning btn-sm text-dark"><i class="bi bi-award-fill text-warning"></i> VIP Memberships</a>
+                <a href="coupons.html" class="btn btn-outline-warning btn-sm text-dark"><i class="bi bi-tag-fill text-warning"></i> Create Promo Code</a>
                 <a href="users.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-people-fill"></i> Manage Staff (RBAC)</a>
               </div>
             </div>
