@@ -358,6 +358,12 @@
     getAppointments: function (params) {
       return this.get('/appointments', params);
     },
+    getAppointment: function (id) {
+      return this.get('/appointments/' + id);
+    },
+    updateAppointment: function (id, data) {
+      return this.put('/appointments/' + id, data);
+    },
     updateAppointmentStatus: function (id, status, notes) {
       return this.patch('/appointments/' + id + '/status', { status, notes });
     },

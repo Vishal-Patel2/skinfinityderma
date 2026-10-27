@@ -138,21 +138,19 @@ Permissions are enforced at both the API middleware layer and the UI navigation 
 
 ---
 
-## 🗄️ Database Architecture
+## 🗄️ Database Architecture (`sid_` Standard Naming Pattern)
 
-The database `skinfinity_derma` contains **32 normalized relational tables**:
+The database `skinfinity_derma` standardizes all core clinic operations and catalog datasets under the official **`sid_` (Skinfinity Derma)** table prefix with backward-compatible SQL views:
 
 ```sql
--- Core Catalog & Operations Tables
-roles, permissions, role_permissions, users
-clinics, doctors, doctor_specialties
-categories, concerns, treatments, treatment_concerns
-hero_banners, offers, coupons, coupon_usages
-appointments, appointment_status_history
-enquiries, enquiry_notes
-patient_reviews, patient_stories, videos
-results_transformations, results_gallery, gallery_items
-faqs, media_press, site_settings, site_stats, navigation_menus, content_blocks, seo_pages
+-- Standard `sid_` Relational Schema:
+sid_roles, sid_permissions, sid_role_permissions, sid_users, sid_audit_logs
+sid_clinics, sid_doctors, sid_membership_plans
+sid_categories, sid_concerns, sid_treatments, sid_treatment_concerns
+sid_banners, sid_offers, sid_offer_treatments, sid_coupons, sid_coupon_categories, sid_coupon_treatments, sid_coupon_redemptions
+sid_appointments, sid_enquiries, sid_lead_notes
+sid_reviews, sid_videos, sid_before_after_cases, sid_gallery_items
+sid_faqs, sid_press_mentions, sid_settings, sid_menu_items, sid_content_blocks, sid_seo_pages, sid_media_files
 ```
 
 ---

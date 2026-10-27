@@ -69,6 +69,10 @@ $(document).ready(function () {
           </td>
           <td><span class="small text-muted">${doc.qualifications || '—'}</span></td>
           <td><span class="badge badge-pill-soft text-wrap text-start">${doc.specialization || 'General Dermatology'}</span></td>
+          <td>
+            <span class="badge bg-success-subtle text-success border px-2 py-1 fw-bold">₹${Number(doc.consultationFee || 1000).toLocaleString('en-IN')}</span>
+            ${doc.availability ? `<div class="small text-muted mt-1"><i class="bi bi-clock me-1"></i>${doc.availability}</div>` : ''}
+          </td>
           <td><span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>${doc.clinicCity || 'All Branches'}</span></td>
           <td class="text-center">${statusSwitch}</td>
           <td class="text-end">
@@ -104,6 +108,9 @@ $(document).ready(function () {
     $('#doctorPhotoUrl').val('');
     $('#doctorPhotoPreviewImg').attr('src', '');
     $('#doctorPhotoPreviewWrap').addClass('d-none');
+    $('#doctorConsultationFee').val('1200');
+    $('#doctorExperience').val('10+ Years');
+    $('#doctorAvailability').val('10:00 AM - 07:00 PM (Mon-Sat)');
     $('#doctorIsActive').prop('checked', true);
     $('#doctorDisplayOrder').val(doctorsData.length + 1);
     $('#doctorModalLabel').text('Add New Doctor Profile');
@@ -121,6 +128,9 @@ $(document).ready(function () {
     $('#doctorDesignation').val(doc.designation);
     $('#doctorQualifications').val(doc.qualifications || '');
     $('#doctorSpecialization').val(doc.specialization || '');
+    $('#doctorConsultationFee').val(doc.consultationFee || 1000);
+    $('#doctorExperience').val(doc.experience || '');
+    $('#doctorAvailability').val(doc.availability || '10:00 AM - 07:00 PM');
     $('#doctorClinicCity').val(doc.clinicCity || '');
     $('#doctorProfileUrl').val(doc.profileUrl || '');
     $('#doctorShortBio').val(doc.shortBio || '');
@@ -159,6 +169,9 @@ $(document).ready(function () {
       designation: designation,
       qualifications: $('#doctorQualifications').val().trim(),
       specialization: $('#doctorSpecialization').val().trim(),
+      consultationFee: parseFloat($('#doctorConsultationFee').val()) || 1000,
+      experience: $('#doctorExperience').val().trim(),
+      availability: $('#doctorAvailability').val().trim(),
       clinicCity: $('#doctorClinicCity').val().trim(),
       profileUrl: $('#doctorProfileUrl').val().trim(),
       shortBio: $('#doctorShortBio').val().trim(),

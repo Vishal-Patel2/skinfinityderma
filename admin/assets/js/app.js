@@ -92,6 +92,9 @@
       if (slug === 'super_admin' || roleLabel.toLowerCase().includes('super')) {
         badgeClass = 'badge-role-superadmin';
         roleLabel = 'Super Admin';
+      } else if (slug === 'doctor' || roleLabel.toLowerCase().includes('doctor') || roleLabel.toLowerCase().includes('physician')) {
+        badgeClass = 'badge-role-doctor';
+        roleLabel = 'Doctor / Consultant';
       } else if (slug === 'admin' || roleLabel.toLowerCase() === 'admin') {
         badgeClass = 'badge-role-admin';
         roleLabel = 'Clinic Admin';
@@ -107,9 +110,14 @@
       }
 
       $('.sidebar-user-role').html(`<span class="${badgeClass}"><i class="bi bi-shield-check"></i> ${roleLabel}</span>`);
-      if (user.avatar) {
-        $('.sidebar-user-avatar, .header-profile-avatar').attr('src', user.avatar);
-      }
+      
+      const defaultAvatar = 'assets/img/avatar-default.svg';
+      const avatarUrl = user.avatar && user.avatar.trim() ? user.avatar : defaultAvatar;
+      $('.sidebar-user-avatar, .header-profile-avatar')
+        .attr('src', avatarUrl)
+        .on('error', function () {
+          $(this).attr('src', defaultAvatar);
+        });
 
       this.applyRBAC(user);
     },

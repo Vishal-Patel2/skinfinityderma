@@ -207,7 +207,9 @@
               <i class="bi bi-calendar2-check-fill text-success"></i>
               <span>All Appointments</span>
             </div>
-            <span class="badge bg-secondary-subtle text-secondary" id="totalApptsCount">Loading...</span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary-subtle text-secondary" id="totalApptsCount">Loading...</span>
+            </div>
           </div>
           <div class="skin-card-body p-0">
             <div class="table-responsive p-3">
@@ -216,10 +218,10 @@
                   <tr>
                     <th>Booking #</th>
                     <th>Patient Details</th>
-                    <th>Requested Treatment</th>
-                    <th>Date & Time</th>
+                    <th>Treatment / Service</th>
+                    <th>Date & Slot</th>
                     <th>Clinic & Doctor</th>
-                    <th>Discount / Est.</th>
+                    <th>Fee & Estimate</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                   </tr>
@@ -235,41 +237,208 @@
 
       <footer class="admin-page-footer">
         <div>&copy; 2026 Skinfinity Derma Operations Portal.</div>
-        <div class="text-muted">Real-Time Clinical Bookings Management</div>
+        <div class="text-muted">Real-Time Clinical Bookings & Doctor Scheduling</div>
       </footer>
     </div>
   </div>
 
-  <!-- Update Status Modal -->
-  <div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
+  <!-- Comprehensive Doctor Assignment & Appointment Management Modal -->
+  <div class="modal fade" id="editApptModal" tabindex="-1" aria-labelledby="editApptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content border-0 shadow">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold">Update Appointment Status</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-light">
+          <div>
+            <h5 class="modal-title fw-bold" id="editApptModalLabel"><i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Manage Appointment & Doctor Assignment</h5>
+            <div class="small text-muted" id="editApptBookingNo">Booking #SKF-XXXXX</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form id="statusForm">
-          <input type="hidden" id="statusApptId">
+        <form id="editApptForm">
+          <input type="hidden" id="editApptId">
           <div class="modal-body p-4">
-            <div class="mb-3">
-              <label class="form-label">Change Status</label>
-              <select id="modalStatusSelect" class="form-select">
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+            <!-- Patient Contact Section -->
+            <div class="p-3 mb-3 bg-light rounded-3 border">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Patient Name</label>
+                  <input type="text" id="editPatientName" class="form-control form-control-sm fw-semibold" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Phone Number</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input type="text" id="editPatientPhone" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Email Address</label>
+                  <input type="email" id="editPatientEmail" class="form-control form-control-sm" placeholder="patient@example.com">
+                </div>
+              </div>
             </div>
+
+            <!-- Doctor & Clinic Allocation -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="editApptDoctor" class="form-label fw-semibold text-primary">
+                  <i class="bi bi-person-badge-fill me-1"></i> Assigned MD Doctor
+                </label>
+                <select id="editApptDoctor" class="form-select">
+                  <option value="">-- Assign Doctor on Arrival --</option>
+                  <!-- Dynamically populated with fees -->
+                </select>
+                <div class="form-text small" id="doctorFeeNotice">Select doctor to automatically apply their consultation fee.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="editApptClinic" class="form-label fw-semibold">
+                  <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Clinic Branch Location
+                </label>
+                <select id="editApptClinic" class="form-select">
+                  <option value="1">Sector 36 HQ Clinic (Noida, UP)</option>
+                  <option value="2">Sector 28 Golf Course Road (Gurugram, Haryana)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Date, Time & Procedure -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="editApptDate" class="form-label fw-semibold">Appointment Date</label>
+                <input type="date" id="editApptDate" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label for="editApptTime" class="form-label fw-semibold">Time Slot</label>
+                <input type="text" id="editApptTime" class="form-control" placeholder="e.g. 11:30 AM or 15:00" required>
+              </div>
+              <div class="col-md-4">
+                <label for="editApptStatus" class="form-label fw-semibold">Booking Status</label>
+                <select id="editApptStatus" class="form-select">
+                  <option value="pending">Pending Confirmation</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="in_clinic">In-Clinic / Arrived</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+
             <div class="mb-3">
-              <label class="form-label">Coordinator Notes (Optional)</label>
-              <textarea id="modalStatusNotes" class="form-control" rows="3" placeholder="e.g. Call connected, patient confirmed for 11:30 AM slot"></textarea>
+              <label for="editApptService" class="form-label fw-semibold">Requested Clinical Service / Treatment</label>
+              <input type="text" id="editApptService" class="form-control" placeholder="e.g. US-FDA Soprano Titanium Laser Hair Removal">
+            </div>
+
+            <!-- Financial Pricing Breakdown -->
+            <div class="price-breakdown-box mb-3">
+              <div class="fw-bold text-dark small text-uppercase mb-2"><i class="bi bi-receipt me-1"></i> Clinical Billing & Estimate Breakdown</div>
+              <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Doctor Consultation Fee</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" id="editDoctorFee" class="form-control" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Treatment / Procedure Price</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" id="editProcedurePrice" class="form-control" value="0" min="0" step="100">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Coupon Discount</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">- ₹</span>
+                    <input type="number" id="editDiscountAmount" class="form-control" value="0" min="0">
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                <div class="small fw-semibold text-muted">Promo Code: <span class="badge bg-warning-subtle text-dark border" id="editCouponBadge">None</span></div>
+                <div class="fs-5 fw-bold text-success">Net Estimate: <span id="editNetPayable">₹0</span></div>
+              </div>
+            </div>
+
+            <!-- Clinical Coordinator Notes -->
+            <div class="mb-2">
+              <label for="editApptNotes" class="form-label small fw-semibold text-muted">Clinical Notes & Coordinator Remarks</label>
+              <textarea id="editApptNotes" class="form-control" rows="2" placeholder="e.g. Patient requested Dr. Ipshita Johri for acne scar consultation. Confirmed via WhatsApp."></textarea>
             </div>
           </div>
           <div class="modal-footer bg-light">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveApptChanges">
+              <i class="bi bi-check-circle-fill me-1"></i> Save Changes & Doctor Assignment
+            </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Clinical Appointment Slip Modal -->
+  <div class="modal fade" id="printSlipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 pt-1" id="printableSlipArea">
+          <div class="text-center mb-3">
+            <img src="assets/img/logo.png" alt="Skinfinity Derma" style="height: 48px;" class="mb-2">
+            <div class="fw-bold font-serif fs-5 text-dark">Skinfinity Derma Aesthetic Clinics</div>
+            <div class="small text-muted" id="slipClinicAddress">B-1/22, Sector 36, Near Golf Course Metro, Noida, UP</div>
+            <div class="small text-muted">Helpline: +91 98719 41444 | appointments@skinfinityderma.com</div>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center my-2">
+            <span class="badge bg-primary px-2 py-1" id="slipBookingNo">SKF-APP-1001</span>
+            <span class="small text-muted" id="slipGeneratedDate">Date: 27 Oct 2026</span>
+          </div>
+
+          <div class="bg-light p-3 rounded-3 my-3 border">
+            <div class="row g-2 small">
+              <div class="col-6"><span class="text-muted">Patient:</span> <strong id="slipPatientName">—</strong></div>
+              <div class="col-6"><span class="text-muted">Phone:</span> <strong id="slipPatientPhone">—</strong></div>
+              <div class="col-6"><span class="text-muted">Appointment Date:</span> <strong id="slipDate">—</strong></div>
+              <div class="col-6"><span class="text-muted">Time Slot:</span> <strong id="slipTime">—</strong></div>
+              <div class="col-12"><span class="text-muted">Consultant Doctor:</span> <strong id="slipDoctorName" class="text-primary">—</strong></div>
+              <div class="col-12"><span class="text-muted">Service / Procedure:</span> <strong id="slipServiceName">—</strong></div>
+            </div>
+          </div>
+
+          <div class="border rounded-3 p-3 my-3">
+            <div class="fw-bold small text-muted text-uppercase mb-2">Billing Summary</div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Doctor Consultation Fee</span>
+              <span id="slipDoctorFee">₹1,200</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Procedure / Treatment Estimate</span>
+              <span id="slipProcedureFee">₹0</span>
+            </div>
+            <div class="d-flex justify-content-between small text-danger mb-1" id="slipDiscountRow">
+              <span>Coupon Discount Applied</span>
+              <span id="slipDiscountFee">- ₹0</span>
+            </div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between fw-bold fs-6 text-dark">
+              <span>Total Payable at Clinic</span>
+              <span id="slipTotalPayable" class="text-success">₹1,200</span>
+            </div>
+          </div>
+
+          <div class="text-center small text-muted fst-italic">
+            Please report 10 minutes prior to scheduled slot for complimentary digital skin assessment.
+          </div>
+        </div>
+        <div class="modal-footer bg-light justify-content-between">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-dark btn-sm" id="btnPrintSlip">
+            <i class="bi bi-printer-fill me-1"></i> Print Appointment Slip
+          </button>
+        </div>
       </div>
     </div>
   </div>

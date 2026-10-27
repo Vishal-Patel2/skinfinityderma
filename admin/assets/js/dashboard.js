@@ -1,32 +1,48 @@
 /**
  * Skinfinity Derma Admin Dashboard
- * Real-Time Clinic Operations & Metrics Controller
+ * Real-Time Clinic Operations Controller
  */
 
 $(document).ready(function () {
   'use strict';
 
+  function formatSlotDate(dStr) {
+    if (!dStr) return '—';
+    try {
+      const d = new Date(dStr);
+      if (isNaN(d.getTime())) return dStr;
+      return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch (e) {
+      return dStr;
+    }
+  }
+
+  function formatSlotTime(tStr) {
+    if (!tStr) return '';
+    const parts = tStr.split(':');
+    if (parts.length >= 2) {
+      let h = parseInt(parts[0], 10);
+      const m = parts[1];
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return `${h}:${m} ${ampm}`;
+    }
+    return tStr;
+  }
+
   function loadDashboardData() {
     window.API.getDashboardStats()
       .done(function (res) {
         if (!res.success) return;
-        const stats = res.data || res.stats || {};
+        const stats = res.data;
 
-        // Metrics Counters
+        // Metric Counter Numbers
         $('#statAppointmentsCount').text(stats.totalAppointments || 0);
-        $('#statPendingAppointments').text(`${stats.pendingAppointments || 0} Pending`);
-
         $('#statEnquiriesCount').text(stats.totalEnquiries || 0);
-        $('#statNewEnquiries').text(`${stats.newEnquiries || 0} New`);
-
         $('#statTreatmentsCount').text(stats.totalTreatments || 0);
-        $('#statActiveTreatments').text(`${stats.activeTreatments || 0} Active`);
-
         $('#statDoctorsCount').text(stats.totalDoctors || 0);
-        $('#statActiveDoctors').text(`${stats.activeDoctors || 0} Active`);
-
         $('#statMembershipsCount').text(stats.totalSubscribers || 254);
-        $('#statCouponsCount').text(stats.activeCoupons || 4);
+        $('#statCouponsCount').text(stats.activeCoupons || stats.totalCoupons || 5);
 
         $('#statBannersCount').text(stats.totalBanners || 0);
         $('#statReviewsCount').text(stats.totalReviews || 0);
@@ -56,14 +72,17 @@ $(document).ready(function () {
       const statusClass = `badge-status-${a.status}`;
       $tbody.append(`
         <tr>
-          <td><span class="fw-bold font-monospace text-primary">${a.appointment_no || '#' + a.id}</span></td>
+          <td class="text-nowrap"><span class="fw-bold font-monospace text-primary">${a.appointment_no || '#' + a.id}</span></td>
           <td>
-            <div class="fw-semibold text-dark">${a.patient_name}</div>
-            <div class="small text-muted">${a.phone}</div>
+            <div class="fw-semibold text-dark text-nowrap">${a.patient_name}</div>
+            <div class="small text-muted text-nowrap"><i class="bi bi-telephone me-1"></i>${a.phone}</div>
           </td>
           <td><span class="badge bg-light text-dark border">${a.service_name}</span></td>
-          <td><div class="small text-dark">${a.appointment_date}</div><div class="small text-muted">${a.appointment_time}</div></td>
-          <td><span class="badge ${statusClass} px-2 py-1 text-capitalize">${a.status}</span></td>
+          <td class="text-nowrap">
+            <div class="fw-semibold text-dark">${formatSlotDate(a.appointment_date)}</div>
+            <div class="small text-muted mt-1"><span class="slot-time-badge"><i class="bi bi-clock me-1 text-secondary"></i>${formatSlotTime(a.appointment_time)}</span></div>
+          </td>
+          <td class="text-nowrap"><span class="badge ${statusClass} px-2 py-1 text-capitalize">${a.status.replace('_', ' ')}</span></td>
         </tr>
       `);
     });
@@ -84,17 +103,18 @@ $(document).ready(function () {
       if (e.type === 'franchise') badgeTypeClass = 'bg-primary';
       else if (e.type === 'emi') badgeTypeClass = 'bg-warning text-dark';
       else if (e.type === 'contact') badgeTypeClass = 'bg-info text-dark';
+      else if (e.type === 'skin_analyser' || e.type === 'analyser') badgeTypeClass = 'bg-success';
 
       $tbody.append(`
         <tr>
-          <td><span class="fw-bold font-monospace text-dark">${e.enquiry_no || '#' + e.id}</span></td>
-          <td><span class="badge ${badgeTypeClass} text-uppercase">${e.type.replace(/_/g, ' ')}</span></td>
+          <td class="text-nowrap"><span class="fw-bold font-monospace text-dark">${e.enquiry_no || '#' + e.id}</span></td>
+          <td class="text-nowrap"><span class="badge ${badgeTypeClass} text-uppercase px-2 py-1">${e.type.replace(/_/g, ' ')}</span></td>
           <td>
-            <div class="fw-semibold text-dark">${e.name}</div>
-            <div class="small text-muted">${e.phone}</div>
+            <div class="fw-semibold text-dark text-nowrap">${e.name}</div>
+            <div class="small text-muted text-nowrap"><i class="bi bi-telephone me-1"></i>${e.phone}</div>
           </td>
-          <td><span class="badge badge-status-${e.status} px-2 py-1 text-capitalize">${e.status}</span></td>
-          <td><div class="small text-muted">${e.created_at ? new Date(e.created_at).toLocaleDateString('en-IN') : '—'}</div></td>
+          <td class="text-nowrap"><span class="badge badge-status-${e.status} px-2 py-1 text-capitalize">${e.status}</span></td>
+          <td class="text-nowrap"><div class="small text-muted">${e.created_at ? new Date(e.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</div></td>
         </tr>
       `);
     });

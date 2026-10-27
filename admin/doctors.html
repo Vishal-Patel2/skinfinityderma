@@ -156,6 +156,7 @@
                     <th>Doctor Name & Title</th>
                     <th>Qualifications</th>
                     <th>Specialization</th>
+                    <th>Consultation Fee</th>
                     <th>Associated Clinic</th>
                     <th>Status</th>
                     <th style="width: 120px;" class="text-end">Actions</th>
@@ -231,14 +232,35 @@
             </div>
 
             <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="doctorConsultationFee" class="form-label fw-semibold text-success">Consultation Fee (₹) <span class="required">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input type="number" class="form-control" id="doctorConsultationFee" placeholder="1200" min="0" step="50" required>
+                </div>
+                <div class="form-text small">Appointed consultation price for bookings.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label for="doctorExperience" class="form-label">Clinical Experience</label>
+                <input type="text" class="form-control" id="doctorExperience" placeholder="e.g. 14+ Years Experience">
+              </div>
+
+              <div class="col-md-4">
+                <label for="doctorAvailability" class="form-label">OPD Slot Availability</label>
+                <input type="text" class="form-control" id="doctorAvailability" placeholder="e.g. 10:00 AM - 07:00 PM (Mon-Sat)">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
               <div class="col-md-6">
                 <label for="doctorClinicCity" class="form-label">Associated Clinic / Branch</label>
-                <input type="text" class="form-control" id="doctorClinicCity" placeholder="e.g. Safdarjung Enclave, New Delhi">
+                <input type="text" class="form-control" id="doctorClinicCity" placeholder="e.g. Sector 36 Noida, Sector 28 Gurgaon">
               </div>
 
               <div class="col-md-6">
                 <label for="doctorProfileUrl" class="form-label">Profile Page URL (Optional)</label>
-                <input type="text" class="form-control" id="doctorProfileUrl" placeholder="/doctors/dr-johar">
+                <input type="text" class="form-control" id="doctorProfileUrl" placeholder="/doctors/dr-ipshita-johri">
               </div>
             </div>
 
