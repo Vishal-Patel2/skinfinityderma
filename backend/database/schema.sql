@@ -8,7 +8,7 @@
 -- ---------------------------------------------------------------------
 -- 1. ACCESS CONTROL (RBAC)
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS roles (
+CREATE TABLE IF NOT EXISTS sid_roles (
   id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   slug        VARCHAR(50)  NOT NULL UNIQUE,
   name        VARCHAR(100) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS roles (
   updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS permissions (
+CREATE TABLE IF NOT EXISTS sid_permissions (
   id      INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   code    VARCHAR(80)  NOT NULL UNIQUE,         -- e.g. treatments.edit
   module  VARCHAR(50)  NOT NULL,
@@ -27,15 +27,15 @@ CREATE TABLE IF NOT EXISTS permissions (
   INDEX idx_permissions_module (module)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS role_permissions (
+CREATE TABLE IF NOT EXISTS sid_role_permissions (
   role_id       INT UNSIGNED NOT NULL,
   permission_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (role_id, permission_id),
-  CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
-  CONSTRAINT fk_rp_perm FOREIGN KEY (permission_id) REFERENCES permissions(id) ON DELETE CASCADE
+  CONSTRAINT fk_rp_role FOREIGN KEY (role_id) REFERENCES sid_roles(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rp_perm FOREIGN KEY (permission_id) REFERENCES sid_permissions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS sid_users (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(120) NOT NULL,
   email         VARCHAR(190) NOT NULL UNIQUE,
@@ -48,11 +48,11 @@ CREATE TABLE IF NOT EXISTS users (
   token_version INT UNSIGNED NOT NULL DEFAULT 0,   -- bump to invalidate all issued JWTs
   created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id),
+  CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES sid_roles(id),
   INDEX idx_users_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS audit_logs (
+CREATE TABLE IF NOT EXISTS sid_audit_logs (
   id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_id    INT UNSIGNED NULL,
   user_name  VARCHAR(120) NULL,
@@ -71,14 +71,14 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 -- ---------------------------------------------------------------------
 -- 2. SITE CONFIGURATION & GLOBAL CONTENT
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS sid_settings (
   setting_key   VARCHAR(100) NOT NULL PRIMARY KEY,
   setting_value JSON         NULL,
   group_name    VARCHAR(50)  NOT NULL DEFAULT 'general',
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS menu_items (
+CREATE TABLE IF NOT EXISTS sid_menu_items (
   id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   menu_key        VARCHAR(60)  NOT NULL,          -- header_main | footer_company | footer_treatments | footer_legal ...
   parent_id       INT UNSIGNED NULL,
@@ -93,10 +93,10 @@ CREATE TABLE IF NOT EXISTS menu_items (
   created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_menu_key (menu_key, parent_id, display_order),
-  CONSTRAINT fk_menu_parent FOREIGN KEY (parent_id) REFERENCES menu_items(id) ON DELETE CASCADE
+  CONSTRAINT fk_menu_parent FOREIGN KEY (parent_id) REFERENCES sid_menu_items(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS content_blocks (
+CREATE TABLE IF NOT EXISTS sid_content_blocks (
   id          INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   block_key   VARCHAR(120) NOT NULL UNIQUE,        -- e.g. home.brand_journey
   title       VARCHAR(190) NOT NULL,
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS content_blocks (
   updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS seo_pages (
+CREATE TABLE IF NOT EXISTS sid_seo_pages (
   id                  INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   path                VARCHAR(255) NOT NULL UNIQUE,   -- /, /treatments, /about-us ...
   name                VARCHAR(150) NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS seo_pages (
   updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS media_files (
+CREATE TABLE IF NOT EXISTS sid_media_files (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   filename      VARCHAR(255) NOT NULL,
   original_name VARCHAR(255) NULL,
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS media_files (
 -- ---------------------------------------------------------------------
 -- 3. CLINICS, DOCTORS, CATALOG
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS clinics (
+CREATE TABLE IF NOT EXISTS sid_clinics (
   id             INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   slug           VARCHAR(120) NOT NULL UNIQUE,
   city           VARCHAR(80)  NOT NULL,
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS clinics (
   updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS doctors (
+CREATE TABLE IF NOT EXISTS sid_doctors (
   id                  INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   slug                VARCHAR(150) NOT NULL UNIQUE,
   name                VARCHAR(150) NOT NULL,
@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS doctors (
   updated_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE IF NOT EXISTS sid_categories (
   id              INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name            VARCHAR(120) NOT NULL UNIQUE,
   slug            VARCHAR(140) NOT NULL UNIQUE,
@@ -209,7 +209,7 @@ CREATE TABLE IF NOT EXISTS categories (
   updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS concerns (
+CREATE TABLE IF NOT EXISTS sid_concerns (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(120) NOT NULL UNIQUE,
   slug          VARCHAR(140) NOT NULL UNIQUE,
@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS concerns (
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS treatments (
+CREATE TABLE IF NOT EXISTS sid_treatments (
   id                 INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   legacy_id          VARCHAR(80)  NULL,                      -- id used by the website's static catalog
   slug               VARCHAR(190) NOT NULL UNIQUE,
@@ -265,21 +265,21 @@ CREATE TABLE IF NOT EXISTS treatments (
   INDEX idx_treatments_category (category_id),
   INDEX idx_treatments_active (is_active, is_featured, display_order),
   UNIQUE KEY uq_treatments_legacy (legacy_id),
-  CONSTRAINT fk_treatments_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+  CONSTRAINT fk_treatments_category FOREIGN KEY (category_id) REFERENCES sid_categories(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS treatment_concerns (
+CREATE TABLE IF NOT EXISTS sid_treatment_concerns (
   treatment_id INT UNSIGNED NOT NULL,
   concern_id   INT UNSIGNED NOT NULL,
   PRIMARY KEY (treatment_id, concern_id),
-  CONSTRAINT fk_tc_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE CASCADE,
-  CONSTRAINT fk_tc_concern   FOREIGN KEY (concern_id)   REFERENCES concerns(id)   ON DELETE CASCADE
+  CONSTRAINT fk_tc_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE CASCADE,
+  CONSTRAINT fk_tc_concern   FOREIGN KEY (concern_id)   REFERENCES sid_concerns(id)   ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
 -- 4. WEBSITE MEDIA & SOCIAL PROOF
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS banners (
+CREATE TABLE IF NOT EXISTS sid_banners (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   title         VARCHAR(255) NOT NULL,
   subtitle      VARCHAR(500) NULL,
@@ -299,7 +299,7 @@ CREATE TABLE IF NOT EXISTS banners (
   INDEX idx_banners_loc (location, is_active, display_order)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS gallery_items (
+CREATE TABLE IF NOT EXISTS sid_gallery_items (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   image         VARCHAR(500) NOT NULL,
   title         VARCHAR(255) NULL,
@@ -310,10 +310,10 @@ CREATE TABLE IF NOT EXISTS gallery_items (
   is_active     TINYINT(1)   NOT NULL DEFAULT 1,
   created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT fk_gallery_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE SET NULL
+  CONSTRAINT fk_gallery_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS before_after_cases (
+CREATE TABLE IF NOT EXISTS sid_before_after_cases (
   id                 INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   legacy_id          VARCHAR(80)  NULL,
   patient_name       VARCHAR(120) NULL,
@@ -331,10 +331,10 @@ CREATE TABLE IF NOT EXISTS before_after_cases (
   created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_ba_legacy (legacy_id),
-  CONSTRAINT fk_ba_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE SET NULL
+  CONSTRAINT fk_ba_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS reviews (
+CREATE TABLE IF NOT EXISTS sid_reviews (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   legacy_id     VARCHAR(80)  NULL,
   reviewer_name VARCHAR(120) NOT NULL,
@@ -354,7 +354,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   UNIQUE KEY uq_reviews_legacy (legacy_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS videos (
+CREATE TABLE IF NOT EXISTS sid_videos (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   legacy_id     VARCHAR(80)  NULL,
   title         VARCHAR(255) NOT NULL,
@@ -372,7 +372,7 @@ CREATE TABLE IF NOT EXISTS videos (
   UNIQUE KEY uq_videos_legacy (legacy_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS press_mentions (
+CREATE TABLE IF NOT EXISTS sid_press_mentions (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   title         VARCHAR(400) NOT NULL,
   outlet        VARCHAR(150) NULL,
@@ -389,7 +389,7 @@ CREATE TABLE IF NOT EXISTS press_mentions (
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS faqs (
+CREATE TABLE IF NOT EXISTS sid_faqs (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   scope         VARCHAR(80)  NOT NULL DEFAULT 'general',      -- home | general | <treatment slug> ...
   question      VARCHAR(500) NOT NULL,
@@ -404,7 +404,7 @@ CREATE TABLE IF NOT EXISTS faqs (
 -- ---------------------------------------------------------------------
 -- 5. MARKETING: COUPONS & OFFERS
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS coupons (
+CREATE TABLE IF NOT EXISTS sid_coupons (
   id             INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   code           VARCHAR(40)  NOT NULL UNIQUE,
   title          VARCHAR(190) NOT NULL,
@@ -424,23 +424,23 @@ CREATE TABLE IF NOT EXISTS coupons (
   updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS coupon_treatments (
+CREATE TABLE IF NOT EXISTS sid_coupon_treatments (
   coupon_id    INT UNSIGNED NOT NULL,
   treatment_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (coupon_id, treatment_id),
-  CONSTRAINT fk_ct_coupon    FOREIGN KEY (coupon_id)    REFERENCES coupons(id)    ON DELETE CASCADE,
-  CONSTRAINT fk_ct_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE CASCADE
+  CONSTRAINT fk_ct_coupon    FOREIGN KEY (coupon_id)    REFERENCES sid_coupons(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_ct_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS coupon_categories (
+CREATE TABLE IF NOT EXISTS sid_coupon_categories (
   coupon_id   INT UNSIGNED NOT NULL,
   category_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (coupon_id, category_id),
-  CONSTRAINT fk_cc_coupon   FOREIGN KEY (coupon_id)   REFERENCES coupons(id)    ON DELETE CASCADE,
-  CONSTRAINT fk_cc_category FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+  CONSTRAINT fk_cc_coupon   FOREIGN KEY (coupon_id)   REFERENCES sid_coupons(id)    ON DELETE CASCADE,
+  CONSTRAINT fk_cc_category FOREIGN KEY (category_id) REFERENCES sid_categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS offers (
+CREATE TABLE IF NOT EXISTS sid_offers (
   id            INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   legacy_id     VARCHAR(80)  NULL,
   title         VARCHAR(255) NOT NULL,
@@ -457,21 +457,21 @@ CREATE TABLE IF NOT EXISTS offers (
   created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_offers_legacy (legacy_id),
-  CONSTRAINT fk_offers_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE SET NULL
+  CONSTRAINT fk_offers_coupon FOREIGN KEY (coupon_id) REFERENCES sid_coupons(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS offer_treatments (
+CREATE TABLE IF NOT EXISTS sid_offer_treatments (
   offer_id     INT UNSIGNED NOT NULL,
   treatment_id INT UNSIGNED NOT NULL,
   PRIMARY KEY (offer_id, treatment_id),
-  CONSTRAINT fk_ot_offer     FOREIGN KEY (offer_id)     REFERENCES offers(id)     ON DELETE CASCADE,
-  CONSTRAINT fk_ot_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE CASCADE
+  CONSTRAINT fk_ot_offer     FOREIGN KEY (offer_id)     REFERENCES sid_offers(id)     ON DELETE CASCADE,
+  CONSTRAINT fk_ot_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
 -- 6. CLINIC OPERATIONS: ENQUIRIES & APPOINTMENTS
 -- ---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS enquiries (
+CREATE TABLE IF NOT EXISTS sid_enquiries (
   id             INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   enquiry_no     VARCHAR(24)  NULL UNIQUE,
   type           ENUM('contact','appointment_callback','emi','franchise','membership','skin_analysis','hair_graft','laser_estimate','other') NOT NULL DEFAULT 'contact',
@@ -496,12 +496,12 @@ CREATE TABLE IF NOT EXISTS enquiries (
   INDEX idx_enq_status (status, created_at),
   INDEX idx_enq_type (type),
   INDEX idx_enq_phone (phone),
-  CONSTRAINT fk_enq_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE SET NULL,
-  CONSTRAINT fk_enq_clinic    FOREIGN KEY (clinic_id)    REFERENCES clinics(id)    ON DELETE SET NULL,
-  CONSTRAINT fk_enq_user      FOREIGN KEY (assigned_to)  REFERENCES users(id)      ON DELETE SET NULL
+  CONSTRAINT fk_enq_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE SET NULL,
+  CONSTRAINT fk_enq_clinic    FOREIGN KEY (clinic_id)    REFERENCES sid_clinics(id)    ON DELETE SET NULL,
+  CONSTRAINT fk_enq_user      FOREIGN KEY (assigned_to)  REFERENCES sid_users(id)      ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS appointments (
+CREATE TABLE IF NOT EXISTS sid_appointments (
   id               INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   appointment_no   VARCHAR(24)  NULL UNIQUE,
   patient_name     VARCHAR(150) NOT NULL,
@@ -531,14 +531,14 @@ CREATE TABLE IF NOT EXISTS appointments (
   INDEX idx_appt_date (appointment_date, clinic_id, status),
   INDEX idx_appt_status (status, created_at),
   INDEX idx_appt_phone (phone),
-  CONSTRAINT fk_appt_clinic    FOREIGN KEY (clinic_id)    REFERENCES clinics(id)    ON DELETE SET NULL,
-  CONSTRAINT fk_appt_doctor    FOREIGN KEY (doctor_id)    REFERENCES doctors(id)    ON DELETE SET NULL,
-  CONSTRAINT fk_appt_treatment FOREIGN KEY (treatment_id) REFERENCES treatments(id) ON DELETE SET NULL,
-  CONSTRAINT fk_appt_coupon    FOREIGN KEY (coupon_id)    REFERENCES coupons(id)    ON DELETE SET NULL,
-  CONSTRAINT fk_appt_user      FOREIGN KEY (assigned_to)  REFERENCES users(id)      ON DELETE SET NULL
+  CONSTRAINT fk_appt_clinic    FOREIGN KEY (clinic_id)    REFERENCES sid_clinics(id)    ON DELETE SET NULL,
+  CONSTRAINT fk_appt_doctor    FOREIGN KEY (doctor_id)    REFERENCES sid_doctors(id)    ON DELETE SET NULL,
+  CONSTRAINT fk_appt_treatment FOREIGN KEY (treatment_id) REFERENCES sid_treatments(id) ON DELETE SET NULL,
+  CONSTRAINT fk_appt_coupon    FOREIGN KEY (coupon_id)    REFERENCES sid_coupons(id)    ON DELETE SET NULL,
+  CONSTRAINT fk_appt_user      FOREIGN KEY (assigned_to)  REFERENCES sid_users(id)      ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS lead_notes (
+CREATE TABLE IF NOT EXISTS sid_lead_notes (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   entity_type ENUM('enquiry','appointment') NOT NULL,
   entity_id   INT UNSIGNED NOT NULL,
@@ -550,7 +550,7 @@ CREATE TABLE IF NOT EXISTS lead_notes (
   INDEX idx_notes_entity (entity_type, entity_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS coupon_redemptions (
+CREATE TABLE IF NOT EXISTS sid_coupon_redemptions (
   id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   coupon_id       INT UNSIGNED NOT NULL,
   appointment_id  INT UNSIGNED NULL,
@@ -560,6 +560,6 @@ CREATE TABLE IF NOT EXISTS coupon_redemptions (
   discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
   created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_red_coupon (coupon_id, created_at),
-  CONSTRAINT fk_red_coupon FOREIGN KEY (coupon_id)      REFERENCES coupons(id)      ON DELETE CASCADE,
-  CONSTRAINT fk_red_appt   FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
+  CONSTRAINT fk_red_coupon FOREIGN KEY (coupon_id)      REFERENCES sid_coupons(id)      ON DELETE CASCADE,
+  CONSTRAINT fk_red_appt   FOREIGN KEY (appointment_id) REFERENCES sid_appointments(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -33,8 +33,8 @@ router.get(
 
     const rows = await query(
       `SELECT e.*, t.name AS treatment_name
-         FROM enquiries e
-         LEFT JOIN treatments t ON t.id = e.treatment_id
+         FROM sid_enquiries e
+         LEFT JOIN sid_treatments t ON t.id = e.treatment_id
         WHERE ${where.join(' AND ')}
         ORDER BY e.created_at DESC LIMIT 200`,
       params
@@ -74,14 +74,14 @@ router.patch(
     const { status, note } = req.body;
     if (!status) throw new HttpError(400, 'Status is required');
 
-    const enq = await one('SELECT * FROM enquiries WHERE id = ?', [id]);
+    const enq = await one('SELECT * FROM sid_enquiries WHERE id = ?', [id]);
     if (!enq) throw new HttpError(404, 'Enquiry not found');
 
-    await query('UPDATE enquiries SET status = ? WHERE id = ?', [status, id]);
+    await query('UPDATE sid_enquiries SET status = ? WHERE id = ?', [status, id]);
 
     if (note) {
       await query(
-        `INSERT INTO lead_notes (entity_type, entity_id, user_id, user_name, note)
+        `INSERT INTO sid_lead_notes (entity_type, entity_id, user_id, user_name, note)
          VALUES ('enquiry', ?, ?, ?, ?)`,
         [id, req.user.id, req.user.name, note]
       );
@@ -106,10 +106,10 @@ router.delete(
   requirePermission('enquiries.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const enq = await one('SELECT enquiry_no FROM enquiries WHERE id = ?', [id]);
+    const enq = await one('SELECT enquiry_no FROM sid_enquiries WHERE id = ?', [id]);
     if (!enq) throw new HttpError(404, 'Enquiry not found');
 
-    await query('DELETE FROM enquiries WHERE id = ?', [id]);
+    await query('DELETE FROM sid_enquiries WHERE id = ?', [id]);
 
     await audit(req, {
       action: 'delete',

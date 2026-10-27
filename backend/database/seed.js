@@ -12,32 +12,32 @@ async function seed() {
   console.log('1️⃣ Seeding Roles & Permissions...');
   for (const perm of ALL_PERMISSIONS) {
     await query(
-      `INSERT INTO permissions (code, module, action, label)
+      `INSERT INTO sid_permissions (code, module, action, label)
        VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE module=VALUES(module), action=VALUES(action), label=VALUES(label)`,
       [perm.code, perm.module, perm.action, perm.label]
     );
   }
 
-  const permRows = await query('SELECT id, code FROM permissions');
+  const permRows = await query('SELECT id, code FROM sid_permissions');
   const permMap = new Map(permRows.map((r) => [r.code, r.id]));
 
   const roleMap = new Map();
   for (const preset of ROLE_PRESETS) {
     await query(
-      `INSERT INTO roles (slug, name, description, is_system)
+      `INSERT INTO sid_roles (slug, name, description, is_system)
        VALUES (?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description)`,
       [preset.slug, preset.name, preset.description]
     );
-    const roleRow = await one('SELECT id, slug FROM roles WHERE slug = ?', [preset.slug]);
+    const roleRow = await one('SELECT id, slug FROM sid_roles WHERE slug = ?', [preset.slug]);
     roleMap.set(preset.slug, roleRow.id);
 
     // Link permissions
-    await query('DELETE FROM role_permissions WHERE role_id = ?', [roleRow.id]);
+    await query('DELETE FROM sid_role_permissions WHERE role_id = ?', [roleRow.id]);
     const pIds = preset.permissions.map((code) => permMap.get(code)).filter(Boolean);
     for (const pid of pIds) {
-      await query('INSERT IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)', [
+      await query('INSERT IGNORE INTO sid_role_permissions (role_id, permission_id) VALUES (?, ?)', [
         roleRow.id,
         pid,
       ]);
@@ -90,7 +90,7 @@ async function seed() {
   for (const u of users) {
     const roleId = roleMap.get(u.role_slug) || roleMap.get('admin');
     await query(
-      `INSERT INTO users (name, email, phone, password_hash, role_id, avatar, status)
+      `INSERT INTO sid_users (name, email, phone, password_hash, role_id, avatar, status)
        VALUES (?, ?, ?, ?, ?, ?, 'active')
        ON DUPLICATE KEY UPDATE name=VALUES(name), phone=VALUES(phone), password_hash=VALUES(password_hash), role_id=VALUES(role_id), avatar=VALUES(avatar)`,
       [u.name, u.email, u.phone, passwordHash, roleId, u.avatar]
@@ -146,7 +146,7 @@ async function seed() {
 
   for (const [group, value] of Object.entries(clinicSettings)) {
     await query(
-      `INSERT INTO settings (setting_key, setting_value, group_name)
+      `INSERT INTO sid_settings (setting_key, setting_value, group_name)
        VALUES (?, ?, ?)
        ON DUPLICATE KEY UPDATE setting_value=VALUES(setting_value)`,
       [group, JSON.stringify(value), group]
@@ -200,7 +200,7 @@ async function seed() {
 
   for (const c of clinics) {
     await query(
-      `INSERT INTO clinics (slug, city, title, address, landmark, pincode, phones, email, whatsapp, hours, map_embed_url, map_link, highlights, image, latitude, longitude, display_order, is_active)
+      `INSERT INTO sid_clinics (slug, city, title, address, landmark, pincode, phones, email, whatsapp, hours, map_embed_url, map_link, highlights, image, latitude, longitude, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE title=VALUES(title), address=VALUES(address), phones=VALUES(phones), hours=VALUES(hours), highlights=VALUES(highlights)`,
       [
@@ -302,7 +302,7 @@ async function seed() {
 
   for (const d of doctors) {
     await query(
-      `INSERT INTO doctors (slug, name, role, qualifications, specialty, experience, image, bio, consultation_fee, available_locations, availability, display_order, is_active)
+      `INSERT INTO sid_doctors (slug, name, role, qualifications, specialty, experience, image, bio, consultation_fee, available_locations, availability, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE name=VALUES(name), role=VALUES(role), specialty=VALUES(specialty), consultation_fee=VALUES(consultation_fee)`,
       [
@@ -336,12 +336,12 @@ async function seed() {
   const catIdMap = new Map();
   for (const cat of categories) {
     await query(
-      `INSERT INTO categories (name, slug, description, thumbnail, display_order, is_active)
+      `INSERT INTO sid_categories (name, slug, description, thumbnail, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE description=VALUES(description), thumbnail=VALUES(thumbnail)`,
       [cat.name, cat.slug, cat.description, cat.thumbnail, cat.display_order]
     );
-    const row = await one('SELECT id FROM categories WHERE slug = ?', [cat.slug]);
+    const row = await one('SELECT id FROM sid_categories WHERE slug = ?', [cat.slug]);
     catIdMap.set(cat.slug, row.id);
   }
 
@@ -358,12 +358,12 @@ async function seed() {
   const conIdMap = new Map();
   for (const con of concerns) {
     await query(
-      `INSERT INTO concerns (name, slug, description, thumbnail, display_order, is_active)
+      `INSERT INTO sid_concerns (name, slug, description, thumbnail, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE description=VALUES(description), thumbnail=VALUES(thumbnail)`,
       [con.name, con.slug, con.description, con.thumbnail, con.display_order]
     );
-    const row = await one('SELECT id FROM concerns WHERE slug = ?', [con.slug]);
+    const row = await one('SELECT id FROM sid_concerns WHERE slug = ?', [con.slug]);
     conIdMap.set(con.slug, row.id);
   }
 
@@ -641,7 +641,7 @@ async function seed() {
   for (const t of treatments) {
     const catId = catIdMap.get(t.category_slug) || null;
     await query(
-      `INSERT INTO treatments (
+      `INSERT INTO sid_treatments (
         legacy_id, slug, aliases, name, category_id, body_area, tags, rating, reviews_count,
         duration, price, original_price, discount_badge, emi_months, emi_monthly, sessions_info,
         card_highlights, explained_subtitle, short_desc, full_desc, banner_image, gallery_images,
@@ -690,13 +690,13 @@ async function seed() {
       ]
     );
 
-    const treatRow = await one('SELECT id FROM treatments WHERE slug = ?', [t.slug]);
+    const treatRow = await one('SELECT id FROM sid_treatments WHERE slug = ?', [t.slug]);
     if (treatRow && t.concern_slugs) {
-      await query('DELETE FROM treatment_concerns WHERE treatment_id = ?', [treatRow.id]);
+      await query('DELETE FROM sid_treatment_concerns WHERE treatment_id = ?', [treatRow.id]);
       for (const cs of t.concern_slugs) {
         const conId = conIdMap.get(cs);
         if (conId) {
-          await query('INSERT IGNORE INTO treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
+          await query('INSERT IGNORE INTO sid_treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
             treatRow.id,
             conId,
           ]);
@@ -745,7 +745,7 @@ async function seed() {
 
   for (const b of banners) {
     await query(
-      `INSERT INTO banners (title, subtitle, desktop_image, mobile_image, alt_text, button_text, button_url, location, display_order, is_active)
+      `INSERT INTO sid_banners (title, subtitle, desktop_image, mobile_image, alt_text, button_text, button_url, location, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
       [b.title, b.subtitle, b.desktop_image, b.mobile_image, b.alt_text, b.button_text, b.button_url, b.location, b.display_order]
     );
@@ -810,26 +810,26 @@ async function seed() {
   const couponIdMap = new Map();
   for (const cp of coupons) {
     await query(
-      `INSERT INTO coupons (code, title, description, discount_type, discount_value, max_discount, min_order, applies_to, usage_limit, is_active)
+      `INSERT INTO sid_coupons (code, title, description, discount_type, discount_value, max_discount, min_order, applies_to, usage_limit, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE title=VALUES(title), discount_value=VALUES(discount_value), min_order=VALUES(min_order)`,
       [cp.code, cp.title, cp.description, cp.discount_type, cp.discount_value, cp.max_discount, cp.min_order, cp.applies_to, cp.usage_limit]
     );
-    const row = await one('SELECT id FROM coupons WHERE code = ?', [cp.code]);
+    const row = await one('SELECT id FROM sid_coupons WHERE code = ?', [cp.code]);
     couponIdMap.set(cp.code, row.id);
   }
 
   // Link LASER30 to laser treatment
-  const laserTrt = await one('SELECT id FROM treatments WHERE slug = "laser-hair-removal-noida"');
+  const laserTrt = await one('SELECT id FROM sid_treatments WHERE slug = "laser-hair-removal-noida"');
   if (laserTrt && couponIdMap.get('LASER30')) {
-    await query('INSERT IGNORE INTO coupon_treatments (coupon_id, treatment_id) VALUES (?, ?)', [
+    await query('INSERT IGNORE INTO sid_coupon_treatments (coupon_id, treatment_id) VALUES (?, ?)', [
       couponIdMap.get('LASER30'),
       laserTrt.id,
     ]);
   }
-  const hydraTrt = await one('SELECT id FROM treatments WHERE slug = "sugarcane-hydrafacial-noida"');
+  const hydraTrt = await one('SELECT id FROM sid_treatments WHERE slug = "sugarcane-hydrafacial-noida"');
   if (hydraTrt && couponIdMap.get('GLOW500')) {
-    await query('INSERT IGNORE INTO coupon_treatments (coupon_id, treatment_id) VALUES (?, ?)', [
+    await query('INSERT IGNORE INTO sid_coupon_treatments (coupon_id, treatment_id) VALUES (?, ?)', [
       couponIdMap.get('GLOW500'),
       hydraTrt.id,
     ]);
@@ -885,7 +885,7 @@ async function seed() {
 
   for (const o of offers) {
     await query(
-      `INSERT INTO offers (legacy_id, title, badge, description, image, link_text, slug, coupon_id, display_order, is_active)
+      `INSERT INTO sid_offers (legacy_id, title, badge, description, image, link_text, slug, coupon_id, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE title=VALUES(title), badge=VALUES(badge), description=VALUES(description), coupon_id=VALUES(coupon_id)`,
       [o.legacy_id, o.title, o.badge, o.description, o.image, o.link_text, o.slug, o.coupon_id, o.display_order]
@@ -955,7 +955,7 @@ async function seed() {
 
   for (const r of reviews) {
     await query(
-      `INSERT INTO reviews (legacy_id, reviewer_name, initials, rating, review_text, treatment_tag, branch, source, verified, review_date, display_order, is_active)
+      `INSERT INTO sid_reviews (legacy_id, reviewer_name, initials, rating, review_text, treatment_tag, branch, source, verified, review_date, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE review_text=VALUES(review_text), rating=VALUES(rating)`,
       [r.legacy_id, r.reviewer_name, r.initials, r.rating, r.review_text, r.treatment_tag, r.branch, r.source, r.verified, r.review_date, r.display_order]
@@ -1008,7 +1008,7 @@ async function seed() {
 
   for (const res of results) {
     await query(
-      `INSERT INTO before_after_cases (legacy_id, patient_name, treatment, treatment_id, description, before_image, after_image, results_type, timeframe, has_patient_consent, approval_status, display_order, is_active)
+      `INSERT INTO sid_before_after_cases (legacy_id, patient_name, treatment, treatment_id, description, before_image, after_image, results_type, timeframe, has_patient_consent, approval_status, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE description=VALUES(description), approval_status=VALUES(approval_status)`,
       [
@@ -1059,7 +1059,7 @@ async function seed() {
 
   for (const f of faqs) {
     await query(
-      `INSERT INTO faqs (scope, question, answer, display_order, is_active)
+      `INSERT INTO sid_faqs (scope, question, answer, display_order, is_active)
        VALUES (?, ?, ?, ?, 1)`,
       [f.scope, f.question, f.answer, f.display_order]
     );
@@ -1108,7 +1108,7 @@ async function seed() {
 
   for (const a of sampleAppts) {
     await query(
-      `INSERT INTO appointments (appointment_no, patient_name, phone, email, gender, age, service_name, appointment_date, appointment_time, visit_type, coupon_code, discount_amount, amount_estimate, status, notes, source)
+      `INSERT INTO sid_appointments (appointment_no, patient_name, phone, email, gender, age, service_name, appointment_date, appointment_time, visit_type, coupon_code, discount_amount, amount_estimate, status, notes, source)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE status=VALUES(status)`,
       [a.appointment_no, a.patient_name, a.phone, a.email, a.gender, a.age, a.service_name, a.appointment_date, a.appointment_time, a.visit_type, a.coupon_code, a.discount_amount, a.amount_estimate, a.status, a.notes, a.source]
@@ -1159,7 +1159,7 @@ async function seed() {
 
   for (const eq of sampleEnquiries) {
     await query(
-      `INSERT INTO enquiries (enquiry_no, type, name, phone, email, city, subject, message, status, priority, source)
+      `INSERT INTO sid_enquiries (enquiry_no, type, name, phone, email, city, subject, message, status, priority, source)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE status=VALUES(status)`,
       [eq.enquiry_no, eq.type, eq.name, eq.phone, eq.email, eq.city, eq.subject, eq.message, eq.status, eq.priority, eq.source]
@@ -1181,7 +1181,7 @@ async function seed() {
 
   for (const m of headerMenus) {
     await query(
-      `INSERT INTO menu_items (menu_key, label, url, badge, display_order, is_active)
+      `INSERT INTO sid_menu_items (menu_key, label, url, badge, display_order, is_active)
        VALUES ('header_main', ?, ?, ?, ?, 1)`,
       [m.label, m.url, m.badge || null, m.display_order]
     );
@@ -1224,7 +1224,7 @@ async function seed() {
 
   for (const blk of blocks) {
     await query(
-      `INSERT INTO content_blocks (block_key, title, description, content, is_active)
+      `INSERT INTO sid_content_blocks (block_key, title, description, content, is_active)
        VALUES (?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE content=VALUES(content), title=VALUES(title)`,
       [blk.block_key, blk.title, blk.description, JSON.stringify(blk.content)]
@@ -1277,7 +1277,7 @@ async function seed() {
 
   for (const sp of seoPages) {
     await query(
-      `INSERT INTO seo_pages (path, name, meta_title, meta_description, meta_keywords, og_image, canonical_url, sitemap_priority, sitemap_changefreq, is_active)
+      `INSERT INTO sid_seo_pages (path, name, meta_title, meta_description, meta_keywords, og_image, canonical_url, sitemap_priority, sitemap_changefreq, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE meta_title=VALUES(meta_title), meta_description=VALUES(meta_description), meta_keywords=VALUES(meta_keywords)`,
       [sp.path, sp.name, sp.meta_title, sp.meta_description, sp.meta_keywords, sp.og_image, sp.canonical_url, sp.sitemap_priority, sp.sitemap_changefreq]

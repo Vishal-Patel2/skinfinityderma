@@ -17,8 +17,8 @@ router.get(
     const rows = await query(
       `SELECT u.id, u.name, u.email, u.phone, u.avatar, u.status, u.last_login_at, u.created_at,
               r.id AS role_id, r.slug AS role_slug, r.name AS role_name
-         FROM users u
-         JOIN roles r ON r.id = u.role_id
+         FROM sid_users u
+         JOIN sid_roles r ON r.id = u.role_id
         ORDER BY u.id ASC`
     );
 
@@ -54,20 +54,20 @@ router.post(
 
     let resolvedRoleId = roleId;
     if (!resolvedRoleId && roleSlug) {
-      const rRow = await one('SELECT id FROM roles WHERE slug = ?', [roleSlug]);
+      const rRow = await one('SELECT id FROM sid_roles WHERE slug = ?', [roleSlug]);
       if (rRow) resolvedRoleId = rRow.id;
     }
 
     if (!resolvedRoleId) throw new HttpError(400, 'Valid role is required');
 
-    const exists = await one('SELECT id FROM users WHERE LOWER(email) = LOWER(?)', [email.trim()]);
+    const exists = await one('SELECT id FROM sid_users WHERE LOWER(email) = LOWER(?)', [email.trim()]);
     if (exists) throw new HttpError(409, 'User with this email already exists');
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
     const r = await query(
-      `INSERT INTO users (name, email, phone, password_hash, role_id, status, avatar)
+      `INSERT INTO sid_users (name, email, phone, password_hash, role_id, status, avatar)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [name.trim(), email.trim(), phone || null, hash, resolvedRoleId, status, avatar || null]
     );
@@ -93,13 +93,13 @@ router.put(
     const { id } = req.params;
     const { name, email, phone, roleId, roleSlug, status, avatar, password } = req.body;
 
-    const existing = await one('SELECT * FROM users WHERE id = ?', [id]);
+    const existing = await one('SELECT * FROM sid_users WHERE id = ?', [id]);
     if (!existing) throw new HttpError(404, 'User not found');
 
     let role_id = existing.role_id;
     if (roleId) role_id = roleId;
     else if (roleSlug) {
-      const r = await one('SELECT id FROM roles WHERE slug = ?', [roleSlug]);
+      const r = await one('SELECT id FROM sid_roles WHERE slug = ?', [roleSlug]);
       if (r) role_id = r.id;
     }
 
@@ -116,7 +116,7 @@ router.put(
     params.push(id);
 
     await query(
-      `UPDATE users
+      `UPDATE sid_users
           SET name = ?, email = ?, phone = ?, role_id = ?, status = ?, avatar = ? ${passwordSql}
         WHERE id = ?`,
       params
@@ -145,11 +145,11 @@ router.patch(
     const { id } = req.params;
     if (Number(id) === req.user.id) throw new HttpError(400, 'Cannot deactivate your own account');
 
-    const u = await one('SELECT status, email FROM users WHERE id = ?', [id]);
+    const u = await one('SELECT status, email FROM sid_users WHERE id = ?', [id]);
     if (!u) throw new HttpError(404, 'User not found');
 
     const nextStatus = u.status === 'active' ? 'inactive' : 'active';
-    await query('UPDATE users SET status = ? WHERE id = ?', [nextStatus, id]);
+    await query('UPDATE sid_users SET status = ? WHERE id = ?', [nextStatus, id]);
     clearAuthCache(id);
 
     await audit(req, {
@@ -173,10 +173,10 @@ router.delete(
     const { id } = req.params;
     if (Number(id) === req.user.id) throw new HttpError(400, 'Cannot delete your own account');
 
-    const u = await one('SELECT email FROM users WHERE id = ?', [id]);
+    const u = await one('SELECT email FROM sid_users WHERE id = ?', [id]);
     if (!u) throw new HttpError(404, 'User not found');
 
-    await query('DELETE FROM users WHERE id = ?', [id]);
+    await query('DELETE FROM sid_users WHERE id = ?', [id]);
     clearAuthCache(id);
 
     await audit(req, {
@@ -197,7 +197,7 @@ router.get(
   '/roles',
   requirePermission('roles.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM roles ORDER BY id ASC');
+    const rows = await query('SELECT * FROM sid_roles ORDER BY id ASC');
     res.json({
       success: true,
       data: rows.map((r) => ({

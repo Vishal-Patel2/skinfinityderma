@@ -28,11 +28,19 @@ const camel = (s) => s.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
 const snake = (s) => s.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`);
 
 function prepare(def) {
+  if (def.table && !def.table.startsWith('sid_')) {
+    def.table = 'sid_' + def.table;
+  }
   def.alias = 't';
   def.permission = def.permission || def.key;
   def.label = def.label || def.key;
   def.titleField = def.titleField || 'name';
   def.relations = def.relations || {};
+  for (const rel of Object.values(def.relations)) {
+    if (rel.table && !rel.table.startsWith('sid_')) {
+      rel.table = 'sid_' + rel.table;
+    }
+  }
   def.filters = def.filters || [];
   def.customFilters = def.customFilters || {};
   def.sortExtras = def.sortExtras || {};

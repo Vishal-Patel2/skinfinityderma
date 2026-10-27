@@ -19,8 +19,8 @@ router.post(
     const user = await one(
       `SELECT u.id, u.name, u.email, u.phone, u.avatar, u.password_hash, u.status, u.token_version,
               r.id AS role_id, r.slug AS role_slug, r.name AS role_name
-         FROM users u
-         JOIN roles r ON r.id = u.role_id
+         FROM sid_users u
+         JOIN sid_roles r ON r.id = u.role_id
         WHERE LOWER(u.email) = LOWER(?) LIMIT 1`,
       [email.trim()]
     );
@@ -39,14 +39,14 @@ router.post(
     if (!matches) throw new HttpError(401, 'Invalid email or password');
 
     // Update last login
-    await query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+    await query('UPDATE sid_users SET last_login_at = NOW() WHERE id = ?', [user.id]);
 
     // Permissions
     user.isSuperAdmin = user.role_slug === 'super_admin';
     const permRows = user.isSuperAdmin
-      ? await query('SELECT code FROM permissions')
+      ? await query('SELECT code FROM sid_permissions')
       : await query(
-          `SELECT p.code FROM role_permissions rp JOIN permissions p ON p.id = rp.permission_id WHERE rp.role_id = ?`,
+          `SELECT p.code FROM sid_role_permissions rp JOIN sid_permissions p ON p.id = rp.permission_id WHERE rp.role_id = ?`,
           [user.role_id]
         );
     const permissions = permRows.map((r) => r.code);
@@ -113,7 +113,7 @@ router.post(
     if (!currentPassword || !newPassword) throw new HttpError(400, 'Both passwords are required');
     if (newPassword.length < 6) throw new HttpError(400, 'New password must be at least 6 characters');
 
-    const user = await one('SELECT password_hash FROM users WHERE id = ?', [req.user.id]);
+    const user = await one('SELECT password_hash FROM sid_users WHERE id = ?', [req.user.id]);
     let matches = false;
     if (user.password_hash.startsWith('$2a$') || user.password_hash.startsWith('$2b$')) {
       matches = await bcrypt.compare(currentPassword, user.password_hash);
@@ -126,7 +126,7 @@ router.post(
     const salt = await bcrypt.genSalt(10);
     const newHash = await bcrypt.hash(newPassword, salt);
 
-    await query('UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?', [
+    await query('UPDATE sid_users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?', [
       newHash,
       req.user.id,
     ]);

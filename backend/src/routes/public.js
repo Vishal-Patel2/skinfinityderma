@@ -20,7 +20,7 @@ router.get(
     setPublicCache(res);
 
     // Settings
-    const settingRows = await query('SELECT setting_key, setting_value FROM settings');
+    const settingRows = await query('SELECT setting_key, setting_value FROM sid_settings');
     const settings = {};
     settingRows.forEach((r) => {
       settings[r.setting_key] = parseJson(r.setting_value, r.setting_value);
@@ -30,7 +30,7 @@ router.get(
     const clinicRows = await query(
       `SELECT id, slug, city, title, address, landmark, pincode, phones, email, whatsapp,
               hours, map_embed_url, map_link, highlights, image, latitude, longitude
-         FROM clinics WHERE is_active = 1 ORDER BY display_order ASC`
+         FROM sid_clinics WHERE is_active = 1 ORDER BY display_order ASC`
     );
     const clinics = clinicRows.map((c) => ({
       ...c,
@@ -42,7 +42,7 @@ router.get(
     // Menus
     const menuRows = await query(
       `SELECT id, menu_key, parent_id, label, url, icon, badge, open_in_new_tab, meta, display_order
-         FROM menu_items WHERE is_active = 1 ORDER BY display_order ASC`
+         FROM sid_menu_items WHERE is_active = 1 ORDER BY display_order ASC`
     );
     const menus = {};
     menuRows.forEach((m) => {
@@ -59,7 +59,7 @@ router.get(
     });
 
     // Content Blocks
-    const blockRows = await query('SELECT block_key, content FROM content_blocks WHERE is_active = 1');
+    const blockRows = await query('SELECT block_key, content FROM sid_content_blocks WHERE is_active = 1');
     const blocks = {};
     blockRows.forEach((b) => {
       blocks[b.block_key] = parseJson(b.content, b.content);
@@ -91,7 +91,7 @@ router.get(
     const location = req.query.location || 'Homepage Hero';
     const rows = await query(
       `SELECT id, title, subtitle, desktop_image, mobile_image, alt_text, button_text, button_url, location, display_order
-         FROM banners WHERE is_active = 1 AND location = ? ORDER BY display_order ASC`,
+         FROM sid_banners WHERE is_active = 1 AND location = ? ORDER BY display_order ASC`,
       [location]
     );
 
@@ -122,7 +122,7 @@ router.get(
     setPublicCache(res);
     const rows = await query(
       `SELECT id, name, slug, description, thumbnail, display_order
-         FROM categories WHERE is_active = 1 ORDER BY display_order ASC`
+         FROM sid_categories WHERE is_active = 1 ORDER BY display_order ASC`
     );
     res.json({
       success: true,
@@ -161,8 +161,8 @@ router.get(
 
     const rows = await query(
       `SELECT t.*, c.name AS category_name, c.slug AS category_slug
-         FROM treatments t
-         LEFT JOIN categories c ON c.id = t.category_id
+         FROM sid_treatments t
+         LEFT JOIN sid_categories c ON c.id = t.category_id
         WHERE ${where.join(' AND ')}
         ORDER BY t.display_order ASC LIMIT ?`,
       [...params, limitNum]
@@ -220,8 +220,8 @@ router.get(
 
     const row = await one(
       `SELECT t.*, c.name AS category_name, c.slug AS category_slug
-         FROM treatments t
-         LEFT JOIN categories c ON c.id = t.category_id
+         FROM sid_treatments t
+         LEFT JOIN sid_categories c ON c.id = t.category_id
         WHERE t.is_active = 1
           AND (t.slug = ? OR t.legacy_id = ? OR JSON_CONTAINS(t.aliases, JSON_QUOTE(?)))
         LIMIT 1`,
@@ -272,8 +272,8 @@ router.get(
     // Related treatments
     const relatedRows = await query(
       `SELECT t.*, c.name AS category_name
-         FROM treatments t
-         LEFT JOIN categories c ON c.id = t.category_id
+         FROM sid_treatments t
+         LEFT JOIN sid_categories c ON c.id = t.category_id
         WHERE t.is_active = 1 AND t.id <> ? AND t.category_id = ?
         LIMIT 4`,
       [row.id, row.category_id || 0]
@@ -303,7 +303,7 @@ router.get(
     const rows = await query(
       `SELECT id, slug, name, role, qualifications, specialty, experience, image, bio,
               consultation_fee, available_locations, availability, display_order
-         FROM doctors WHERE is_active = 1 ORDER BY display_order ASC`
+         FROM sid_doctors WHERE is_active = 1 ORDER BY display_order ASC`
     );
 
     res.json({
@@ -335,11 +335,11 @@ router.get(
     setPublicCache(res);
     const rows = await query(
       `SELECT id, reviewer_name, initials, avatar, rating, review_text, treatment_tag, branch, verified, review_date
-         FROM reviews WHERE is_active = 1 ORDER BY display_order ASC, id DESC LIMIT 50`
+         FROM sid_reviews WHERE is_active = 1 ORDER BY display_order ASC, id DESC LIMIT 50`
     );
 
     const statsRow = await one(
-      `SELECT setting_value FROM settings WHERE setting_key = 'reviews' LIMIT 1`
+      `SELECT setting_value FROM sid_settings WHERE setting_key = 'reviews' LIMIT 1`
     );
     const stats = statsRow ? parseJson(statsRow.setting_value, {}) : { rating: 4.5, reviewCount: '4,500+' };
 
@@ -370,7 +370,7 @@ router.get(
     setPublicCache(res);
     const rows = await query(
       `SELECT id, legacy_id, patient_name, treatment, description, before_image, after_image, results_type, timeframe
-         FROM before_after_cases
+         FROM sid_before_after_cases
         WHERE is_active = 1 AND has_patient_consent = 1 AND approval_status = 'Approved'
         ORDER BY display_order ASC`
     );
@@ -400,8 +400,8 @@ router.get(
     setPublicCache(res);
     const rows = await query(
       `SELECT o.*, c.code AS coupon_code, c.discount_type, c.discount_value
-         FROM offers o
-         LEFT JOIN coupons c ON c.id = o.coupon_id
+         FROM sid_offers o
+         LEFT JOIN sid_coupons c ON c.id = o.coupon_id
         WHERE o.is_active = 1
         ORDER BY o.display_order ASC`
     );
@@ -432,7 +432,7 @@ router.get(
   asyncHandler(async (req, res) => {
     setPublicCache(res);
     const rows = await query(
-      `SELECT * FROM membership_plans WHERE is_active = 1 ORDER BY display_order ASC`
+      `SELECT * FROM sid_membership_plans WHERE is_active = 1 ORDER BY display_order ASC`
     );
     res.json({
       success: true,
@@ -467,7 +467,7 @@ router.get(
     setPublicCache(res);
     const scope = req.query.scope || 'home';
     const rows = await query(
-      `SELECT id, scope, question, answer FROM faqs WHERE is_active = 1 AND (scope = ? OR scope = 'general') ORDER BY display_order ASC`,
+      `SELECT id, scope, question, answer FROM sid_faqs WHERE is_active = 1 AND (scope = ? OR scope = 'general') ORDER BY display_order ASC`,
       [scope]
     );
 
@@ -492,7 +492,7 @@ router.get(
     const cleanPath = p.startsWith('/') ? p : `/${p}`;
 
     const row = await one(
-      `SELECT * FROM seo_pages WHERE is_active = 1 AND (path = ? OR path = ?) LIMIT 1`,
+      `SELECT * FROM sid_seo_pages WHERE is_active = 1 AND (path = ? OR path = ?) LIMIT 1`,
       [cleanPath, cleanPath.replace(/\/$/, '') || '/']
     );
 
@@ -525,11 +525,11 @@ router.get(
   asyncHandler(async (req, res) => {
     const seoRows = await query(
       `SELECT path, sitemap_priority, sitemap_changefreq, updated_at
-         FROM seo_pages WHERE is_active = 1 AND include_in_sitemap = 1`
+         FROM sid_seo_pages WHERE is_active = 1 AND include_in_sitemap = 1`
     );
 
     const treatRows = await query(
-      `SELECT slug, updated_at FROM treatments WHERE is_active = 1`
+      `SELECT slug, updated_at FROM sid_treatments WHERE is_active = 1`
     );
 
     const items = [
@@ -563,7 +563,7 @@ router.post(
 
     const cleanCode = code.trim().toUpperCase();
     const coupon = await one(
-      `SELECT * FROM coupons WHERE UPPER(code) = ? AND is_active = 1 LIMIT 1`,
+      `SELECT * FROM sid_coupons WHERE UPPER(code) = ? AND is_active = 1 LIMIT 1`,
       [cleanCode]
     );
 
@@ -667,7 +667,7 @@ router.post(
     let clinicId = null;
     if (finalClinic) {
       const cRow = await one(
-        `SELECT id FROM clinics WHERE slug = ? OR city = ? OR title LIKE ? LIMIT 1`,
+        `SELECT id FROM sid_clinics WHERE slug = ? OR city = ? OR title LIKE ? LIMIT 1`,
         [finalClinic, finalClinic, `%${finalClinic}%`]
       );
       if (cRow) clinicId = cRow.id;
@@ -677,7 +677,7 @@ router.post(
     let doctorId = null;
     if (finalDoctor) {
       const dRow = await one(
-        `SELECT id FROM doctors WHERE slug = ? OR name LIKE ? LIMIT 1`,
+        `SELECT id FROM sid_doctors WHERE slug = ? OR name LIKE ? LIMIT 1`,
         [finalDoctor, `%${finalDoctor}%`]
       );
       if (dRow) doctorId = dRow.id;
@@ -687,7 +687,7 @@ router.post(
     let treatmentId = null;
     if (treatmentSlug) {
       const tRow = await one(
-        `SELECT id, name, price FROM treatments WHERE slug = ? OR legacy_id = ? LIMIT 1`,
+        `SELECT id, name, price FROM sid_treatments WHERE slug = ? OR legacy_id = ? LIMIT 1`,
         [treatmentSlug, treatmentSlug]
       );
       if (tRow) treatmentId = tRow.id;
@@ -698,7 +698,7 @@ router.post(
     const apptTime = finalTime || '11:00';
 
     const insertResult = await query(
-      `INSERT INTO appointments (
+      `INSERT INTO sid_appointments (
         appointment_no, patient_name, phone, email, gender, age, clinic_id, doctor_id,
         treatment_id, service_name, appointment_date, appointment_time, visit_type,
         notes, source, coupon_code, status, ip
@@ -756,7 +756,7 @@ router.post(
     const enqNo = `ENQ-${Date.now().toString().slice(-6)}`;
 
     const insertResult = await query(
-      `INSERT INTO enquiries (
+      `INSERT INTO sid_enquiries (
         enquiry_no, type, name, phone, email, city, subject, message,
         source, extra, status, ip
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new', ?)`,

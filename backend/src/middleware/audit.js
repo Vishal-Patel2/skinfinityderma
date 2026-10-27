@@ -8,7 +8,7 @@ async function audit(req, { action, entity, entityId, summary, details }) {
   try {
     const user = req && req.user;
     await query(
-      `INSERT INTO audit_logs (user_id, user_name, action, entity, entity_id, summary, details, ip)
+      `INSERT INTO sid_audit_logs (user_id, user_name, action, entity, entity_id, summary, details, ip)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user ? user.id : null,

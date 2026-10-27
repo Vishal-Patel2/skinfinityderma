@@ -19,16 +19,16 @@ async function loadUser(id) {
   const user = await one(
     `SELECT u.id, u.name, u.email, u.phone, u.avatar, u.status, u.token_version, u.role_id,
             r.slug AS role_slug, r.name AS role_name
-       FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ?`,
+       FROM sid_users u JOIN sid_roles r ON r.id = u.role_id WHERE u.id = ?`,
     [id]
   );
   if (!user) return null;
 
   user.isSuperAdmin = user.role_slug === 'super_admin';
   const rows = user.isSuperAdmin
-    ? await query('SELECT code FROM permissions')
+    ? await query('SELECT code FROM sid_permissions')
     : await query(
-        `SELECT p.code FROM role_permissions rp JOIN permissions p ON p.id = rp.permission_id WHERE rp.role_id = ?`,
+        `SELECT p.code FROM sid_role_permissions rp JOIN sid_permissions p ON p.id = rp.permission_id WHERE rp.role_id = ?`,
         [user.role_id]
       );
   user.permissions = rows.map((r) => r.code);

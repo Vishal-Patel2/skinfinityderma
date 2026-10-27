@@ -13,7 +13,7 @@ router.get(
   '/',
   requirePermission('coupons.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM coupons ORDER BY id DESC');
+    const rows = await query('SELECT * FROM sid_coupons ORDER BY id DESC');
     res.json({
       success: true,
       data: rows.map((r) => ({
@@ -49,11 +49,11 @@ router.post(
     }
 
     const cleanCode = code.trim().toUpperCase();
-    const exists = await one('SELECT id FROM coupons WHERE code = ?', [cleanCode]);
+    const exists = await one('SELECT id FROM sid_coupons WHERE code = ?', [cleanCode]);
     if (exists) throw new HttpError(409, 'Coupon code already exists');
 
     const r = await query(
-      `INSERT INTO coupons (code, title, description, discount_type, discount_value, max_discount, min_order, applies_to, usage_limit, is_active)
+      `INSERT INTO sid_coupons (code, title, description, discount_type, discount_value, max_discount, min_order, applies_to, usage_limit, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [cleanCode, title, description || null, discountType, discountValue, maxDiscount || null, minOrder, appliesTo, usageLimit || null, isActive ? 1 : 0]
     );
@@ -79,13 +79,13 @@ router.put(
     const { id } = req.params;
     const { code, title, description, discountType, discountValue, maxDiscount, minOrder, appliesTo, usageLimit, isActive } = req.body;
 
-    const existing = await one('SELECT * FROM coupons WHERE id = ?', [id]);
+    const existing = await one('SELECT * FROM sid_coupons WHERE id = ?', [id]);
     if (!existing) throw new HttpError(404, 'Coupon not found');
 
     const cleanCode = code ? code.trim().toUpperCase() : existing.code;
 
     await query(
-      `UPDATE coupons
+      `UPDATE sid_coupons
           SET code = ?, title = ?, description = ?, discount_type = ?, discount_value = ?, max_discount = ?,
               min_order = ?, applies_to = ?, usage_limit = ?, is_active = ?
         WHERE id = ?`,
@@ -123,11 +123,11 @@ router.patch(
   requirePermission('coupons.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const cp = await one('SELECT is_active, code FROM coupons WHERE id = ?', [id]);
+    const cp = await one('SELECT is_active, code FROM sid_coupons WHERE id = ?', [id]);
     if (!cp) throw new HttpError(404, 'Coupon not found');
 
     const nextState = cp.is_active ? 0 : 1;
-    await query('UPDATE coupons SET is_active = ? WHERE id = ?', [nextState, id]);
+    await query('UPDATE sid_coupons SET is_active = ? WHERE id = ?', [nextState, id]);
 
     await audit(req, {
       action: 'status',
@@ -148,10 +148,10 @@ router.delete(
   requirePermission('coupons.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const cp = await one('SELECT code FROM coupons WHERE id = ?', [id]);
+    const cp = await one('SELECT code FROM sid_coupons WHERE id = ?', [id]);
     if (!cp) throw new HttpError(404, 'Coupon not found');
 
-    await query('DELETE FROM coupons WHERE id = ?', [id]);
+    await query('DELETE FROM sid_coupons WHERE id = ?', [id]);
 
     await audit(req, {
       action: 'delete',

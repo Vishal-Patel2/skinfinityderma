@@ -16,26 +16,26 @@ router.get(
   requirePermission('dashboard.view'),
   asyncHandler(async (req, res) => {
     const [banners, doctors, treatments, categories, concerns, appts, enqs, reviews, memberships, coupons] = await Promise.all([
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM banners'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM doctors'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(is_featured) AS featured FROM treatments'),
-      one('SELECT COUNT(*) AS total FROM categories'),
-      one('SELECT COUNT(*) AS total FROM concerns'),
-      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending FROM appointments'),
-      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="new" THEN 1 ELSE 0 END) AS newCount FROM enquiries'),
-      one('SELECT COUNT(*) AS total FROM reviews'),
-      one('SELECT COUNT(*) AS total, SUM(subscribers_count) AS subscribers FROM membership_plans'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(used_count) AS total_uses FROM coupons'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_banners'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_doctors'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(is_featured) AS featured FROM sid_treatments'),
+      one('SELECT COUNT(*) AS total FROM sid_categories'),
+      one('SELECT COUNT(*) AS total FROM sid_concerns'),
+      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending FROM sid_appointments'),
+      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="new" THEN 1 ELSE 0 END) AS newCount FROM sid_enquiries'),
+      one('SELECT COUNT(*) AS total FROM sid_reviews'),
+      one('SELECT COUNT(*) AS total, SUM(subscribers_count) AS subscribers FROM sid_membership_plans'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(used_count) AS total_uses FROM sid_coupons'),
     ]);
 
     const recentAppts = await query(
       `SELECT a.id, a.appointment_no, a.patient_name, a.phone, a.service_name, a.appointment_date, a.appointment_time, a.status
-         FROM appointments a ORDER BY a.created_at DESC LIMIT 5`
+         FROM sid_appointments a ORDER BY a.created_at DESC LIMIT 5`
     );
 
     const recentEnqs = await query(
       `SELECT e.id, e.enquiry_no, e.name, e.phone, e.type, e.status, e.created_at
-         FROM enquiries e ORDER BY e.created_at DESC LIMIT 5`
+         FROM sid_enquiries e ORDER BY e.created_at DESC LIMIT 5`
     );
 
     res.json({
@@ -74,7 +74,7 @@ router.get(
   '/banners',
   requirePermission('banners.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM banners ORDER BY display_order ASC, id DESC');
+    const rows = await query('SELECT * FROM sid_banners ORDER BY display_order ASC, id DESC');
     res.json({
       success: true,
       data: rows.map((r) => ({
@@ -103,7 +103,7 @@ router.post(
     if (!title) throw new HttpError(400, 'Banner title is required');
 
     const r = await query(
-      `INSERT INTO banners (title, subtitle, desktop_image, mobile_image, alt_text, button_text, button_url, location, display_order, is_active)
+      `INSERT INTO sid_banners (title, subtitle, desktop_image, mobile_image, alt_text, button_text, button_url, location, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, subtitle || null, desktopImage || null, mobileImage || null, altText || null, buttonText || null, buttonUrl || null, location, displayOrder, isActive ? 1 : 0]
     );
@@ -120,11 +120,11 @@ router.put(
     const { id } = req.params;
     const { title, subtitle, desktopImage, mobileImage, altText, buttonText, buttonUrl, location, displayLocation, displayOrder, isActive } = req.body;
 
-    const b = await one('SELECT * FROM banners WHERE id = ?', [id]);
+    const b = await one('SELECT * FROM sid_banners WHERE id = ?', [id]);
     if (!b) throw new HttpError(404, 'Banner not found');
 
     await query(
-      `UPDATE banners
+      `UPDATE sid_banners
           SET title = ?, subtitle = ?, desktop_image = ?, mobile_image = ?, alt_text = ?,
               button_text = ?, button_url = ?, location = ?, display_order = ?, is_active = ?
         WHERE id = ?`,
@@ -153,11 +153,11 @@ router.patch(
   requirePermission('banners.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const b = await one('SELECT is_active, title FROM banners WHERE id = ?', [id]);
+    const b = await one('SELECT is_active, title FROM sid_banners WHERE id = ?', [id]);
     if (!b) throw new HttpError(404, 'Banner not found');
 
     const next = b.is_active ? 0 : 1;
-    await query('UPDATE banners SET is_active = ? WHERE id = ?', [next, id]);
+    await query('UPDATE sid_banners SET is_active = ? WHERE id = ?', [next, id]);
     res.json({ success: true, isActive: Boolean(next), message: `Banner is now ${next ? 'active' : 'inactive'}` });
   })
 );
@@ -167,7 +167,7 @@ router.delete(
   requirePermission('banners.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    await query('DELETE FROM banners WHERE id = ?', [id]);
+    await query('DELETE FROM sid_banners WHERE id = ?', [id]);
     res.json({ success: true, message: 'Banner deleted successfully' });
   })
 );
@@ -179,7 +179,7 @@ router.get(
   '/doctors',
   requirePermission('doctors.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM doctors ORDER BY display_order ASC, id ASC');
+    const rows = await query('SELECT * FROM sid_doctors ORDER BY display_order ASC, id ASC');
     res.json({
       success: true,
       data: rows.map((d) => ({
@@ -219,7 +219,7 @@ router.post(
     const locs = availableLocations || (clinicCity ? clinicCity.split(',').map((s) => s.trim()) : ['Noida']);
 
     const r = await query(
-      `INSERT INTO doctors (name, slug, role, qualifications, specialty, experience, image, bio, consultation_fee, available_locations, availability, display_order, is_active)
+      `INSERT INTO sid_doctors (name, slug, role, qualifications, specialty, experience, image, bio, consultation_fee, available_locations, availability, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
@@ -250,13 +250,13 @@ router.put(
     const { id } = req.params;
     const { name, slug, role, designation, qualifications, specialty, specialization, experience, image, photo, bio, fullBio, consultationFee, clinicCity, availableLocations, availability, displayOrder, isActive } = req.body;
 
-    const d = await one('SELECT * FROM doctors WHERE id = ?', [id]);
+    const d = await one('SELECT * FROM sid_doctors WHERE id = ?', [id]);
     if (!d) throw new HttpError(404, 'Doctor not found');
 
     const locs = availableLocations || (clinicCity ? clinicCity.split(',').map((s) => s.trim()) : parseJson(d.available_locations, []));
 
     await query(
-      `UPDATE doctors
+      `UPDATE sid_doctors
           SET name = ?, slug = ?, role = ?, qualifications = ?, specialty = ?, experience = ?,
               image = ?, bio = ?, consultation_fee = ?, available_locations = ?, availability = ?,
               display_order = ?, is_active = ?
@@ -288,10 +288,10 @@ router.patch(
   requirePermission('doctors.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const d = await one('SELECT is_active FROM doctors WHERE id = ?', [id]);
+    const d = await one('SELECT is_active FROM sid_doctors WHERE id = ?', [id]);
     if (!d) throw new HttpError(404, 'Doctor not found');
     const next = d.is_active ? 0 : 1;
-    await query('UPDATE doctors SET is_active = ? WHERE id = ?', [next, id]);
+    await query('UPDATE sid_doctors SET is_active = ? WHERE id = ?', [next, id]);
     res.json({ success: true, isActive: Boolean(next), message: `Doctor is now ${next ? 'active' : 'inactive'}` });
   })
 );
@@ -301,7 +301,7 @@ router.delete(
   requirePermission('doctors.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    await query('DELETE FROM doctors WHERE id = ?', [id]);
+    await query('DELETE FROM sid_doctors WHERE id = ?', [id]);
     res.json({ success: true, message: 'Doctor profile deleted' });
   })
 );
@@ -315,8 +315,8 @@ router.get(
   asyncHandler(async (req, res) => {
     const rows = await query(
       `SELECT t.*, c.name AS category_name, c.slug AS category_slug
-         FROM treatments t
-         LEFT JOIN categories c ON c.id = t.category_id
+         FROM sid_treatments t
+         LEFT JOIN sid_categories c ON c.id = t.category_id
         ORDER BY t.display_order ASC, t.id ASC`
     );
 
@@ -363,15 +363,15 @@ router.get(
     const { id } = req.params;
     const t = await one(
       `SELECT t.*, c.name AS category_name
-         FROM treatments t
-         LEFT JOIN categories c ON c.id = t.category_id
+         FROM sid_treatments t
+         LEFT JOIN sid_categories c ON c.id = t.category_id
         WHERE t.id = ? LIMIT 1`,
       [id]
     );
     if (!t) throw new HttpError(404, 'Treatment not found');
 
     const concernRows = await query(
-      `SELECT concern_id FROM treatment_concerns WHERE treatment_id = ?`,
+      `SELECT concern_id FROM sid_treatment_concerns WHERE treatment_id = ?`,
       [id]
     );
 
@@ -417,7 +417,7 @@ router.post(
     const trtSlug = slug || slugify(name);
 
     const r = await query(
-      `INSERT INTO treatments (
+      `INSERT INTO sid_treatments (
         name, slug, category_id, price, original_price, discount_badge, duration, rating,
         short_desc, full_desc, banner_image, gallery_images, how_it_works, ideal_for,
         after_treatment, faqs, seo_title, seo_description, is_featured, is_active, display_order
@@ -450,7 +450,7 @@ router.post(
     const treatmentId = r.insertId;
     if (concernIds && concernIds.length) {
       for (const cid of concernIds) {
-        await query('INSERT IGNORE INTO treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
+        await query('INSERT IGNORE INTO sid_treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
           treatmentId,
           parseInt(cid, 10),
         ]);
@@ -469,11 +469,11 @@ router.put(
     const { id } = req.params;
     const { name, slug, categoryId, concernIds, price, originalPrice, discountLabel, estimatedDuration, displayRating, shortDescription, fullDescription, featuredImage, galleryImages, process, suitability, aftercare, faqs, seoTitle, seoDescription, isFeatured, isActive, displayOrder } = req.body;
 
-    const t = await one('SELECT * FROM treatments WHERE id = ?', [id]);
+    const t = await one('SELECT * FROM sid_treatments WHERE id = ?', [id]);
     if (!t) throw new HttpError(404, 'Treatment not found');
 
     await query(
-      `UPDATE treatments
+      `UPDATE sid_treatments
           SET name = ?, slug = ?, category_id = ?, price = ?, original_price = ?, discount_badge = ?,
               duration = ?, rating = ?, short_desc = ?, full_desc = ?, banner_image = ?,
               gallery_images = ?, how_it_works = ?, ideal_for = ?, after_treatment = ?, faqs = ?,
@@ -506,9 +506,9 @@ router.put(
     );
 
     if (concernIds !== undefined) {
-      await query('DELETE FROM treatment_concerns WHERE treatment_id = ?', [id]);
+      await query('DELETE FROM sid_treatment_concerns WHERE treatment_id = ?', [id]);
       for (const cid of concernIds) {
-        await query('INSERT IGNORE INTO treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
+        await query('INSERT IGNORE INTO sid_treatment_concerns (treatment_id, concern_id) VALUES (?, ?)', [
           id,
           parseInt(cid, 10),
         ]);
@@ -524,10 +524,10 @@ router.patch(
   requirePermission('treatments.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const t = await one('SELECT is_active FROM treatments WHERE id = ?', [id]);
+    const t = await one('SELECT is_active FROM sid_treatments WHERE id = ?', [id]);
     if (!t) throw new HttpError(404, 'Treatment not found');
     const next = t.is_active ? 0 : 1;
-    await query('UPDATE treatments SET is_active = ? WHERE id = ?', [next, id]);
+    await query('UPDATE sid_treatments SET is_active = ? WHERE id = ?', [next, id]);
     res.json({ success: true, isActive: Boolean(next), message: `Treatment is now ${next ? 'active' : 'inactive'}` });
   })
 );
@@ -537,10 +537,10 @@ router.patch(
   requirePermission('treatments.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const t = await one('SELECT is_featured FROM treatments WHERE id = ?', [id]);
+    const t = await one('SELECT is_featured FROM sid_treatments WHERE id = ?', [id]);
     if (!t) throw new HttpError(404, 'Treatment not found');
     const next = t.is_featured ? 0 : 1;
-    await query('UPDATE treatments SET is_featured = ? WHERE id = ?', [next, id]);
+    await query('UPDATE sid_treatments SET is_featured = ? WHERE id = ?', [next, id]);
     res.json({ success: true, isFeatured: Boolean(next), message: `Treatment featured status changed` });
   })
 );
@@ -550,7 +550,7 @@ router.delete(
   requirePermission('treatments.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    await query('DELETE FROM treatments WHERE id = ?', [id]);
+    await query('DELETE FROM sid_treatments WHERE id = ?', [id]);
     res.json({ success: true, message: 'Treatment deleted successfully' });
   })
 );
@@ -562,7 +562,7 @@ router.get(
   '/categories',
   requirePermission('categories.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM categories ORDER BY display_order ASC, id ASC');
+    const rows = await query('SELECT * FROM sid_categories ORDER BY display_order ASC, id ASC');
     res.json({
       success: true,
       data: rows.map((c) => ({
@@ -582,7 +582,7 @@ router.get(
   '/concerns',
   requirePermission('concerns.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM concerns ORDER BY display_order ASC, id ASC');
+    const rows = await query('SELECT * FROM sid_concerns ORDER BY display_order ASC, id ASC');
     res.json({
       success: true,
       data: rows.map((c) => ({
@@ -605,7 +605,7 @@ router.get(
   '/settings',
   requirePermission('settings.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT setting_key, setting_value FROM settings');
+    const rows = await query('SELECT setting_key, setting_value FROM sid_settings');
     const out = {};
     rows.forEach((r) => {
       out[r.setting_key] = parseJson(r.setting_value, r.setting_value);
@@ -641,7 +641,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const body = req.body;
 
-    const existingGeneral = await one('SELECT setting_value FROM settings WHERE setting_key = "general"');
+    const existingGeneral = await one('SELECT setting_value FROM sid_settings WHERE setting_key = "general"');
     const general = existingGeneral ? parseJson(existingGeneral.setting_value, {}) : {};
 
     if (body.clinicName) general.clinicName = body.clinicName;
@@ -654,18 +654,18 @@ router.post(
     if (body.socialLinks) general.socialLinks = body.socialLinks;
 
     await query(
-      `INSERT INTO settings (setting_key, setting_value, group_name) VALUES ('general', ?, 'general')
+      `INSERT INTO sid_settings (setting_key, setting_value, group_name) VALUES ('general', ?, 'general')
        ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
       [JSON.stringify(general)]
     );
 
     if (body.seo) {
-      const existingSeo = await one('SELECT setting_value FROM settings WHERE setting_key = "seo"');
+      const existingSeo = await one('SELECT setting_value FROM sid_settings WHERE setting_key = "seo"');
       const seo = existingSeo ? parseJson(existingSeo.setting_value, {}) : {};
       if (body.seo.defaultTitle) seo.defaultTitle = body.seo.defaultTitle;
       if (body.seo.defaultMetaDescription) seo.defaultDescription = body.seo.defaultMetaDescription;
       await query(
-        `INSERT INTO settings (setting_key, setting_value, group_name) VALUES ('seo', ?, 'seo')
+        `INSERT INTO sid_settings (setting_key, setting_value, group_name) VALUES ('seo', ?, 'seo')
          ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)`,
         [JSON.stringify(seo)]
       );
@@ -684,7 +684,7 @@ router.get(
   '/memberships',
   requirePermission('treatments.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM membership_plans ORDER BY display_order ASC, id ASC');
+    const rows = await query('SELECT * FROM sid_membership_plans ORDER BY display_order ASC, id ASC');
     res.json({
       success: true,
       data: rows.map((m) => ({
@@ -737,7 +737,7 @@ router.post(
     const finalPriceFormatted = priceFormatted || `₹${numPrice.toLocaleString('en-IN')}`;
 
     const result = await query(
-      `INSERT INTO membership_plans (
+      `INSERT INTO sid_membership_plans (
         slug, name, price, price_formatted, period, validity, tagline,
         is_popular, features, display_order, is_active
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -768,14 +768,14 @@ router.put(
     const { id } = req.params;
     const body = req.body;
 
-    const existing = await one('SELECT * FROM membership_plans WHERE id = ?', [id]);
+    const existing = await one('SELECT * FROM sid_membership_plans WHERE id = ?', [id]);
     if (!existing) throw new HttpError(404, 'Membership plan not found');
 
     const numPrice = body.price !== undefined ? Number(body.price) : Number(existing.price);
     const formatted = body.priceFormatted || (body.price !== undefined ? `₹${numPrice.toLocaleString('en-IN')}` : existing.price_formatted);
 
     await query(
-      `UPDATE membership_plans SET
+      `UPDATE sid_membership_plans SET
         name = COALESCE(?, name),
         slug = COALESCE(?, slug),
         price = ?,
@@ -816,7 +816,7 @@ router.delete(
   requirePermission('treatments.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    await query('DELETE FROM membership_plans WHERE id = ?', [id]);
+    await query('DELETE FROM sid_membership_plans WHERE id = ?', [id]);
     await audit(req, { action: 'delete', entity: 'membership_plans', entityId: id, summary: `Deleted membership plan #${id}` });
     res.json({ success: true, message: 'Membership plan deleted successfully' });
   })
@@ -826,7 +826,7 @@ router.get(
   '/audit-logs',
   requirePermission('audit_logs.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100');
+    const rows = await query('SELECT * FROM sid_audit_logs ORDER BY created_at DESC LIMIT 100');
     res.json({ success: true, data: rows });
   })
 );
