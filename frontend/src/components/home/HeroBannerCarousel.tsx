@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getBanners } from "@/lib/api";
+import { getBanners, getHomepageData } from "@/lib/api";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -20,7 +20,11 @@ import {
   Droplets
 } from "lucide-react";
 
-export default function HeroBannerCarousel() {
+interface HeroBannerCarouselProps {
+  initialBanners?: any[] | null;
+}
+
+export default function HeroBannerCarousel({ initialBanners }: HeroBannerCarouselProps = {}) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -41,23 +45,76 @@ export default function HeroBannerCarousel() {
     },
   ];
 
-  const [slides, setSlides] = useState(defaultSlides);
+  const defaultTrustPills = [
+    { icon: CheckCircle2, text: "Leading Choice for Aesthetic Solutions" },
+    { icon: ShieldCheck, text: "Safe & Hygienic Clinical Protocols" },
+    { icon: Award, text: "US-FDA Approved Technology" },
+    { icon: Stethoscope, text: "Personalized Treatment Plans" },
+    { icon: CreditCard, text: "0% Interest EMI Option Available" },
+    { icon: UserCheck, text: "Senior MD Dermatologists Led Clinic" },
+    { icon: Star, text: "3,200+ Verified 5-Star Google Reviews" },
+    { icon: CheckCircle2, text: "Hospital-Grade Sanitation" },
+    { icon: Clock, text: "10+ Years of Dermatology Excellence" },
+    { icon: FlaskConical, text: "Integrated Pharmacy & Pathology Services" },
+    { icon: Zap, text: "Painless US-FDA Laser Hair Removal" },
+    { icon: Droplets, text: "Signature Sugarcane HydraFacial MD" },
+  ];
+
+  const formattedInitial = initialBanners && initialBanners.length > 0
+    ? initialBanners.map((b) => ({
+        id: String(b.id),
+        alt: "Skinfinity Derma Banner",
+        desktopImage: b.desktopImage,
+        mobileImage: b.mobileImage || b.desktopImage,
+        link: "/about-us",
+      }))
+    : defaultSlides;
+
+  const [slides, setSlides] = useState(formattedInitial);
+  const [trustPills, setTrustPills] = useState(defaultTrustPills);
+
+  const getPillIcon = (iconName?: string | null) => {
+    const key = (iconName || "").toLowerCase();
+    if (key.includes("shield") || key.includes("safe")) return ShieldCheck;
+    if (key.includes("award") || key.includes("fda")) return Award;
+    if (key.includes("steth") || key.includes("doctor")) return Stethoscope;
+    if (key.includes("card") || key.includes("emi")) return CreditCard;
+    if (key.includes("user") || key.includes("md")) return UserCheck;
+    if (key.includes("star") || key.includes("review")) return Star;
+    if (key.includes("clock") || key.includes("year")) return Clock;
+    if (key.includes("flask") || key.includes("lab") || key.includes("pharmacy")) return FlaskConical;
+    if (key.includes("zap") || key.includes("laser")) return Zap;
+    if (key.includes("drop") || key.includes("hydra")) return Droplets;
+    return CheckCircle2;
+  };
 
   useEffect(() => {
     let active = true;
-    getBanners("Homepage Hero").then((data) => {
-      if (active && data && data.length > 0) {
+    getBanners().then((data) => {
+      if (active && data) {
         setSlides(
           data.map((b) => ({
             id: String(b.id),
-            alt: b.title || "Skinfinity Derma Hero",
+            alt: "Skinfinity Derma Banner",
             desktopImage: b.desktopImage,
             mobileImage: b.mobileImage || b.desktopImage,
-            link: b.buttonUrl || b.linkUrl || "/about-us",
+            link: "/about-us",
           }))
         );
       }
     }).catch(() => {});
+
+    getHomepageData().then((hp) => {
+      if (active && hp?.trustBadges && hp.trustBadges.length > 0) {
+        setTrustPills(
+          hp.trustBadges.map((badge) => ({
+            icon: getPillIcon(badge.icon || badge.title),
+            text: badge.title,
+          }))
+        );
+      }
+    }).catch(() => {});
+
     return () => {
       active = false;
     };
@@ -65,7 +122,7 @@ export default function HeroBannerCarousel() {
 
   // Auto rotate banner every 5.5 seconds
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || slides.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5500);
@@ -98,22 +155,6 @@ export default function HeroBannerCarousel() {
       prevSlide();
     }
   };
-
-  // High-value clinical trust & feature pills with authentic medical icons
-  const trustPills = [
-    { icon: CheckCircle2, text: "Leading Choice for Aesthetic Solutions" },
-    { icon: ShieldCheck, text: "Safe & Hygienic Clinical Protocols" },
-    { icon: Award, text: "US-FDA Approved Technology" },
-    { icon: Stethoscope, text: "Personalized Treatment Plans" },
-    { icon: CreditCard, text: "0% Interest EMI Option Available" },
-    { icon: UserCheck, text: "Senior MD Dermatologists Led Clinic" },
-    { icon: Star, text: "3,200+ Verified 5-Star Google Reviews" },
-    { icon: CheckCircle2, text: "Hospital-Grade Sanitation" },
-    { icon: Clock, text: "10+ Years of Dermatology Excellence" },
-    { icon: FlaskConical, text: "Integrated Pharmacy & Pathology Services" },
-    { icon: Zap, text: "Painless US-FDA Laser Hair Removal" },
-    { icon: Droplets, text: "Signature Sugarcane HydraFacial MD" },
-  ];
 
   return (
     <section className="relative w-full overflow-hidden bg-white">
@@ -168,39 +209,45 @@ export default function HeroBannerCarousel() {
             </div>
           ))}
 
-          {/* Clean Glassmorphic Left Arrow */}
-          <button
-            onClick={prevSlide}
-            aria-label="Previous Slide"
-            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/35 hover:bg-[#008081] text-white shadow-xl flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 z-20 backdrop-blur-md border border-white/20"
-          >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
+          {/* Clean Glassmorphic Left Arrow (only if multiple slides) */}
+          {slides.length > 1 && (
+            <button
+              onClick={prevSlide}
+              aria-label="Previous Slide"
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/35 hover:bg-[#008081] text-white shadow-xl flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 z-20 backdrop-blur-md border border-white/20"
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          )}
 
-          {/* Clean Glassmorphic Right Arrow */}
-          <button
-            onClick={nextSlide}
-            aria-label="Next Slide"
-            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/35 hover:bg-[#008081] text-white shadow-xl flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 z-20 backdrop-blur-md border border-white/20"
-          >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
+          {/* Clean Glassmorphic Right Arrow (only if multiple slides) */}
+          {slides.length > 1 && (
+            <button
+              onClick={nextSlide}
+              aria-label="Next Slide"
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/35 hover:bg-[#008081] text-white shadow-xl flex items-center justify-center transition-all duration-200 opacity-80 hover:opacity-100 hover:scale-110 active:scale-95 z-20 backdrop-blur-md border border-white/20"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          )}
 
-          {/* Luxury Dot & Pill Indicators */}
-          <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/45 backdrop-blur-md border border-white/15 shadow-lg">
-            {slides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full ${
-                  currentSlide === idx 
-                    ? "w-7 sm:w-8 h-2 sm:h-2.5 bg-gradient-to-r from-teal-400 to-emerald-400 shadow-glow" 
-                    : "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/60 hover:bg-white"
-                }`}
-              />
-            ))}
-          </div>
+          {/* Luxury Dot & Pill Indicators (only if multiple slides) */}
+          {slides.length > 1 && (
+            <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/45 backdrop-blur-md border border-white/15 shadow-lg">
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  className={`transition-all duration-300 rounded-full ${
+                    currentSlide === idx 
+                      ? "w-7 sm:w-8 h-2 sm:h-2.5 bg-gradient-to-r from-teal-400 to-emerald-400 shadow-glow" 
+                      : "w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/60 hover:bg-white"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

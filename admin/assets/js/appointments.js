@@ -1,15 +1,17 @@
 /**
  * Skinfinity Derma Operations Portal
  * Advanced Patient Appointments & Doctor Scheduling Controller
+ * Fully integrated with Calendar Views, Dynamic Slot Engines & Double Booking Prevention
  */
 
 $(document).ready(function () {
   'use strict';
 
   let cachedDoctors = [];
+  let cachedTreatments = [];
   let appointmentsList = [];
+  let calendarInstance = null;
 
-  // Helper date & time formatters to guarantee no hyphen wrapping
   function formatSlotDate(dStr) {
     if (!dStr) return '—';
     try {
@@ -39,33 +41,51 @@ $(document).ready(function () {
     return p.replace(/\D/g, '').slice(-10);
   }
 
-  // Pre-load doctors for assignment select
-  function preloadDoctors() {
-    window.API.getDoctors()
-      .done(function (res) {
-        if (res.success && res.data) {
-          cachedDoctors = res.data;
-          const $select = $('#editApptDoctor');
-          $select.find('option:not(:first)').remove();
+  // Pre-load doctors & treatments for assignment and booking modals
+  function preloadDependencies() {
+    window.API.getDoctors().done(function (res) {
+      if (res.success && res.data) {
+        cachedDoctors = res.data;
+        const $editSelect = $('#editApptDoctor');
+        const $newSelect = $('#newApptDoctor');
 
-          cachedDoctors.forEach(function (d) {
-            const fee = Number(d.consultationFee || 1000);
-            $select.append(`<option value="${d.id}" data-fee="${fee}">${d.name} (${d.designation || 'Consultant'} — Fee: ₹${fee.toLocaleString('en-IN')})</option>`);
-          });
-        }
-      });
+        $editSelect.find('option:not(:first)').remove();
+        $newSelect.find('option:not(:first)').remove();
+
+        cachedDoctors.forEach(function (d) {
+          const fee = Number(d.consultationFee || 1000);
+          const opt = `<option value="${d.id}" data-fee="${fee}">${d.name} (${d.designation || 'Consultant'} — ₹${fee.toLocaleString('en-IN')})</option>`;
+          $editSelect.append(opt);
+          $newSelect.append(opt);
+        });
+      }
+    });
+
+    window.API.getTreatments().done(function (res) {
+      if (res.success && res.data) {
+        cachedTreatments = res.data;
+        const $newTrt = $('#newApptTreatment');
+        $newTrt.find('option:not(:first)').remove();
+
+        cachedTreatments.forEach(function (t) {
+          $newTrt.append(`<option value="${t.id}" data-price="${t.price || 0}" data-name="${t.name}">${t.name} (₹${(t.price || 0).toLocaleString('en-IN')})</option>`);
+        });
+      }
+    });
   }
 
-  // Load and render all appointments
+  // Load and render all appointments in Table View
   function loadAppointments() {
     const status = $('#filterStatus').val();
+    const date = $('#filterDate').val();
     const q = $('#filterSearch').val().trim();
 
     const params = {};
     if (status && status !== 'all') params.status = status;
+    if (date) params.date = date;
     if (q) params.q = q;
 
-    $('#appointmentsTableBody').html('<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Fetching clinical appointments...</td></tr>');
+    $('#appointmentsTableBody').html('<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-success spinner-border-sm me-2"></div>Fetching clinical appointments...</td></tr>');
 
     window.API.getAppointments(params)
       .done(function (res) {
@@ -80,7 +100,13 @@ $(document).ready(function () {
 
         let html = '';
         appointmentsList.forEach(function (a) {
-          const statusClass = `badge-status-${a.status}`;
+          let statusBadgeClass = 'badge-secondary';
+          if (a.status === 'confirmed') statusBadgeClass = 'bg-teal text-white';
+          else if (a.status === 'pending') statusBadgeClass = 'bg-warning-subtle text-dark border';
+          else if (a.status === 'completed') statusBadgeClass = 'bg-primary text-white';
+          else if (a.status === 'cancelled') statusBadgeClass = 'bg-danger text-white';
+          else if (a.status === 'no_show') statusBadgeClass = 'bg-dark text-white';
+
           const cleanPhone = cleanPhoneDigits(a.phone);
           const docAssigned = a.doctorId && a.doctorName && a.doctorName !== 'Assigned on Arrival';
           const docFee = Number(a.doctorFee) || (docAssigned ? 1200 : 0);
@@ -91,7 +117,7 @@ $(document).ready(function () {
           html += `
             <tr data-id="${a.id}">
               <td class="text-nowrap">
-                <span class="fw-bold text-primary font-monospace">${a.appointmentNo || '#' + a.id}</span>
+                <span class="fw-bold text-success font-monospace">${a.appointmentNo || '#' + a.id}</span>
                 <div class="text-muted small mt-1"><i class="bi bi-broadcast me-1"></i>${a.source || 'Website'}</div>
               </td>
               <td>
@@ -103,7 +129,7 @@ $(document).ready(function () {
                   ${cleanPhone ? `
                     <a href="https://wa.me/91${cleanPhone}?text=Hello%20${encodeURIComponent(a.patientName)}%2C%20greetings%20from%20Skinfinity%20Derma%20Clinics.%20Regarding%20your%20appointment%20${a.appointmentNo || ''}..." 
                        target="_blank" class="badge bg-success text-white text-decoration-none" title="Chat on WhatsApp">
-                      <i class="bi bi-whatsapp"></i> Chat
+                      <i class="bi bi-whatsapp"></i>
                     </a>
                   ` : ''}
                 </div>
@@ -132,32 +158,24 @@ $(document).ready(function () {
                   `}
                 </div>
                 <div class="small text-muted text-nowrap">
-                  <i class="bi bi-geo-alt-fill text-danger me-1"></i>${a.clinicName}
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i>${a.clinicName || 'Noida Clinic'}
                 </div>
-                ${docAssigned ? `<div class="small text-success fw-semibold mt-1">Doctor Fee: ₹${docFee.toLocaleString('en-IN')}</div>` : ''}
               </td>
               <td class="text-nowrap">
-                ${a.couponCode ? `
-                  <div class="mb-1">
-                    <span class="badge bg-warning-subtle text-dark border px-2 py-0">
-                      <i class="bi bi-tag-fill text-warning me-1"></i>${a.couponCode} (-₹${discount})
-                    </span>
-                  </div>
-                ` : ''}
                 <div class="fw-bold fs-6 text-dark">₹${totalPayable.toLocaleString('en-IN')}</div>
                 <div class="small text-muted" style="font-size: 0.72rem;">(Proc: ₹${procEstimate} + Doc: ₹${docFee})</div>
               </td>
               <td class="text-nowrap">
-                <span class="badge ${statusClass} px-2 py-1 text-capitalize">${a.status.replace('_', ' ')}</span>
+                <span class="badge ${statusBadgeClass} px-2 py-1 text-capitalize">${(a.status || 'pending').replace('_', ' ')}</span>
               </td>
               <td class="text-end text-nowrap">
-                <button class="btn btn-sm btn-outline-primary me-1 btn-edit-appt" data-id="${a.id}" title="Assign Doctor & Manage Pricing">
+                <button class="btn btn-sm btn-outline-primary me-1 btn-edit-appt" data-id="${a.id}" title="Manage Details & Doctor">
                   <i class="bi bi-pencil-square"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary me-1 btn-print-slip" data-id="${a.id}" title="Print Clinical Appointment Slip">
+                <button class="btn btn-sm btn-outline-secondary me-1 btn-print-slip" data-id="${a.id}" title="Print Clinical Slip">
                   <i class="bi bi-printer"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger btn-delete-appt" data-id="${a.id}" title="Cancel & Delete Record">
+                <button class="btn btn-sm btn-outline-danger btn-delete-appt" data-id="${a.id}" title="Cancel & Delete">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -172,72 +190,231 @@ $(document).ready(function () {
       });
   }
 
-  // Calculation helper for Net Payable inside Edit Modal
-  function recalculateModalNet() {
-    const docFee = parseFloat($('#editDoctorFee').val()) || 0;
-    const procPrice = parseFloat($('#editProcedurePrice').val()) || 0;
-    const discount = parseFloat($('#editDiscountAmount').val()) || 0;
-    const net = Math.max(0, procPrice + docFee - discount);
-    $('#editNetPayable').text(`₹${net.toLocaleString('en-IN')}`);
+  // FullCalendar Setup
+  function initCalendar() {
+    const calendarEl = document.getElementById('fullCalendarWrap');
+    if (!calendarEl) return;
+
+    calendarInstance = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+      },
+      events: function (info, successCallback, failureCallback) {
+        window.API.getAppointmentsCalendar({ start: info.startStr, end: info.endStr })
+          .done(function (res) {
+            successCallback(res.data || []);
+          })
+          .fail(function (err) {
+            failureCallback(err);
+          });
+      },
+      eventClick: function (info) {
+        const id = info.event.id;
+        openEditModalById(id);
+      }
+    });
+
+    calendarInstance.render();
   }
 
-  // Doctor Select Change Listener inside Edit Modal
-  $('#editApptDoctor').on('change', function () {
-    const selectedOption = $(this).find('option:selected');
-    const fee = selectedOption.data('fee') || 0;
-    $('#editDoctorFee').val(fee);
-    if (fee > 0) {
-      $('#doctorFeeNotice').html(`<span class="text-success fw-semibold"><i class="bi bi-check2-circle me-1"></i>Appointed consultation fee of ₹${fee.toLocaleString('en-IN')} applied.</span>`);
-    } else {
-      $('#doctorFeeNotice').text('Doctor not selected. Consultation fee set to ₹0.');
-    }
-    recalculateModalNet();
+  // View Switching (Table vs Calendar)
+  $('#btnViewTable').on('click', function () {
+    $(this).addClass('active');
+    $('#btnViewCalendar').removeClass('active');
+    $('#tableFilterSection, #tableViewContainer').removeClass('d-none');
+    $('#calendarViewContainer').addClass('d-none');
   });
 
-  $('#editProcedurePrice, #editDiscountAmount').on('input', function () {
-    recalculateModalNet();
+  $('#btnViewCalendar').on('click', function () {
+    $(this).addClass('active');
+    $('#btnViewTable').removeClass('active');
+    $('#tableFilterSection, #tableViewContainer').addClass('d-none');
+    $('#calendarViewContainer').removeClass('d-none');
+
+    if (!calendarInstance) {
+      initCalendar();
+    } else {
+      calendarInstance.render();
+      calendarInstance.refetchEvents();
+    }
   });
 
-  // Open Full Manage Appointment & Doctor Assignment Modal
-  $(document).on('click', '.btn-edit-appt, .btn-assign-doctor', function () {
-    const id = $(this).data('id');
-    const appt = appointmentsList.find(a => a.id === String(id));
-    if (!appt) return;
+  // Dynamic Available Slots Loader for Modals
+  function loadAvailableSlots(clinicId, date, targetContainerId, selectedSlotHiddenId) {
+    const $container = $(targetContainerId);
+    $container.html('<div class="text-muted small p-2"><span class="spinner-border spinner-border-sm text-success me-2"></span>Checking clinic slot availability...</div>');
+    $(selectedSlotHiddenId).val('');
 
-    $('#editApptId').val(appt.id);
-    $('#editApptBookingNo').text(`Booking ${appt.appointmentNo || '#' + appt.id} • ${appt.source || 'Website'}`);
-    $('#editPatientName').val(appt.patientName || '');
-    $('#editPatientPhone').val(appt.phone || '');
-    $('#editPatientEmail').val(appt.email || '');
+    API.getSlots({ clinicId: clinicId, date: date })
+      .done(function (res) {
+        if (!res.success || !res.slots || res.slots.length === 0) {
+          $container.html('<div class="text-danger small p-2"><i class="bi bi-calendar-x me-1"></i>No slots available on this date or clinic is closed.</div>');
+          return;
+        }
 
-    // Select Doctor
-    $('#editApptDoctor').val(appt.doctorId || '');
-    const selectedDoc = cachedDoctors.find(d => String(d.id) === String(appt.doctorId));
-    const docFee = selectedDoc ? Number(selectedDoc.consultationFee || 1000) : (appt.doctorFee || 0);
-    $('#editDoctorFee').val(docFee);
+        let html = '';
+        res.slots.forEach(function (slot) {
+          html += `
+            <button type="button" class="slot-pill-btn" data-time="${slot.time}" data-target="${selectedSlotHiddenId}">
+              <i class="bi bi-clock me-1"></i>${slot.label}
+            </button>
+          `;
+        });
+        $container.html(html);
+      })
+      .fail(function () {
+        $container.html('<div class="text-danger small p-2">Failed to check slot availability.</div>');
+      });
+  }
 
-    $('#editApptClinic').val(appt.clinicId || '1');
-    $('#editApptDate').val(appt.appointmentDate || '');
-    $('#editApptTime').val(appt.appointmentTime || '');
-    $('#editApptStatus').val(appt.status || 'pending');
-    $('#editApptService').val(appt.serviceName || '');
-    $('#editProcedurePrice').val(appt.amountEstimate || 0);
-    $('#editDiscountAmount').val(appt.discountAmount || 0);
-
-    if (appt.couponCode) {
-      $('#editCouponBadge').text(`${appt.couponCode} (-₹${appt.discountAmount})`);
-    } else {
-      $('#editCouponBadge').text('None');
-    }
-
-    $('#editApptNotes').val(appt.notes || '');
-
-    recalculateModalNet();
-    const modal = new bootstrap.Modal(document.getElementById('editApptModal'));
+  // New Booking Modal Handler
+  $('#btnOpenNewApptModal').on('click', function () {
+    const today = new Date().toISOString().split('T')[0];
+    $('#newApptDate').attr('min', today).val(today);
+    loadAvailableSlots($('#newApptClinic').val(), today, '#newSlotsPillsContainer', '#newSelectedSlot');
+    const modal = new bootstrap.Modal(document.getElementById('newApptModal'));
     modal.show();
   });
 
-  // Save Full Appointment Updates
+  $('#newApptDate, #newApptClinic').on('change', function () {
+    const date = $('#newApptDate').val();
+    const clinicId = $('#newApptClinic').val();
+    if (date && clinicId) {
+      loadAvailableSlots(clinicId, date, '#newSlotsPillsContainer', '#newSelectedSlot');
+    }
+  });
+
+  $('#newApptTreatment').on('change', function () {
+    const selected = $(this).find('option:selected');
+    const price = selected.data('price') || 0;
+    $('#newApptAmount').val(price);
+  });
+
+  // Slot Pill Selection
+  $(document).on('click', '.slot-pill-btn', function () {
+    const $this = $(this);
+    const time = $this.data('time');
+    const targetHidden = $this.data('target');
+
+    $this.siblings('.slot-pill-btn').removeClass('selected');
+    $this.addClass('selected');
+    $(targetHidden).val(time);
+  });
+
+  // Submit New Booking
+  $('#newApptForm').on('submit', function (e) {
+    e.preventDefault();
+    const slotTime = $('#newSelectedSlot').val();
+    if (!slotTime) {
+      window.App.toast('error', 'Please select an available appointment slot.');
+      return;
+    }
+
+    const payload = {
+      patientName: $('#newPatientName').val().trim(),
+      phone: $('#newPatientPhone').val().trim(),
+      email: $('#newPatientEmail').val().trim() || null,
+      serviceName: $('#newApptTreatment option:selected').data('name') || $('#newApptTreatment option:selected').text(),
+      treatmentId: $('#newApptTreatment').val() ? parseInt($('#newApptTreatment').val()) : null,
+      clinicId: parseInt($('#newApptClinic').val()) || 1,
+      doctorId: $('#newApptDoctor').val() ? parseInt($('#newApptDoctor').val()) : null,
+      appointmentDate: $('#newApptDate').val(),
+      appointmentTime: slotTime,
+      amountEstimate: parseFloat($('#newApptAmount').val()) || 0,
+      status: $('#newApptStatus').val() || 'confirmed',
+      notes: $('#newApptNotes').val().trim() || 'Booked directly via admin operations portal.'
+    };
+
+    const $btn = $('#btnSubmitNewBooking');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Reserving slot...');
+
+    API.createAppointment(payload)
+      .done(function (res) {
+        bootstrap.Modal.getInstance(document.getElementById('newApptModal')).hide();
+        Swal.fire({
+          icon: 'success',
+          title: 'Booking Confirmed!',
+          text: `Appointment registered for ${payload.patientName} at ${payload.appointmentTime}.`,
+          confirmButtonColor: '#005b41'
+        });
+        $('#newApptForm')[0].reset();
+        loadAppointments();
+        if (calendarInstance) calendarInstance.refetchEvents();
+      })
+      .fail(function (xhr) {
+        const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Failed to book appointment';
+        Swal.fire('Booking Failed', msg, 'error');
+      })
+      .always(function () {
+        $btn.prop('disabled', false).html('<i class="bi bi-calendar-check me-1"></i> Confirm & Book Slot');
+      });
+  });
+
+  // Open Edit Modal by ID helper
+  function openEditModalById(id) {
+    API.getAppointment(id).done(function (res) {
+      if (!res.success || !res.data) return;
+      const appt = res.data;
+
+      $('#editApptId').val(appt.id);
+      $('#editApptBookingNo').text(`Booking ${appt.appointmentNo || '#' + appt.id} • ${appt.source || 'Website'}`);
+      $('#editPatientName').val(appt.patientName || '');
+      $('#editPatientPhone').val(appt.phone || '');
+      $('#editPatientEmail').val(appt.email || '');
+
+      $('#editApptDoctor').val(appt.doctorId || '');
+      const selectedDoc = cachedDoctors.find(d => String(d.id) === String(appt.doctorId));
+      const docFee = selectedDoc ? Number(selectedDoc.consultationFee || 1000) : (appt.doctorFee || 0);
+      $('#editDoctorFee').val(docFee);
+
+      $('#editApptClinic').val(appt.clinicId || '1');
+      $('#editApptDate').val(appt.appointmentDate || '');
+      $('#editApptTime').val(appt.appointmentTime || '');
+      $('#editApptStatus').val(appt.status || 'pending');
+      $('#editApptService').val(appt.serviceName || '');
+      $('#editProcedurePrice').val(appt.amountEstimate || 0);
+      $('#editDiscountAmount').val(appt.discountAmount || 0);
+
+      if (appt.couponCode) {
+        $('#editCouponBadge').text(`${appt.couponCode} (-₹${appt.discountAmount})`);
+      } else {
+        $('#editCouponBadge').text('None');
+      }
+
+      $('#editApptNotes').val(appt.notes || '');
+
+      const net = Math.max(0, (parseFloat(appt.amountEstimate) || 0) + docFee - (parseFloat(appt.discountAmount) || 0));
+      $('#editNetPayable').text(`₹${net.toLocaleString('en-IN')}`);
+
+      const modal = new bootstrap.Modal(document.getElementById('editApptModal'));
+      modal.show();
+    });
+  }
+
+  $(document).on('click', '.btn-edit-appt, .btn-assign-doctor', function () {
+    openEditModalById($(this).data('id'));
+  });
+
+  // Doctor Select listener in Edit Modal
+  $('#editApptDoctor').on('change', function () {
+    const fee = $(this).find('option:selected').data('fee') || 0;
+    $('#editDoctorFee').val(fee);
+    const proc = parseFloat($('#editProcedurePrice').val()) || 0;
+    const disc = parseFloat($('#editDiscountAmount').val()) || 0;
+    $('#editNetPayable').text(`₹${Math.max(0, proc + fee - disc).toLocaleString('en-IN')}`);
+  });
+
+  $('#editProcedurePrice, #editDiscountAmount').on('input', function () {
+    const docFee = parseFloat($('#editDoctorFee').val()) || 0;
+    const proc = parseFloat($('#editProcedurePrice').val()) || 0;
+    const disc = parseFloat($('#editDiscountAmount').val()) || 0;
+    $('#editNetPayable').text(`₹${Math.max(0, proc + docFee - disc).toLocaleString('en-IN')}`);
+  });
+
+  // Save Edit Modal Updates
   $('#editApptForm').on('submit', function (e) {
     e.preventDefault();
     const id = $('#editApptId').val();
@@ -264,22 +441,86 @@ $(document).ready(function () {
 
     window.API.updateAppointment(id, payload)
       .done(function (res) {
-        if (res.success) {
-          bootstrap.Modal.getInstance(document.getElementById('editApptModal')).hide();
-          window.App.toast('success', 'Appointment and Doctor schedule updated successfully!');
-          loadAppointments();
-        }
+        bootstrap.Modal.getInstance(document.getElementById('editApptModal')).hide();
+        window.App.toast('success', 'Appointment updated successfully!');
+        loadAppointments();
+        if (calendarInstance) calendarInstance.refetchEvents();
       })
       .fail(function (xhr) {
         const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Failed to update appointment';
         window.App.toast('error', msg);
       })
       .always(function () {
-        $btn.prop('disabled', false).html('<i class="bi bi-check-circle-fill me-1"></i> Save Changes & Doctor Assignment');
+        $btn.prop('disabled', false).html('<i class="bi bi-check-circle-fill me-1"></i> Save Changes');
       });
   });
 
-  // Open Printable Clinical Slip Modal
+  // Reschedule Modal Trigger
+  $('#btnOpenRescheduleModal').on('click', function () {
+    const id = $('#editApptId').val();
+    $('#rescheduleApptId').val(id);
+    $('#rescheduleBookingNo').text($('#editApptBookingNo').text());
+
+    const today = new Date().toISOString().split('T')[0];
+    $('#rescheduleDate').attr('min', today).val(today);
+    loadAvailableSlots($('#editApptClinic').val() || 1, today, '#rescheduleSlotsContainer', '#rescheduleSelectedSlot');
+
+    bootstrap.Modal.getInstance(document.getElementById('editApptModal')).hide();
+    const modal = new bootstrap.Modal(document.getElementById('rescheduleModal'));
+    modal.show();
+  });
+
+  $('#rescheduleDate').on('change', function () {
+    const date = $(this).val();
+    const clinicId = $('#editApptClinic').val() || 1;
+    if (date) {
+      loadAvailableSlots(clinicId, date, '#rescheduleSlotsContainer', '#rescheduleSelectedSlot');
+    }
+  });
+
+  // Submit Reschedule
+  $('#rescheduleForm').on('submit', function (e) {
+    e.preventDefault();
+    const id = $('#rescheduleApptId').val();
+    const newSlot = $('#rescheduleSelectedSlot').val();
+    const newDate = $('#rescheduleDate').val();
+
+    if (!newSlot) {
+      window.App.toast('error', 'Please pick an available time slot.');
+      return;
+    }
+
+    const payload = {
+      newDate: newDate,
+      newTime: newSlot,
+      reason: $('#rescheduleReason').val().trim()
+    };
+
+    const $btn = $('#btnSubmitReschedule');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Rescheduling...');
+
+    API.rescheduleAppointment(id, payload)
+      .done(function (res) {
+        bootstrap.Modal.getInstance(document.getElementById('rescheduleModal')).hide();
+        Swal.fire({
+          icon: 'success',
+          title: 'Rescheduled Successfully',
+          text: `Booking shifted to ${newDate} at ${newSlot}.`,
+          confirmButtonColor: '#005b41'
+        });
+        loadAppointments();
+        if (calendarInstance) calendarInstance.refetchEvents();
+      })
+      .fail(function (xhr) {
+        const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Failed to reschedule';
+        Swal.fire('Reschedule Failed', msg, 'error');
+      })
+      .always(function () {
+        $btn.prop('disabled', false).html('<i class="bi bi-clock-history me-1"></i> Update & Reschedule');
+      });
+  });
+
+  // Printable Slip
   $(document).on('click', '.btn-print-slip', function () {
     const id = $(this).data('id');
     const appt = appointmentsList.find(a => a.id === String(id));
@@ -315,7 +556,6 @@ $(document).ready(function () {
     modal.show();
   });
 
-  // Print Action
   $('#btnPrintSlip').on('click', function () {
     const printContent = document.getElementById('printableSlipArea').innerHTML;
     const originalContent = document.body.innerHTML;
@@ -347,6 +587,7 @@ $(document).ready(function () {
             if (res.success) {
               window.App.toast('success', 'Appointment deleted');
               loadAppointments();
+              if (calendarInstance) calendarInstance.refetchEvents();
             }
           })
           .fail(function () {
@@ -360,11 +601,11 @@ $(document).ready(function () {
   $('#btnRefreshAppts, #btnFilterSubmit').on('click', function () {
     loadAppointments();
   });
-  $('#filterStatus').on('change', function () {
+  $('#filterStatus, #filterDate').on('change', function () {
     loadAppointments();
   });
 
-  // Initialization
-  preloadDoctors();
+  // Initialize
+  preloadDependencies();
   loadAppointments();
 });

@@ -1,16 +1,49 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Sparkles, MapPin, CheckCircle2 } from "lucide-react";
+import { getHomepageData } from "@/lib/api";
 
 export default function AssociatedPartners() {
+  const [banner, setBanner] = useState({
+    title: "Most Trusted Aesthetic Brands of Delhi-NCR",
+    subtitle: "Explore Franchise Opportunities",
+    badgeText: "Now Expanding Pan India",
+    buttonText: "Now Expanding Pan India",
+    buttonUrl: "/franchise",
+    mediaUrl: "/images/custom/clinic-reception.jpg",
+  });
+
+  useEffect(() => {
+    let active = true;
+    getHomepageData().then((hp) => {
+      if (!active) return;
+      const f = hp?.franchiseBanner || hp?.sections?.franchise_banner;
+      if (f) {
+        setBanner((prev) => ({
+          ...prev,
+          title: f.title || prev.title,
+          subtitle: f.subtitle || prev.subtitle,
+          badgeText: f.badgeText || prev.badgeText,
+          buttonText: f.buttonText || prev.buttonText,
+          buttonUrl: f.buttonUrl || prev.buttonUrl,
+          mediaUrl: f.mediaUrl || prev.mediaUrl,
+        }));
+      }
+    }).catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <section className="py-8 lg:py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
-          href="/franchise"
+          href={banner.buttonUrl || "/franchise"}
           className="group relative block w-full rounded-3xl overflow-hidden border border-teal-200/80 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-[#f4fbf9] via-white to-[#e6f6f4]"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[320px] lg:min-h-[380px] items-stretch">
@@ -22,7 +55,7 @@ export default function AssociatedPartners() {
 
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-teal-900/5 border border-teal-700/20 text-brand-800 text-[11px] font-bold uppercase tracking-widest w-fit mb-4">
                 <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>Now Expanding Pan India</span>
+                <span>{banner.badgeText || "Now Expanding Pan India"}</span>
               </div>
 
               <p className="text-xs sm:text-sm font-extrabold uppercase tracking-[0.18em] text-[#1e266d] mb-1.5">
@@ -39,7 +72,7 @@ export default function AssociatedPartners() {
               </h2>
 
               <p className="text-base sm:text-lg font-extrabold text-[#1e266d] mt-2.5 tracking-tight">
-                Explore Franchise Opportunities
+                {banner.subtitle || "Explore Franchise Opportunities"}
               </p>
 
               {/* Location & Action Pills */}
@@ -50,7 +83,7 @@ export default function AssociatedPartners() {
                 </div>
 
                 <span className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1e266d] group-hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-md transition-all">
-                  <span>Now Expanding Pan India</span>
+                  <span>{banner.buttonText || "Now Expanding Pan India"}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </div>
@@ -76,7 +109,7 @@ export default function AssociatedPartners() {
             <div className="lg:col-span-6 relative min-h-[260px] lg:min-h-full overflow-hidden">
               {/* Background: Authentic Skinfinity Derma Reception Lounge */}
               <Image
-                src="/images/custom/clinic-reception.jpg"
+                src={banner.mediaUrl || "/images/custom/clinic-reception.jpg"}
                 alt="Skinfinity Derma Luxury Clinic Reception"
                 fill
                 className="object-cover object-center group-hover:scale-105 transition-transform duration-700"

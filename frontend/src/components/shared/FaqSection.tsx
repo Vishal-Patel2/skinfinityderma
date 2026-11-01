@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronDown, HelpCircle, ShieldCheck } from "lucide-react";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import { getFaqs } from "@/lib/api";
 
 export default function FaqSection() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
-  const faqs = [
+  const defaultFaqs = [
     {
       q: "What makes Skinfinity Derma distinct from commercial skin salons and cosmetic clinics?",
       a: "Skinfinity Derma is a medical dermatology practice founded and directed by certified MD dermatologists (led by Dr. Ipshita Johri, Cardiff UK trained). We focus on accurate diagnosis and treating root-cause medical issues (hormonal, microbial, dietary) rather than temporary cosmetic cover-ups. Every laser and light device is 100% US-FDA approved."
@@ -37,6 +38,25 @@ export default function FaqSection() {
       a: "Both clinics in Noida (Sector 36, Near Logix Mall) and Gurgaon (Sector 28, Golf Course Road) are open 7 days a week, Monday through Sunday, from 10:00 AM to 08:00 PM."
     }
   ];
+
+  const [faqs, setFaqs] = useState(defaultFaqs);
+
+  useEffect(() => {
+    let active = true;
+    getFaqs("home").then((data) => {
+      if (active && data && data.length > 0) {
+        setFaqs(
+          data.map((f) => ({
+            q: f.question,
+            a: f.answer,
+          }))
+        );
+      }
+    }).catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <section className="py-10 lg:py-14 bg-white">

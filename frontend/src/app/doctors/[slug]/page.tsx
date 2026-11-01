@@ -33,10 +33,23 @@ export function generateStaticParams() {
   }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
-  const doctor = DOCTORS.find(
-    (d) => d.id === params.slug || d.slug === params.slug
-  );
+export const dynamicParams = true;
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  let doctor: any = null;
+  try {
+    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.data) doctor = json.data;
+    }
+  } catch {}
+
+  if (!doctor) {
+    doctor = DOCTORS.find((d) => d.id === params.slug || d.slug === params.slug);
+  }
+
   if (!doctor) {
     return {
       title: "Doctor Profile | Skinfinity Derma Clinic",
@@ -197,19 +210,29 @@ const DOCTOR_EXTENDED_DETAILS: Record<
   },
 };
 
-export default function DoctorProfilePage({ params }: Props) {
-  const doctor = DOCTORS.find(
-    (d) => d.id === params.slug || d.slug === params.slug
-  );
+export default async function DoctorProfilePage({ params }: Props) {
+  let doctor: any = null;
+  try {
+    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.data) doctor = json.data;
+    }
+  } catch {}
+
+  if (!doctor) {
+    doctor = DOCTORS.find((d) => d.id === params.slug || d.slug === params.slug);
+  }
 
   if (!doctor) {
     notFound();
   }
 
+  const doctorKey = doctor.id || doctor.slug;
   const details =
-    DOCTOR_EXTENDED_DETAILS[doctor.id] ||
+    DOCTOR_EXTENDED_DETAILS[doctorKey] ||
     DOCTOR_EXTENDED_DETAILS["dr-sukriti"];
-  const otherDoctors = DOCTORS.filter((d) => d.id !== doctor.id);
+  const otherDoctors = DOCTORS.filter((d) => d.id !== doctorKey && d.slug !== doctorKey);
 
   return (
     <div className="bg-white">

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homepage Section-Wise CMS | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .section-tab-nav .nav-link {
+      font-weight: 600;
+      color: #64748B;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 0.75rem 1.25rem;
+    }
+    .section-tab-nav .nav-link.active {
+      color: #005b41;
+      border-bottom-color: #005b41;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link active"><i class="bi bi-house-gear-fill text-success"></i><span>Homepage CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
+          <div class="header-title-wrap">
+            <h1>Homepage Section-Wise Content Manager</h1>
+            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Homepage CMS</span></div>
+          </div>
+        </div>
+        <div class="header-right d-flex align-items-center gap-2">
+          <a href="http://localhost:3000" target="_blank" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-box-arrow-up-right me-1"></i> View Live Website
+          </a>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <div class="skin-card">
+          <div class="skin-card-header p-0 bg-white border-bottom">
+            <ul class="nav nav-tabs section-tab-nav px-3" id="homepageTabs" role="tablist">
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-about">
+                  <i class="bi bi-building me-1"></i> About Clinic Showcase
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-trust">
+                  <i class="bi bi-shield-check me-1"></i> Trust Ticker Badges
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-founder">
+                  <i class="bi bi-person-badge me-1"></i> Founder & Medical Director
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-diagnostic">
+                  <i class="bi bi-cpu me-1"></i> Diagnostic Tools
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-franchise">
+                  <i class="bi bi-diagram-3 me-1"></i> Franchise Opportunities
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div class="skin-card-body p-4">
+            <div class="tab-content" id="homepageTabsContent">
+              <!-- TAB 1: ABOUT CLINIC SHOWCASE -->
+              <div class="tab-pane fade show active" id="tab-about">
+                <form id="aboutClinicForm">
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                      <label class="form-label fw-semibold">Section Heading</label>
+                      <input type="text" class="form-control" id="aboutTitle" required>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label fw-semibold">Top Badge Tag</label>
+                      <input type="text" class="form-control" id="aboutBadge">
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Subtitle / Tagline</label>
+                    <input type="text" class="form-control" id="aboutSubtitle">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Mission & Clinical Overview Description</label>
+                    <textarea class="form-control" id="aboutDesc" rows="3"></textarea>
+                  </div>
+
+                  <!-- Clinic Image Upload / URL with Case 1-4 Handlers -->
+                  <div class="mb-4 pb-3 border-bottom">
+                    <label class="form-label fw-semibold">Clinic Reception Image (Optional)</label>
+                    <div class="input-group mb-2">
+                      <input type="text" class="form-control" id="aboutMediaUrl" placeholder="/images/custom/clinic-reception.jpg or upload...">
+                      <label class="btn btn-outline-secondary mb-0 cursor-pointer">
+                        <i class="bi bi-upload"></i> Upload
+                        <input type="file" id="fileUploadAbout" class="d-none" accept="image/*">
+                      </label>
+                      <button type="button" class="btn btn-outline-danger" id="btnRemoveAboutImg">
+                        <i class="bi bi-trash"></i> Remove
+                      </button>
+                    </div>
+                    <div class="media-preview-box" id="previewWrapAbout" style="height: 180px; max-width: 320px;">
+                      <img id="previewImgAbout" src="" alt="About Preview" class="d-none">
+                      <span class="text-muted small" id="previewTextAbout">No image selected</span>
+                    </div>
+                  </div>
+
+                  <!-- Statistics Counters -->
+                  <div class="mb-4 pb-3 border-bottom">
+                    <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-success me-1"></i> Key Statistics Counters</h6>
+                    <div class="row g-3">
+                      <div class="col-md-3">
+                        <label class="form-label small">Stat 1 Value</label>
+                        <input type="text" class="form-control form-control-sm" id="stat1Val" placeholder="1,00,000+">
+                        <input type="text" class="form-control form-control-sm mt-1" id="stat1Label" placeholder="Patients Treated">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small">Stat 2 Value</label>
+                        <input type="text" class="form-control form-control-sm" id="stat2Val" placeholder="15+">
+                        <input type="text" class="form-control form-control-sm mt-1" id="stat2Label" placeholder="US-FDA Lasers">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small">Stat 3 Value</label>
+                        <input type="text" class="form-control form-control-sm" id="stat3Val" placeholder="4.5★">
+                        <input type="text" class="form-control form-control-sm mt-1" id="stat3Label" placeholder="4,500+ Reviews">
+                      </div>
+                      <div class="col-md-3">
+                        <label class="form-label small">Stat 4 Value</label>
+                        <input type="text" class="form-control form-control-sm" id="stat4Val" placeholder="CMO">
+                        <input type="text" class="form-control form-control-sm mt-1" id="stat4Label" placeholder="Govt. Licensed">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold small">Primary Button Text</label>
+                      <input type="text" class="form-control" id="aboutBtnText" placeholder="Book Free Consultation">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold small">Primary Button URL</label>
+                      <input type="text" class="form-control" id="aboutBtnUrl" placeholder="/treatments">
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveAbout">
+                    <i class="bi bi-cloud-check me-1"></i> Save About Us Section
+                  </button>
+                </form>
+              </div>
+
+              <!-- TAB 2: TRUST TICKER -->
+              <div class="tab-pane fade" id="tab-trust">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div>
+                    <h5 class="fw-bold mb-0">Trust Bar Badges</h5>
+                    <p class="text-muted small mb-0">Manage the animated trust ticker displayed below the hero carousel.</p>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnAddTrustItem">
+                    <i class="bi bi-plus-lg me-1"></i> Add Badge
+                  </button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle">
+                    <thead>
+                      <tr>
+                        <th>Badge Title</th>
+                        <th>Subtitle</th>
+                        <th>Icon Name</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="trustTickerBody">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- TAB 3: FOUNDER SHOWCASE -->
+              <div class="tab-pane fade" id="tab-founder">
+                <form id="founderForm">
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Founder Name</label>
+                      <input type="text" class="form-control" id="founderTitle" value="Dr. Ipshita Johri" required>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold">Medical Designation</label>
+                      <input type="text" class="form-control" id="founderSubtitle" value="Founder & Medical Director" required>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Founder Biography & Editorial Overview</label>
+                    <textarea class="form-control" id="founderDesc" rows="4"></textarea>
+                  </div>
+
+                  <div class="mb-4 pb-3 border-bottom">
+                    <label class="form-label fw-semibold">Portrait Photo (Optional)</label>
+                    <div class="input-group mb-2">
+                      <input type="text" class="form-control" id="founderMediaUrl" placeholder="/images/doctors/dr-ipshita-johri.webp">
+                      <label class="btn btn-outline-secondary mb-0 cursor-pointer">
+                        <i class="bi bi-upload"></i> Upload
+                        <input type="file" id="fileUploadFounder" class="d-none" accept="image/*">
+                      </label>
+                    </div>
+                    <div class="media-preview-box" id="previewWrapFounder" style="height: 180px; max-width: 240px;">
+                      <img id="previewImgFounder" src="" alt="Founder" class="d-none">
+                      <span class="text-muted small" id="previewTextFounder">No image</span>
+                    </div>
+                  </div>
+
+                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveFounder">
+                    <i class="bi bi-cloud-check me-1"></i> Save Founder Profile
+                  </button>
+                </form>
+              </div>
+
+              <!-- TAB 4: DIAGNOSTIC TOOLS -->
+              <div class="tab-pane fade" id="tab-diagnostic">
+                <form id="diagnosticForm">
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Section Heading</label>
+                    <input type="text" class="form-control" id="diagTitle" value="Innovative Aesthetic Assessments">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Subtitle Description</label>
+                    <textarea class="form-control" id="diagSubtitle" rows="2"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveDiag">
+                    <i class="bi bi-cloud-check me-1"></i> Save Diagnostic Settings
+                  </button>
+                </form>
+              </div>
+
+              <!-- TAB 5: FRANCHISE OPPORTUNITIES -->
+              <div class="tab-pane fade" id="tab-franchise">
+                <form id="franchiseForm">
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Franchise Banner Heading</label>
+                    <input type="text" class="form-control" id="franchiseTitle" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Subtitle</label>
+                    <input type="text" class="form-control" id="franchiseSubtitle">
+                  </div>
+                  <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold small">Button Label</label>
+                      <input type="text" class="form-control" id="franchiseBtnText" value="Explore Franchise Model">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold small">Button Link</label>
+                      <input type="text" class="form-control" id="franchiseBtnUrl" value="/franchise">
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveFranchise">
+                    <i class="bi bi-cloud-check me-1"></i> Save Franchise Banner
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
+        <div class="text-muted">Section-Wise Dynamic Homepage Content Management</div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/homepage.js"></script>
+</body>
+</html>

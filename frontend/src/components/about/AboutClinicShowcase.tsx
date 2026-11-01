@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getHomepageData } from "@/lib/api";
 import {
   FlaskConical,
   Pill,
@@ -16,14 +17,14 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const STATS = [
+const DEFAULT_STATS = [
   { value: "1,00,000+", label: "Patients Treated" },
   { value: "15+", label: "US-FDA Lasers" },
   { value: "4.5★", label: "4,500+ Reviews" },
   { value: "CMO", label: "Govt. Licensed" },
 ];
 
-const PILLARS = [
+const DEFAULT_PILLARS = [
   {
     icon: FlaskConical,
     color: "bg-amber-50 text-amber-700 border-amber-200",
@@ -50,6 +51,79 @@ const PILLARS = [
 export default function AboutClinicShowcase() {
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+
+  const [sectionData, setSectionData] = useState({
+    title: "About Skinfinity Derma Aesthetic Clinics",
+    subtitle: "Where Clinical Expertise Meets Patient Luxury",
+    badgeText: "Complete Medical Infrastructure",
+    description: "At Skinfinity Derma, we believe patient outcomes begin with medical integrity and immaculate hygiene. From individual diagnosis chambers to sterile procedure operatories, every aspect of our clinic is engineered to deliver safe, predictable, and life-changing skin and hair transformations.",
+    mediaUrl: "/images/custom/clinic-reception.jpg",
+    mediaAlt: "Skinfinity Derma Luxury Clinic Reception — Noida & Gurgaon",
+    buttonText: "Book Clinic Consultation",
+    buttonUrl: "/contact-us#appointment_form",
+    secondaryButtonText: "Explore Full Facilities",
+    secondaryButtonUrl: "/about-clinic",
+  });
+
+  const [stats, setStats] = useState(DEFAULT_STATS);
+  const [pillars, setPillars] = useState(DEFAULT_PILLARS);
+
+  useEffect(() => {
+    let active = true;
+    getHomepageData().then((hp) => {
+      if (!active || !hp?.aboutClinic) return;
+      const sec = hp.aboutClinic.section;
+      if (sec) {
+        setSectionData((prev) => ({
+          ...prev,
+          title: sec.title || prev.title,
+          subtitle: sec.subtitle || prev.subtitle,
+          badgeText: sec.badgeText || prev.badgeText,
+          description: sec.description || prev.description,
+          mediaUrl: sec.mediaUrl || prev.mediaUrl,
+          mediaAlt: sec.mediaAlt || prev.mediaAlt,
+          buttonText: sec.buttonText || prev.buttonText,
+          buttonUrl: sec.buttonUrl || prev.buttonUrl,
+          secondaryButtonText: sec.secondaryButtonText || prev.secondaryButtonText,
+          secondaryButtonUrl: sec.secondaryButtonUrl || prev.secondaryButtonUrl,
+        }));
+      }
+
+      if (hp.aboutClinic.stats && hp.aboutClinic.stats.length > 0) {
+        setStats(
+          hp.aboutClinic.stats.map((s) => ({
+            value: s.statValue || s.title || "",
+            label: s.statLabel || s.subtitle || "",
+          }))
+        );
+      }
+
+      if (hp.aboutClinic.pillars && hp.aboutClinic.pillars.length > 0) {
+        const pillarStyles = [
+          { icon: FlaskConical, color: "bg-amber-50 text-amber-700 border-amber-200", iconBg: "bg-amber-100" },
+          { icon: Pill, color: "bg-teal-50 text-teal-700 border-teal-200", iconBg: "bg-teal-100" },
+          { icon: Microscope, color: "bg-violet-50 text-violet-700 border-violet-200", iconBg: "bg-violet-100" },
+        ];
+
+        setPillars(
+          hp.aboutClinic.pillars.map((p, idx) => {
+            const style = pillarStyles[idx % pillarStyles.length];
+            return {
+              icon: style.icon,
+              color: style.color,
+              iconBg: style.iconBg,
+              title: p.title,
+              desc: p.description || p.subtitle || "",
+            };
+          })
+        );
+      }
+    }).catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -79,10 +153,17 @@ export default function AboutClinicShowcase() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 border border-brand-200 text-brand-700 text-[11px] font-bold uppercase tracking-widest mb-4">
             <Building className="w-3.5 h-3.5" />
-            <span>Complete Medical Infrastructure</span>
+            <span>{sectionData.badgeText || "Complete Medical Infrastructure"}</span>
           </div>
           <h2 className="text-2xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-slate-900 font-serif lg:whitespace-nowrap">
-            About Skinfinity Derma <span className="text-brand-700">Aesthetic Clinics</span>
+            {sectionData.title.includes("Aesthetic Clinics") ? (
+              <>
+                {sectionData.title.replace("Aesthetic Clinics", "").trim()}{" "}
+                <span className="text-brand-700">Aesthetic Clinics</span>
+              </>
+            ) : (
+              sectionData.title
+            )}
           </h2>
         </div>
 
@@ -98,8 +179,8 @@ export default function AboutClinicShowcase() {
             {/* Main clinic image — fills column height matching right content */}
             <div className="relative rounded-3xl overflow-hidden shadow-2xl flex-1 min-h-[300px] sm:min-h-[340px] lg:min-h-0 bg-slate-100 group border border-white">
               <Image
-                src="/images/custom/clinic-reception.jpg"
-                alt="Skinfinity Derma Luxury Clinic Reception — Noida & Gurgaon"
+                src={sectionData.mediaUrl || "/images/custom/clinic-reception.jpg"}
+                alt={sectionData.mediaAlt || "Skinfinity Derma Luxury Clinic Reception — Noida & Gurgaon"}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                 priority
@@ -133,7 +214,7 @@ export default function AboutClinicShowcase() {
 
             {/* Stats row */}
             <div className="grid grid-cols-4 gap-3 mt-4">
-              {STATS.map((s) => (
+              {stats.map((s) => (
                 <div
                   key={s.label}
                   className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm text-center hover:shadow-md transition-shadow"
@@ -173,21 +254,28 @@ export default function AboutClinicShowcase() {
                 Founded by Dr. Ipshita Johri
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif leading-snug">
-                Where Clinical Expertise{" "}
-                <span className="text-brand-700">Meets Patient Luxury</span>
+                {sectionData.subtitle?.includes("Meets Patient Luxury") ? (
+                  <>
+                    {sectionData.subtitle.replace("Meets Patient Luxury", "").trim()}{" "}
+                    <span className="text-brand-700">Meets Patient Luxury</span>
+                  </>
+                ) : (
+                  sectionData.subtitle || (
+                    <>
+                      Where Clinical Expertise{" "}
+                      <span className="text-brand-700">Meets Patient Luxury</span>
+                    </>
+                  )
+                )}
               </h3>
               <p className="text-sm text-slate-600 leading-relaxed">
-                At Skinfinity Derma, we believe patient outcomes begin with medical
-                integrity and immaculate hygiene. From individual diagnosis chambers
-                to sterile procedure operatories, every aspect of our clinic is
-                engineered to deliver safe, predictable, and life-changing skin and
-                hair transformations.
+                {sectionData.description}
               </p>
             </div>
 
             {/* Medical Pillars */}
             <div className="space-y-3">
-              {PILLARS.map(({ icon: Icon, color, iconBg, title, desc }) => (
+              {pillars.map(({ icon: Icon, color, iconBg, title, desc }) => (
                 <div
                   key={title}
                   className={`flex items-start gap-4 p-4 rounded-2xl border bg-white hover:shadow-md transition-all duration-300 ${color}`}
@@ -206,17 +294,17 @@ export default function AboutClinicShowcase() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 pt-1">
               <Link
-                href="/contact-us#appointment_form"
+                href={sectionData.buttonUrl || "/contact-us#appointment_form"}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold text-white bg-brand-700 hover:bg-brand-800 shadow-lg hover:shadow-brand-700/30 transition-all duration-300"
               >
                 <Calendar className="w-4 h-4" />
-                Book Clinic Consultation
+                {sectionData.buttonText || "Book Clinic Consultation"}
               </Link>
               <Link
-                href="/about-clinic"
+                href={sectionData.secondaryButtonUrl || "/about-clinic"}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
               >
-                Explore Full Facilities
+                {sectionData.secondaryButtonText || "Explore Full Facilities"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

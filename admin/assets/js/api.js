@@ -168,6 +168,9 @@
     toggleBannerStatus: function (id) {
       return this.patch('/banners/' + id + '/toggle-status');
     },
+    reorderBanners: function (orderList) {
+      return this.post('/banners/reorder', { orderList: orderList });
+    },
     deleteBanner: function (id) {
       return this.delete('/banners/' + id);
     },
@@ -358,11 +361,23 @@
     getAppointments: function (params) {
       return this.get('/appointments', params);
     },
+    getAppointmentsCalendar: function (params) {
+      return this.get('/appointments/calendar', params);
+    },
     getAppointment: function (id) {
       return this.get('/appointments/' + id);
     },
+    getSlots: function (params) {
+      return this.get('/public/appointments/slots', params);
+    },
+    createAppointment: function (data) {
+      return this.post('/appointments', data);
+    },
     updateAppointment: function (id, data) {
       return this.put('/appointments/' + id, data);
+    },
+    rescheduleAppointment: function (id, data) {
+      return this.put('/appointments/' + id + '/reschedule', data);
     },
     updateAppointmentStatus: function (id, status, notes) {
       return this.patch('/appointments/' + id + '/status', { status, notes });
@@ -371,15 +386,114 @@
       return this.delete('/appointments/' + id);
     },
 
-    // Enquiries
+    // Patients
+    getPatients: function (params) {
+      return this.get('/patients', params);
+    },
+    getPatient: function (id) {
+      return this.get('/patients/' + id);
+    },
+    createPatient: function (data) {
+      return this.post('/patients', data);
+    },
+    updatePatient: function (id, data) {
+      return this.put('/patients/' + id, data);
+    },
+    deletePatient: function (id) {
+      return this.delete('/patients/' + id);
+    },
+
+    // Enquiries & CRM
     getEnquiries: function (params) {
       return this.get('/enquiries', params);
     },
-    updateEnquiryStatus: function (id, status, note) {
-      return this.patch('/enquiries/' + id + '/status', { status, note });
+    createEnquiry: function (data) {
+      return this.post('/enquiries', data);
+    },
+    updateEnquiryStatus: function (id, status, note, followUpAt) {
+      return this.patch('/enquiries/' + id + '/status', { status, note, followUpAt });
+    },
+    assignEnquiry: function (id, assignedTo) {
+      return this.patch('/enquiries/' + id + '/assign', { assignedTo });
+    },
+    getEnquiryNotes: function (id) {
+      return this.get('/enquiries/' + id + '/notes');
+    },
+    addEnquiryNote: function (id, note) {
+      return this.post('/enquiries/' + id + '/notes', { note });
     },
     deleteEnquiry: function (id) {
       return this.delete('/enquiries/' + id);
+    },
+
+    // Roles & Permissions Matrix
+    getRolesList: function () {
+      return this.get('/roles');
+    },
+    getRole: function (id) {
+      return this.get('/roles/' + id);
+    },
+    createRole: function (data) {
+      return this.post('/roles', data);
+    },
+    updateRole: function (id, data) {
+      return this.put('/roles/' + id, data);
+    },
+    deleteRole: function (id) {
+      return this.delete('/roles/' + id);
+    },
+    getPermissionsList: function () {
+      return this.get('/roles/permissions');
+    },
+
+    // Clinical Blogs & Articles
+    getBlogs: function (params) {
+      return this.get('/blogs', params);
+    },
+    getBlog: function (id) {
+      return this.get('/blogs/' + id);
+    },
+    createBlog: function (data) {
+      return this.post('/blogs', data);
+    },
+    updateBlog: function (id, data) {
+      return this.put('/blogs/' + id, data);
+    },
+    deleteBlog: function (id) {
+      return this.delete('/blogs/' + id);
+    },
+
+    // Media Manager
+    getMediaList: function (params) {
+      return this.get('/media', params);
+    },
+    uploadMediaFile: function (file, altText) {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (altText) formData.append('altText', altText);
+      return this.request({
+        url: '/media/upload',
+        method: 'POST',
+        data: formData,
+        contentType: false
+      });
+    },
+    updateMediaMeta: function (id, data) {
+      return this.put('/media/' + id, data);
+    },
+    deleteMediaFile: function (id) {
+      return this.delete('/media/' + id);
+    },
+
+    // Notifications Center
+    getNotifications: function () {
+      return this.get('/notifications');
+    },
+    markNotificationRead: function (id) {
+      return this.patch('/notifications/' + id + '/read');
+    },
+    markAllNotificationsRead: function () {
+      return this.post('/notifications/mark-all-read');
     },
 
     // Coupons
@@ -412,6 +526,62 @@
     },
     deleteMembership: function (id) {
       return this.delete('/memberships/' + id);
+    },
+
+    // Homepage Section CMS
+    getHomepageSections: function () {
+      return this.get('/homepage');
+    },
+    updateHomepageSection: function (key, data) {
+      return this.put('/homepage/' + key, data);
+    },
+    addHomepageItem: function (key, data) {
+      return this.post('/homepage/' + key + '/items', data);
+    },
+    deleteHomepageItem: function (id) {
+      return this.delete('/homepage/items/' + id);
+    },
+
+    // Services
+    getServicesList: function () {
+      return this.get('/services');
+    },
+    createService: function (data) {
+      return this.post('/services', data);
+    },
+    updateService: function (id, data) {
+      return this.put('/services/' + id, data);
+    },
+    deleteService: function (id) {
+      return this.delete('/services/' + id);
+    },
+
+    // Locations / Clinics
+    getLocationsList: function () {
+      return this.get('/locations');
+    },
+    createLocation: function (data) {
+      return this.post('/locations', data);
+    },
+    updateLocation: function (id, data) {
+      return this.put('/locations/' + id, data);
+    },
+    deleteLocation: function (id) {
+      return this.delete('/locations/' + id);
+    },
+
+    // Dynamic Pages
+    getPagesList: function () {
+      return this.get('/pages');
+    },
+    createPage: function (data) {
+      return this.post('/pages', data);
+    },
+    updatePage: function (id, data) {
+      return this.put('/pages/' + id, data);
+    },
+    deletePage: function (id) {
+      return this.delete('/pages/' + id);
     }
   };
 

@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { getBanners } from "@/lib/api";
 import HeroBannerCarousel from "@/components/home/HeroBannerCarousel";
 import SkuCarouselSection from "@/components/tools/SkuCarouselSection";
 import InteractiveToolsShowcase from "@/components/tools/InteractiveToolsShowcase";
@@ -27,11 +28,15 @@ function SectionDivider() {
   );
 }
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const banners = await getBanners();
+
   return (
     <div className="flex flex-col bg-white">
       {/* 1. Hero Team Banner */}
-      <HeroBannerCarousel />
+      <HeroBannerCarousel initialBanners={banners} />
 
       {/* 2. About Skinfinity Derma Luxury Clinics */}
       <AboutClinicShowcase />

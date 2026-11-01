@@ -30,6 +30,7 @@
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
           <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
           <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
           <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
         </ul>
@@ -37,15 +38,21 @@
         <div class="sidebar-section-title">Catalog & Doctors</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
           <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
           <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-house-gear-fill text-success"></i><span>Homepage CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link active"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
           <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
           <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
           <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
@@ -54,7 +61,8 @@
 
         <div class="sidebar-section-title">Administration & RBAC</div>
         <ul class="sidebar-nav">
-          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff & Roles (RBAC)</span></a></li>
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
           <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
           <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
         </ul>
@@ -114,27 +122,20 @@
         <div class="skin-card mb-4">
           <div class="skin-card-body py-3">
             <div class="row g-3 align-items-center">
-              <div class="col-md-5">
-                <label class="form-label small text-muted mb-1">Filter by Placement Location</label>
-                <select id="filterBannerLocation" class="form-select form-select-sm">
-                  <option value="">All Locations</option>
-                  <option value="Homepage Hero">Homepage Hero</option>
-                  <option value="Hair Care Page">Hair Care Page</option>
-                  <option value="Skin Care Page">Skin Care Page</option>
-                  <option value="Special Offers Banner">Special Offers Banner</option>
-                </select>
-              </div>
-              <div class="col-md-5">
-                <label class="form-label small text-muted mb-1">Status</label>
+              <div class="col-md-6">
+                <label class="form-label small text-muted mb-1">Filter by Status</label>
                 <select id="filterBannerStatus" class="form-select form-select-sm">
                   <option value="">All Banners</option>
                   <option value="active">Active Only</option>
-                  <option value="inactive">Inactive</option>
+                  <option value="inactive">Inactive Only</option>
                 </select>
               </div>
-              <div class="col-md-2 d-flex align-items-end">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="btnResetBannerFilters">
+              <div class="col-md-6 d-flex align-items-end justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetBannerFilters">
                   <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                </button>
+                <button class="btn btn-sm btn-outline-primary" id="btnReloadBanners">
+                  <i class="bi bi-arrow-clockwise me-1"></i> Refresh Banners
                 </button>
               </div>
             </div>
@@ -148,22 +149,22 @@
               <i class="bi bi-images text-secondary"></i>
               <span>All Website Banners</span>
             </div>
-            <button class="btn btn-sm btn-outline-secondary" id="btnReloadBanners">
-              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-            </button>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-light text-muted border small d-inline-flex align-items-center">
+                <i class="bi bi-grip-vertical me-1 text-primary"></i> Drag rows to reorder
+              </span>
+            </div>
           </div>
           <div class="skin-card-body p-0">
             <div class="table-responsive p-3">
               <table id="bannersTable" class="table table-hover align-middle w-100">
                 <thead>
                   <tr>
-                    <th style="width: 50px;">Order</th>
-                    <th style="width: 110px;">Preview</th>
-                    <th>Banner Title & Subtitle</th>
-                    <th>Location</th>
-                    <th>Call to Action</th>
-                    <th>Status</th>
-                    <th style="width: 120px;" class="text-end">Actions</th>
+                    <th style="width: 80px;">Order</th>
+                    <th style="width: 260px;">Desktop Banner Image</th>
+                    <th style="width: 160px;">Mobile Banner Image</th>
+                    <th style="width: 130px;" class="text-center">Status</th>
+                    <th style="width: 130px;" class="text-end">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="bannersTableBody">
@@ -192,96 +193,79 @@
         </div>
         <form id="bannerForm" novalidate>
           <input type="hidden" id="bannerId" name="id">
+          <input type="hidden" id="bannerDesktopImageUrl" name="desktopImage">
+          <input type="hidden" id="bannerMobileImageUrl" name="mobileImage">
           <div class="modal-body p-4">
-            <div class="mb-3">
-              <label for="bannerTitle" class="form-label">Banner Main Title <span class="required">*</span></label>
-              <input type="text" class="form-control" id="bannerTitle" placeholder="e.g. Advanced Clinical Dermatology & Aesthetic Care" required>
-              <div class="invalid-feedback">Banner title is required.</div>
+            
+            <div class="alert alert-light border small text-muted mb-4 d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle text-primary fs-5"></i>
+              <span>Upload desktop and mobile banner creatives. Active status and display sequence are managed directly on the table view.</span>
             </div>
 
-            <div class="mb-3">
-              <label for="bannerSubtitle" class="form-label">Subtitle / Promotional Description</label>
-              <textarea class="form-control" id="bannerSubtitle" rows="2" placeholder="Brief supporting message or clinic announcement..."></textarea>
-            </div>
-
-            <div class="row g-3 mb-3">
+            <div class="row g-4">
               <!-- Desktop Image Upload -->
-              <div class="col-md-6">
-                <label class="form-label">Desktop Banner Image <span class="required">*</span></label>
-                <input type="hidden" id="bannerDesktopImageUrl">
+              <div class="col-md-7">
+                <label class="form-label fw-bold small text-dark d-flex justify-content-between align-items-center">
+                  <span>Desktop Banner Image <span class="text-danger">*</span></span>
+                  <span class="badge bg-light text-muted border fw-normal">3:1 Ultra-Wide</span>
+                </label>
+                
+                <!-- Upload Dropzone (shown if no image) -->
                 <div class="image-upload-dropzone mb-2" id="bannerDesktopDropzone">
-                  <i class="bi bi-display dropzone-icon mb-1"></i>
-                  <div class="fw-semibold small">Desktop Image (16:9 / 21:9)</div>
-                  <div class="text-muted small">JPG, PNG, WEBP (Max 5MB)</div>
+                  <i class="bi bi-cloud-arrow-up dropzone-icon mb-2 text-primary fs-1"></i>
+                  <div class="fw-semibold">Click to upload Desktop Banner</div>
+                  <div class="text-muted small">Recommended size: 1920 &times; 640 px (PNG, JPG, WEBP)</div>
                   <input type="file" id="bannerDesktopFile" class="d-none" accept="image/*">
                 </div>
-                <div class="image-preview-wrapper d-none w-100 text-center" id="bannerDesktopPreviewWrap">
-                  <img id="bannerDesktopPreviewImg" src="" alt="Desktop preview" style="max-height: 140px; border-radius: 6px;">
-                  <button type="button" class="image-preview-remove" id="btnRemoveBannerDesktopImg"><i class="bi bi-x"></i></button>
+
+                <!-- Preview Card (shown if image exists) -->
+                <div class="image-preview-wrapper d-none w-100 position-relative border rounded-3 p-2 bg-light shadow-sm" id="bannerDesktopPreviewWrap">
+                  <div class="position-relative overflow-hidden rounded-2 bg-dark" style="aspect-ratio: 3/1; width: 100%;">
+                    <img id="bannerDesktopPreviewImg" src="" alt="Desktop preview" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                    <span class="small text-muted text-truncate" id="bannerDesktopFileName" style="max-width: 250px;">Desktop Creative</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" id="btnRemoveBannerDesktopImg">
+                      <i class="bi bi-trash3"></i> Change Image
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <!-- Mobile Banner Image Upload (Optional) -->
-              <div class="col-md-6">
-                <label class="form-label">Mobile Banner Image (Optional)</label>
-                <input type="hidden" id="bannerMobileImageUrl">
+              <div class="col-md-5">
+                <label class="form-label fw-bold small text-dark d-flex justify-content-between align-items-center">
+                  <span>Mobile Banner <span class="text-muted fw-normal">(Optional)</span></span>
+                  <span class="badge bg-light text-muted border fw-normal">3:4 Portrait</span>
+                </label>
+                
+                <!-- Upload Dropzone (shown if no image) -->
                 <div class="image-upload-dropzone mb-2" id="bannerMobileDropzone">
-                  <i class="bi bi-phone dropzone-icon mb-1"></i>
-                  <div class="fw-semibold small">Mobile Image (Portrait / 4:5)</div>
-                  <div class="text-muted small">Optimized for smartphones</div>
+                  <i class="bi bi-phone dropzone-icon mb-2 text-primary fs-1"></i>
+                  <div class="fw-semibold">Click to upload Mobile Banner</div>
+                  <div class="text-muted small">Recommended size: 750 &times; 1000 px</div>
                   <input type="file" id="bannerMobileFile" class="d-none" accept="image/*">
                 </div>
-                <div class="image-preview-wrapper d-none w-100 text-center" id="bannerMobilePreviewWrap">
-                  <img id="bannerMobilePreviewImg" src="" alt="Mobile preview" style="max-height: 140px; border-radius: 6px;">
-                  <button type="button" class="image-preview-remove" id="btnRemoveBannerMobileImg"><i class="bi bi-x"></i></button>
+
+                <!-- Preview Card (shown if image exists) -->
+                <div class="image-preview-wrapper d-none w-100 position-relative border rounded-3 p-2 bg-light shadow-sm" id="bannerMobilePreviewWrap">
+                  <div class="position-relative overflow-hidden rounded-2 bg-dark mx-auto" style="aspect-ratio: 3/4; max-height: 180px; width: auto;">
+                    <img id="bannerMobilePreviewImg" src="" alt="Mobile preview" style="height: 100%; width: auto; object-fit: cover;">
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                    <span class="small text-muted text-truncate" id="bannerMobileFileName" style="max-width: 150px;">Mobile Creative</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" id="btnRemoveBannerMobileImg">
+                      <i class="bi bi-trash3"></i> Change Image
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="mb-3">
-              <label for="bannerAltText" class="form-label">Image Alt Text (SEO & Accessibility)</label>
-              <input type="text" class="form-control" id="bannerAltText" placeholder="Descriptive text for visually impaired visitors and search crawlers">
-            </div>
-
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label for="bannerButtonText" class="form-label">Button Call to Action Text</label>
-                <input type="text" class="form-control" id="bannerButtonText" placeholder="e.g. Book Consultation">
-              </div>
-
-              <div class="col-md-6">
-                <label for="bannerButtonUrl" class="form-label">Button Target URL</label>
-                <input type="text" class="form-control" id="bannerButtonUrl" placeholder="e.g. /book-consultation or /treatments/hydrafacial">
-              </div>
-            </div>
-
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="bannerLocation" class="form-label">Display Location</label>
-                <select id="bannerLocation" class="form-select">
-                  <option value="Homepage Hero">Homepage Hero</option>
-                  <option value="Hair Care Page">Hair Care Page</option>
-                  <option value="Skin Care Page">Skin Care Page</option>
-                  <option value="Special Offers Banner">Special Offers Banner</option>
-                </select>
-              </div>
-
-              <div class="col-md-4">
-                <label for="bannerOrder" class="form-label">Slide Order</label>
-                <input type="number" class="form-control" id="bannerOrder" min="1" value="1">
-              </div>
-
-              <div class="col-md-4 d-flex align-items-end">
-                <div class="form-check form-switch mb-2">
-                  <input class="form-check-input" type="checkbox" id="bannerIsActive" checked>
-                  <label class="form-check-label fw-semibold" for="bannerIsActive">Active on Website</label>
-                </div>
-              </div>
-            </div>
           </div>
           <div class="modal-footer bg-light">
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveBanner">
+            <button type="submit" class="btn btn-primary px-4" id="btnSaveBanner">
               <i class="bi bi-check-lg me-1"></i> Save Banner
             </button>
           </div>

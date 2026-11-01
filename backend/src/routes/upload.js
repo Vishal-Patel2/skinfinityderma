@@ -47,20 +47,21 @@ const upload = multer({
 router.post(
   '/',
   requirePermission('media.create'),
-  upload.single('file'),
+  upload.any(),
   asyncHandler(async (req, res) => {
-    if (!req.file) throw new HttpError(400, 'No file uploaded');
+    const file = req.files && req.files.length ? req.files[0] : req.file;
+    if (!file) throw new HttpError(400, 'No file uploaded');
 
-    const relativeUrl = `/uploads/${req.file.filename}`;
+    const relativeUrl = `/uploads/${file.filename}`;
     const absoluteUrl = `${config.publicBaseUrl}${relativeUrl}`;
 
     res.json({
       success: true,
       url: relativeUrl,
       absoluteUrl,
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size,
+      filename: file.filename,
+      originalName: file.originalname,
+      size: file.size,
     });
   })
 );

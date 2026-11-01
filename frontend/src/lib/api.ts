@@ -25,6 +25,9 @@ import type {
   SitemapEntry,
   SiteData,
   SlotsResponse,
+  HomepageData,
+  DynamicPage,
+  DedicatedService,
 } from "./types";
 
 const DEFAULT_API = "http://localhost:4000/api/public";
@@ -93,7 +96,9 @@ async function request<T>(
       body: method === "POST" ? JSON.stringify(init.body ?? {}) : undefined,
       signal: controller.signal,
       ...(method === "GET"
-        ? { next: { revalidate: init.revalidate ?? REVALIDATE_SECONDS } }
+        ? (init.revalidate === 0
+            ? { cache: "no-store" as RequestCache }
+            : { next: { revalidate: init.revalidate ?? REVALIDATE_SECONDS } })
         : { cache: "no-store" as RequestCache }),
     });
     if (!res.ok) return null;
@@ -186,8 +191,8 @@ export async function getSite(): Promise<SiteData | null> {
   return r ? normalizeSite(r.data) : null;
 }
 
-export async function getBanners(location = "Homepage Hero"): Promise<ApiBanner[] | null> {
-  const r = await request<ApiBanner[]>(`/banners${qs({ location })}`);
+export async function getBanners(location?: string): Promise<ApiBanner[] | null> {
+  const r = await request<ApiBanner[]>(`/banners`, { revalidate: 0 });
   return r && Array.isArray(r.data) ? r.data : null;
 }
 
@@ -268,6 +273,36 @@ export async function getSitemap(): Promise<SitemapEntry[] | null> {
 export async function getGallery(): Promise<any[] | null> {
   const r = await request<any[]>("/gallery");
   return r && Array.isArray(r.data) ? r.data : null;
+}
+
+export async function getHomepageData(): Promise<HomepageData | null> {
+  const r = await request<HomepageData>("/homepage");
+  return r && r.data ? r.data : null;
+}
+
+export async function getLocations(): Promise<ApiClinic[] | null> {
+  const r = await request<ApiClinic[]>("/locations");
+  return r && Array.isArray(r.data) ? r.data.map(normalizeClinic) : null;
+}
+
+export async function getLocation(slug: string): Promise<any | null> {
+  const r = await request<any>(`/locations/${encodeURIComponent(slug)}`);
+  return r && r.data ? r.data : null;
+}
+
+export async function getDedicatedServices(): Promise<DedicatedService[] | null> {
+  const r = await request<DedicatedService[]>("/services");
+  return r && Array.isArray(r.data) ? r.data : null;
+}
+
+export async function getDedicatedService(slug: string): Promise<DedicatedService | null> {
+  const r = await request<DedicatedService>(`/services/${encodeURIComponent(slug)}`);
+  return r && r.data ? r.data : null;
+}
+
+export async function getDynamicPage(slug: string): Promise<DynamicPage | null> {
+  const r = await request<DynamicPage>(`/pages/${encodeURIComponent(slug)}`);
+  return r && r.data ? r.data : null;
 }
 
 /* ------------------------------------------------------------------------- */

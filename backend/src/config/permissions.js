@@ -1,38 +1,40 @@
 /**
  * RBAC catalog — the single source of truth for permissions and the default role presets.
- * Permission codes are `<module>.<action>`. The seeder syncs this catalog into the
- * `permissions` / `roles` / `role_permissions` tables; super admins can then fine-tune roles
- * from the dashboard (Access Control → Roles & Permissions).
+ * Permission codes are `<module>.<action>`. The seeder and permissions syncer sync this catalog into the
+ * `sid_permissions` / `sid_roles` / `sid_role_permissions` tables.
  */
 
 const CRUD = ['view', 'create', 'edit', 'delete'];
 
 const MODULES = [
-  { module: 'dashboard', label: 'Dashboard', actions: ['view'] },
-  { module: 'appointments', label: 'Appointments', actions: CRUD },
-  { module: 'enquiries', label: 'Enquiries & Leads', actions: CRUD },
-  { module: 'treatments', label: 'Treatments', actions: CRUD },
+  { module: 'dashboard', label: 'Dashboard Overview', actions: ['view'] },
+  { module: 'appointments', label: 'Appointments & Scheduling', actions: ['view', 'create', 'edit', 'delete', 'export'] },
+  { module: 'patients', label: 'Patient Management', actions: CRUD },
+  { module: 'enquiries', label: 'CRM & Lead Management', actions: ['view', 'create', 'edit', 'delete', 'assign'] },
+  { module: 'treatments', label: 'Treatments Catalog', actions: ['view', 'create', 'edit', 'delete', 'publish'] },
   { module: 'categories', label: 'Treatment Categories', actions: CRUD },
-  { module: 'concerns', label: 'Skin / Hair Concerns', actions: CRUD },
-  { module: 'doctors', label: 'Doctors', actions: CRUD },
+  { module: 'concerns', label: 'Skin & Hair Concerns', actions: CRUD },
+  { module: 'doctors', label: 'Medical Board Doctors', actions: CRUD },
   { module: 'clinics', label: 'Clinics & Branches', actions: CRUD },
-  { module: 'banners', label: 'Hero Banners', actions: CRUD },
-  { module: 'offers', label: 'Offers', actions: CRUD },
-  { module: 'coupons', label: 'Coupons', actions: CRUD },
-  { module: 'reviews', label: 'Patient Reviews', actions: CRUD },
-  { module: 'videos', label: 'Videos & Stories', actions: CRUD },
-  { module: 'before_after', label: 'Before & After Results', actions: CRUD },
-  { module: 'gallery', label: 'Gallery', actions: CRUD },
-  { module: 'press', label: 'Press & Media', actions: CRUD },
-  { module: 'faqs', label: 'FAQs', actions: CRUD },
-  { module: 'menus', label: 'Menus (Header & Footer)', actions: CRUD },
-  { module: 'content_blocks', label: 'Website Content Blocks', actions: CRUD },
-  { module: 'seo', label: 'SEO Manager', actions: CRUD },
-  { module: 'media', label: 'Media Library', actions: ['view', 'create', 'delete'] },
-  { module: 'settings', label: 'Site Settings', actions: ['view', 'edit', 'scripts'] },
-  { module: 'users', label: 'Staff Users', actions: CRUD },
-  { module: 'roles', label: 'Roles & Permissions', actions: CRUD },
-  { module: 'audit_logs', label: 'Audit Logs', actions: ['view'] },
+  { module: 'banners', label: 'Hero & Promo Banners', actions: CRUD },
+  { module: 'offers', label: 'Seasonal Offers', actions: CRUD },
+  { module: 'coupons', label: 'Promo Codes & Discounts', actions: CRUD },
+  { module: 'blogs', label: 'Clinical Articles & Blogs', actions: ['view', 'create', 'edit', 'delete', 'publish'] },
+  { module: 'reviews', label: 'Verified Google & Patient Reviews', actions: CRUD },
+  { module: 'videos', label: 'Video Testimonials & Shorts', actions: CRUD },
+  { module: 'before_after', label: 'Clinical Transformations', actions: CRUD },
+  { module: 'gallery', label: 'Clinic Photo Gallery', actions: CRUD },
+  { module: 'press', label: 'Press & Media Mentions', actions: CRUD },
+  { module: 'faqs', label: 'Clinical FAQs', actions: CRUD },
+  { module: 'menus', label: 'Header & Footer Menus', actions: CRUD },
+  { module: 'content_blocks', label: 'Homepage & Website CMS Blocks', actions: CRUD },
+  { module: 'seo', label: 'SEO Metadata & Sitemap', actions: CRUD },
+  { module: 'media', label: 'Centralized Media Library', actions: ['view', 'create', 'delete', 'manage'] },
+  { module: 'notifications', label: 'Notification Center', actions: ['view', 'manage'] },
+  { module: 'settings', label: 'Clinic & System Settings', actions: ['view', 'edit', 'scripts'] },
+  { module: 'users', label: 'Staff Accounts & RBAC', actions: CRUD },
+  { module: 'roles', label: 'Roles & Permission Matrix', actions: CRUD },
+  { module: 'audit_logs', label: 'Operational Audit Logs', actions: ['view'] },
   { module: 'system', label: 'System & Developer Tools', actions: ['view', 'manage'] },
 ];
 
@@ -41,8 +43,11 @@ const ACTION_LABELS = {
   create: 'Create',
   edit: 'Edit',
   delete: 'Delete',
-  scripts: 'Manage tracking / custom scripts',
-  manage: 'Manage',
+  publish: 'Publish / Unpublish',
+  export: 'Export Data',
+  assign: 'Assign Lead',
+  scripts: 'Manage Custom Tracking Scripts',
+  manage: 'Full Management',
 };
 
 const ALL_PERMISSIONS = MODULES.flatMap((m) =>
@@ -65,18 +70,27 @@ const full = (...modules) =>
     return m ? m.actions.map((a) => `${mod}.${a}`) : [];
   });
 
-/** Default roles. `super_admin` always bypasses permission checks. */
+/**
+ * Default roles:
+ * 1. Super Admin
+ * 2. Admin
+ * 3. Clinic Manager
+ * 4. Doctor
+ * 5. Receptionist
+ * 6. Content Manager
+ * 7. Marketing Manager
+ */
 const ROLE_PRESETS = [
   {
     slug: 'super_admin',
     name: 'Super Admin',
-    description: 'Full, unrestricted access including users, roles and system tools.',
+    description: 'Full unrestricted access to all modules, users, roles, system tools, and settings.',
     permissions: ALL_CODES,
   },
   {
     slug: 'admin',
     name: 'Admin',
-    description: 'Runs the clinic website & operations. Cannot manage roles, system tools or tracking scripts.',
+    description: 'Clinic administration, appointments, patients, catalog, marketing, and operations.',
     permissions: ALL_CODES.filter(
       (c) =>
         !c.startsWith('roles.') &&
@@ -86,67 +100,111 @@ const ROLE_PRESETS = [
     ),
   },
   {
-    slug: 'seo_executive',
-    name: 'SEO Executive',
-    description: 'Owns SEO metadata, sitemap, FAQs and content blocks. Read-only elsewhere.',
+    slug: 'clinic_manager',
+    name: 'Clinic Manager',
+    description: 'Manages daily clinic operations, appointments calendar, patient profiles, doctors roster, and leads.',
     permissions: [
       'dashboard.view',
-      ...full('seo', 'faqs', 'press'),
-      'content_blocks.view',
-      'content_blocks.edit',
-      'media.view',
-      'media.create',
+      ...full('appointments', 'patients', 'enquiries', 'doctors', 'clinics', 'reviews', 'notifications'),
       'treatments.view',
       'categories.view',
       'concerns.view',
-      'doctors.view',
-      'banners.view',
-      'menus.view',
-      'reviews.view',
+      'coupons.view',
+      'offers.view',
+      'media.view',
+      'users.view',
       'settings.view',
     ],
   },
   {
-    slug: 'developer',
-    name: 'Developer',
-    description: 'Technical owner: site settings, tracking scripts, menus, content blocks, system tools.',
+    slug: 'doctor',
+    name: 'Doctor',
+    description: 'Medical board specialist: consultation view, assigned appointments, patient clinical histories, and treatments.',
     permissions: [
       'dashboard.view',
-      ...viewAll('users', 'roles'),
-      'settings.edit',
-      'settings.scripts',
-      ...full('menus', 'content_blocks', 'seo', 'media', 'system'),
-      'audit_logs.view',
-      'users.view',
+      'appointments.view',
+      'appointments.edit',
+      'patients.view',
+      'patients.edit',
+      'treatments.view',
+      'categories.view',
+      'concerns.view',
+      'before_after.view',
+      'reviews.view',
+      'notifications.view',
     ],
   },
   {
-    slug: 'content_manager',
-    name: 'Content Manager',
-    description: 'Manages website content: treatments, doctors, banners, offers, reviews, media.',
+    slug: 'receptionist',
+    name: 'Receptionist',
+    description: 'Front desk reception: booking patient appointments, rescheduling, check-in, intake of calls and leads.',
     permissions: [
       'dashboard.view',
-      'treatments.view', 'treatments.create', 'treatments.edit',
-      ...full('categories', 'concerns', 'banners', 'gallery', 'before_after', 'reviews', 'videos', 'press', 'faqs', 'media'),
-      'doctors.view', 'doctors.create', 'doctors.edit',
-      'offers.view', 'offers.create', 'offers.edit',
-      'coupons.view',
+      'appointments.view',
+      'appointments.create',
+      'appointments.edit',
+      'patients.view',
+      'patients.create',
+      'patients.edit',
+      'enquiries.view',
+      'enquiries.create',
+      'enquiries.edit',
+      'treatments.view',
+      'doctors.view',
       'clinics.view',
-      'seo.view',
+      'coupons.view',
+      'notifications.view',
     ],
   },
   {
     slug: 'front_desk',
     name: 'Front Desk',
-    description: 'Handles appointments and incoming enquiries.',
+    description: 'Front desk reception (alias for receptionist).',
     permissions: [
       'dashboard.view',
-      'appointments.view', 'appointments.create', 'appointments.edit',
-      'enquiries.view', 'enquiries.create', 'enquiries.edit',
-      'coupons.view',
+      'appointments.view',
+      'appointments.create',
+      'appointments.edit',
+      'patients.view',
+      'patients.create',
+      'patients.edit',
+      'enquiries.view',
+      'enquiries.create',
+      'enquiries.edit',
       'treatments.view',
       'doctors.view',
       'clinics.view',
+      'coupons.view',
+      'notifications.view',
+    ],
+  },
+  {
+    slug: 'content_manager',
+    name: 'Content Manager',
+    description: 'Manages website content: treatments, blogs, banners, FAQs, gallery, videos, and SEO blocks.',
+    permissions: [
+      'dashboard.view',
+      ...full('treatments', 'categories', 'concerns', 'blogs', 'banners', 'gallery', 'before_after', 'reviews', 'videos', 'press', 'faqs', 'media', 'seo', 'content_blocks'),
+      'doctors.view',
+      'offers.view',
+      'coupons.view',
+      'menus.view',
+      'settings.view',
+    ],
+  },
+  {
+    slug: 'marketing_manager',
+    name: 'Marketing Manager',
+    description: 'Manages promotional campaigns: coupons, seasonal offers, hero banners, leads pipeline, and patient reviews.',
+    permissions: [
+      'dashboard.view',
+      ...full('coupons', 'offers', 'banners', 'enquiries', 'reviews', 'videos', 'press', 'media'),
+      'treatments.view',
+      'blogs.view',
+      'appointments.view',
+      'appointments.export',
+      'patients.view',
+      'notifications.view',
     ],
   },
 ];

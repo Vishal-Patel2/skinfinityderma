@@ -13,18 +13,69 @@ import {
 } from "lucide-react";
 import { DOCTORS } from "@/data/clinicData";
 import { useAuth } from "@/context/AuthContext";
+import { getDoctors, getHomepageData } from "@/lib/api";
 
 export default function DoctorFounder() {
   const { openAppointmentModal } = useAuth();
-  const founder = DOCTORS[0]; // Dr. Ipshita Johri
-  const teamDoctors = DOCTORS.map((doc) =>
+  const defaultFounder = DOCTORS[0]; // Dr. Ipshita Johri
+  const defaultTeamDoctors = DOCTORS.map((doc) =>
     doc.id === "dr-ipshita-johri"
       ? { ...doc, image: "/images/doctors/dr-ipshita-johri.webp" }
       : doc
   );
 
+  const [founder, setFounder] = useState(defaultFounder);
+  const [teamDoctors, setTeamDoctors] = useState(defaultTeamDoctors);
+  const [founderSection, setFounderSection] = useState({
+    title: "Dr. Ipshita Johri",
+    subtitle: "Founder, Celebrity Dermatologist & Anti-Ageing Expert",
+    badgeText: "Medical Expertise & Leadership",
+    description: "Dr. Ipshita Johri is the visionary founder and medical director of Skinfinity Derma clinics in Noida and Gurgaon. Widely recognized as one of Delhi NCR’s premier dermatologists, she combines rigorous clinical training from Cardiff University, UK with an artistic eye for natural facial aesthetics.",
+    subDescription: "Her signature medical philosophy rests on four core pillars: Accurate Diagnosis, Root-Cause Eradication, Prevention of Recurrence, and Empowered Patient Education. Under her leadership, Skinfinity Derma has treated over 1,00,000 satisfied patients across India and internationally.",
+    qualifications: "MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)",
+    experience: "Over 12 years of specialized aesthetic clinical experience in Delhi NCR",
+  });
+
   const doctorScrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    // Fetch dynamic doctors list
+    getDoctors().then((docs) => {
+      if (active && docs && docs.length > 0) {
+        setTeamDoctors(docs);
+        const founderDoc = docs.find((d) => d.slug?.includes("ipshita") || d.id?.includes("ipshita")) || docs[0];
+        if (founderDoc) {
+          setFounder((prev) => ({
+            ...prev,
+            ...founderDoc,
+            image: founderDoc.image || prev.image,
+          }));
+        }
+      }
+    }).catch(() => {});
+
+    // Fetch dynamic section overrides from homepage CMS
+    getHomepageData().then((hp) => {
+      if (!active || !hp?.doctorFounder) return;
+      const sec = hp.sections?.doctor_founder;
+      if (sec) {
+        setFounderSection((prev) => ({
+          ...prev,
+          title: sec.title || prev.title,
+          subtitle: sec.subtitle || prev.subtitle,
+          badgeText: sec.badgeText || prev.badgeText,
+          description: sec.description || prev.description,
+        }));
+      }
+    }).catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Auto-slide on desktop and mobile carousel
   useEffect(() => {
@@ -107,12 +158,12 @@ export default function DoctorFounder() {
           <div className="lg:col-span-7 space-y-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
-                Medical Expertise &amp; Leadership
+                {founderSection.badgeText || "Medical Expertise & Leadership"}
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 mt-2 font-serif leading-tight">
-                Dr. Ipshita Johri
+                {founder.name || founderSection.title}
                 <span className="block text-gradient-teal text-xl sm:text-2xl font-sans font-bold mt-1">
-                  Founder, Celebrity Dermatologist &amp; Anti-Ageing Expert
+                  {founderSection.subtitle}
                 </span>
               </h2>
             </div>
@@ -120,17 +171,17 @@ export default function DoctorFounder() {
             <div className="p-4 rounded-2xl bg-brand-50/50 border border-brand-100 text-xs sm:text-sm text-brand-900 flex items-center gap-3">
               <GraduationCap className="w-6 h-6 text-brand-700 shrink-0" />
               <div>
-                <span className="font-bold block">MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)</span>
-                <span className="text-slate-600 text-xs">Over 12 years of specialized aesthetic clinical experience in Delhi NCR</span>
+                <span className="font-bold block">{founder.qualifications || founderSection.qualifications}</span>
+                <span className="text-slate-600 text-xs">{founder.experience || founderSection.experience}</span>
               </div>
             </div>
 
             <p className="text-sm text-slate-600 leading-relaxed">
-              Dr. Ipshita Johri is the visionary founder and medical director of Skinfinity Derma clinics in Noida and Gurgaon. Widely recognized as one of Delhi NCR’s premier dermatologists, she combines rigorous clinical training from Cardiff University, UK with an artistic eye for natural facial aesthetics.
+              {founderSection.description}
             </p>
 
             <p className="text-sm text-slate-600 leading-relaxed">
-              Her signature medical philosophy rests on four core pillars: <strong className="text-slate-800 font-semibold">Accurate Diagnosis</strong>, <strong className="text-slate-800 font-semibold">Root-Cause Eradication</strong>, <strong className="text-slate-800 font-semibold">Prevention of Recurrence</strong>, and <strong className="text-slate-800 font-semibold">Empowered Patient Education</strong>. Under her leadership, Skinfinity Derma has treated over 1,00,000 satisfied patients across India and internationally.
+              {founderSection.subDescription}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-medium text-slate-700">

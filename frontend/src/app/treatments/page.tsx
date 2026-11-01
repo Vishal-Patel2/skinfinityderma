@@ -27,6 +27,7 @@ import {
   BODY_AREA_TYPES,
   RichTreatment,
 } from "@/data/treatmentsCatalog";
+import { getTreatments } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -40,6 +41,37 @@ function TreatmentsListingContent() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"popular" | "price-asc" | "price-desc" | "rating">("popular");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [catalogTreatments, setCatalogTreatments] = useState<RichTreatment[]>(RICH_TREATMENTS);
+
+  const availableCategories = useMemo(() => {
+    const list: string[] = ["All Treatments"];
+    const seen = new Set<string>();
+    TREATMENT_CATEGORIES.forEach((c) => {
+      if (c !== "All Treatments") {
+        seen.add(c);
+        list.push(c);
+      }
+    });
+    catalogTreatments.forEach((t) => {
+      if (t.category && !seen.has(t.category)) {
+        seen.add(t.category);
+        list.push(t.category);
+      }
+    });
+    return list;
+  }, [catalogTreatments]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getTreatments().then((data) => {
+      if (isMounted && data && data.length > 0) {
+        setCatalogTreatments(data);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const { items, addItem, updateQuantity, openCart, cartCount } = useCart();
   const { openAppointmentModal, openEmiModal } = useAuth();
@@ -47,7 +79,7 @@ function TreatmentsListingContent() {
   useEffect(() => {
     const catParam = searchParams.get("category");
     const areaParam = searchParams.get("area");
-    if (catParam && TREATMENT_CATEGORIES.includes(catParam as any)) {
+    if (catParam && (TREATMENT_CATEGORIES.includes(catParam as any) || availableCategories.includes(catParam))) {
       setSelectedCategory(catParam);
     } else if (!catParam) {
       setSelectedCategory("All Treatments");
@@ -57,10 +89,10 @@ function TreatmentsListingContent() {
     } else if (!areaParam) {
       setSelectedArea("All Areas");
     }
-  }, [searchParams]);
+  }, [searchParams, availableCategories]);
 
   const filteredTreatments = useMemo(() => {
-    let list = [...RICH_TREATMENTS];
+    let list = [...catalogTreatments];
 
     if (selectedCategory !== "All Treatments") {
       list = list.filter((t) => t.category === selectedCategory);
@@ -284,7 +316,7 @@ function TreatmentsListingContent() {
                 Clinical Category
               </h3>
               <div className="space-y-1.5">
-                {TREATMENT_CATEGORIES.map((cat) => {
+                {availableCategories.map((cat) => {
                   const isSelected = selectedCategory === cat;
                   return (
                     <button

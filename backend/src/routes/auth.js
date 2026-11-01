@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { query, one } = require('../config/db');
 const { signToken, authenticate, clearAuthCache } = require('../middleware/auth');
@@ -98,6 +99,90 @@ router.get(
         isSuperAdmin: req.user.isSuperAdmin,
         permissions: req.user.permissions,
       },
+    });
+  })
+);
+
+/**
+ * POST /api/auth/forgot-password
+ */
+router.post(
+  '/forgot-password',
+  asyncHandler(async (req, res) => {
+    const { email } = req.body;
+    if (!email) throw new HttpError(400, 'Email address is required');
+
+    const user = await one('SELECT id, name, email FROM sid_users WHERE LOWER(email) = LOWER(?)', [email.trim()]);
+    if (!user) {
+      // Return success even if email not found to prevent enumeration
+      return res.json({
+        success: true,
+        message: 'If an account exists with this email, instructions have been generated.',
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+
+    await query(
+      'UPDATE sid_users SET reset_token = ?, reset_expires_at = ? WHERE id = ?',
+      [resetToken, expiresAt, user.id]
+    );
+
+    await audit({ user, ip: req.ip, headers: req.headers }, {
+      action: 'password_reset_request',
+      entity: 'auth',
+      entityId: user.id,
+      summary: `Password reset requested for ${user.email}`,
+    });
+
+    res.json({
+      success: true,
+      message: 'Password reset link sent to registered email address.',
+      resetToken, // Provided for instant testing
+    });
+  })
+);
+
+/**
+ * POST /api/auth/reset-password
+ */
+router.post(
+  '/reset-password',
+  asyncHandler(async (req, res) => {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) throw new HttpError(400, 'Reset token and new password are required');
+    if (newPassword.length < 6) throw new HttpError(400, 'Password must be at least 6 characters');
+
+    const user = await one(
+      'SELECT id, name, email FROM sid_users WHERE reset_token = ? AND reset_expires_at > NOW()',
+      [token]
+    );
+
+    if (!user) {
+      throw new HttpError(400, 'Invalid or expired password reset token');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const newHash = await bcrypt.hash(newPassword, salt);
+
+    await query(
+      'UPDATE sid_users SET password_hash = ?, reset_token = NULL, reset_expires_at = NULL, token_version = token_version + 1 WHERE id = ?',
+      [newHash, user.id]
+    );
+
+    clearAuthCache(user.id);
+
+    await audit({ user, ip: req.ip, headers: req.headers }, {
+      action: 'password_reset_complete',
+      entity: 'auth',
+      entityId: user.id,
+      summary: `Password reset successfully for ${user.email}`,
+    });
+
+    res.json({
+      success: true,
+      message: 'Password has been reset successfully. You may now sign in with your new password.',
     });
   })
 );

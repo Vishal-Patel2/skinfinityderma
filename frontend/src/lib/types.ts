@@ -258,3 +258,85 @@ export interface CouponResult {
   finalAmount?: number;
   message?: string;
 }
+
+export interface HomepageSection {
+  title: string;
+  subtitle?: string | null;
+  badgeText?: string | null;
+  description?: string | null;
+  mediaUrl?: string | null;
+  mediaAlt?: string | null;
+  buttonText?: string | null;
+  buttonUrl?: string | null;
+  secondaryButtonText?: string | null;
+  secondaryButtonUrl?: string | null;
+  extra?: Record<string, any>;
+}
+
+export interface HomepageItem {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  description?: string | null;
+  icon?: string | null;
+  image?: string | null;
+  statValue?: string | null;
+  statLabel?: string | null;
+  tag?: string | null;
+  linkUrl?: string | null;
+  displayOrder?: number;
+}
+
+export interface HomepageData {
+  sections: Record<string, HomepageSection>;
+  trustBadges: HomepageItem[];
+  aboutClinic: {
+    section: HomepageSection;
+    stats: HomepageItem[];
+    pillars: HomepageItem[];
+  };
+  doctorFounder: {
+    founder: any;
+    doctors: any[];
+    awards: HomepageItem[];
+  };
+  diagnosticTools: HomepageSection;
+  franchiseBanner: HomepageSection;
+  clinics: ApiClinic[];
+}
+
+export interface DynamicPage {
+  id: number;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  bannerImage?: string;
+  content?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  sections?: {
+    id: number;
+    title: string;
+    sectionType: string;
+    content?: string;
+    mediaUrl?: string;
+    displayOrder: number;
+  }[];
+}
+
+export interface DedicatedService {
+  id: number;
+  slug: string;
+  title: string;
+  shortDesc?: string;
+  fullDesc?: string;
+  categoryName?: string;
+  bannerImage?: string;
+  icon?: string;
+  priceStarting?: number;
+  benefits?: string[];
+  procedureSteps?: string[];
+  primaryCtaText?: string;
+  primaryCtaUrl?: string;
+}
+

@@ -11,8 +11,13 @@ const { errorHandler, notFound } = require('./middleware/error');
 const publicRoutes = require('./routes/public');
 const authRoutes = require('./routes/auth');
 const usersRoutes = require('./routes/users');
+const rolesRoutes = require('./routes/roles');
 const appointmentsRoutes = require('./routes/appointments');
+const patientsRoutes = require('./routes/patients');
 const enquiriesRoutes = require('./routes/enquiries');
+const blogsRoutes = require('./routes/blogs');
+const mediaRoutes = require('./routes/media');
+const notificationsRoutes = require('./routes/notifications');
 const couponsRoutes = require('./routes/coupons');
 const uploadRoutes = require('./routes/upload');
 const adminCrudRoutes = require('./routes/admin-crud');
@@ -54,6 +59,12 @@ if (!fs.existsSync(config.uploadsDir)) {
 }
 app.use('/uploads', express.static(config.uploadsDir));
 
+// Static frontend public directory for images, banners, icons
+const frontendPublicDir = path.resolve(__dirname, '../../frontend/public');
+if (fs.existsSync(frontendPublicDir)) {
+  app.use(express.static(frontendPublicDir));
+}
+
 // Static Admin Dashboard Panel
 if (fs.existsSync(config.adminDir)) {
   app.use(express.static(config.adminDir));
@@ -73,8 +84,13 @@ app.get('/health', async (req, res) => {
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/roles', rolesRoutes);
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/patients', patientsRoutes);
 app.use('/api/enquiries', enquiriesRoutes);
+app.use('/api/blogs', blogsRoutes);
+app.use('/api/media', mediaRoutes);
+app.use('/api/notifications', notificationsRoutes);
 app.use('/api/coupons', couponsRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api', adminCrudRoutes);

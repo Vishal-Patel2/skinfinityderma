@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { getTreatments } from "@/lib/api";
 
 export default function SkuCarouselSection() {
   const { addItem } = useCart();
@@ -24,7 +25,7 @@ export default function SkuCarouselSection() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
 
-  const categories = [
+  const defaultCategories = [
     "All",
     "Laser Treatments",
     "Skin Treatments",
@@ -34,7 +35,7 @@ export default function SkuCarouselSection() {
   ];
 
   // Clean clinical SKU list using real dermatology photography (no generic AI-looking icon overlays)
-  const skuList = [
+  const defaultSkuList = [
     {
       id: "sku-lhr",
       slug: "laser-hair-reduction-noida",
@@ -196,6 +197,55 @@ export default function SkuCarouselSection() {
       ]
     }
   ];
+
+  const [categories, setCategories] = useState(defaultCategories);
+  const [skuList, setSkuList] = useState(defaultSkuList);
+
+  useEffect(() => {
+    let active = true;
+    getTreatments().then((treatments) => {
+      if (!active || !treatments || treatments.length === 0) return;
+      
+      const mapped = treatments.map((t) => {
+        const p = Number(t.price) || 2999;
+        const emi = t.emiMonths ? Math.round(p / t.emiMonths) : Math.round(p / 6);
+        return {
+          id: String(t.id || t.slug),
+          slug: t.slug,
+          name: t.name,
+          category: t.category || "Skin Treatments",
+          badge: t.isFeatured ? "Featured" : (t.tags?.[0] || "MD Approved"),
+          price: `₹${p.toLocaleString("en-IN")}`,
+          priceSub: "per session",
+          emiText: `₹${emi.toLocaleString("en-IN")}/mo`,
+          rating: Number(t.rating) || 4.9,
+          reviewsCount: Number(t.reviewsCount) || 120,
+          image: t.bannerImage || t.image || "/images/treatments/banner-laser.webp",
+          duration: t.duration || "30-45 Mins",
+          downtime: t.downtime || "Zero Downtime",
+          highlights: (t.cardHighlights && t.cardHighlights.length > 0)
+            ? t.cardHighlights.slice(0, 3)
+            : [
+                "US-FDA Approved Protocol",
+                "By Senior MD Dermatologists",
+                "Personalized Treatment Plan"
+              ]
+        };
+      });
+
+      setSkuList(mapped);
+
+      // Extract unique categories from dynamic treatments
+      const dynCats = Array.from(new Set(mapped.map((m) => m.category).filter(Boolean)));
+      if (dynCats.length > 0) {
+        setCategories(["All", ...dynCats]);
+      }
+    }).catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredSkus = activeCategory === "All"
     ? skuList

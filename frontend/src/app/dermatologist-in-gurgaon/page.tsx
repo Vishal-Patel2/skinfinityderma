@@ -25,8 +25,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function GurgaonPage() {
-  const gurgaonClinic = CLINIC_LOCATIONS[1];
+export default async function GurgaonPage() {
+  let clinicData: any = null;
+  try {
+    const res = await fetch("http://localhost:4000/api/public/locations/gurgaon-golf-course-road", { next: { revalidate: 60 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json?.data) clinicData = json.data;
+    }
+  } catch {}
+
+  const gurgaonClinic = clinicData || CLINIC_LOCATIONS[1];
+  const clinicPhones = Array.isArray(gurgaonClinic.phones) && gurgaonClinic.phones.length > 0
+    ? gurgaonClinic.phones
+    : ["+91 85911 10110", "+91 98104 58900"];
 
   return (
     <div className="bg-white">
@@ -69,7 +81,7 @@ export default function GurgaonPage() {
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4 text-brand-700 shrink-0" />
-                  <span>Call: <a href="tel:+918591110110" className="font-bold text-slate-900 hover:text-brand-700">+91 85911 10110</a> / <a href="tel:+919810458900" className="font-bold text-slate-900 hover:text-brand-700">+91 98104 58900</a></span>
+                  <span>Call: <a href={`tel:${clinicPhones[0]}`} className="font-bold text-slate-900 hover:text-brand-700">{clinicPhones[0]}</a>{clinicPhones[1] && <> / <a href={`tel:${clinicPhones[1]}`} className="font-bold text-slate-900 hover:text-brand-700">{clinicPhones[1]}</a></>}</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-amber-500 shrink-0" />

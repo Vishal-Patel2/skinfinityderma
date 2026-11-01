@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { Newspaper, ChevronLeft, ChevronRight, ExternalLink, PlayCircle, FileText, Stethoscope } from "lucide-react";
 import { MEDIA_PRESS } from "@/data/clinicData";
+import { getPress } from "@/lib/api";
 
 const MEDIA_LOGOS = [
   { name: "Times of India",   src: "/images/media/times-of-india-logo-toi.webp", tag: "National Daily" },
@@ -29,6 +30,19 @@ export default function NewsMediaSection() {
   const cardsScrollRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [pressItems, setPressItems] = useState(MEDIA_PRESS);
+
+  useEffect(() => {
+    let active = true;
+    getPress().then((data) => {
+      if (active && data && data.length > 0) {
+        setPressItems(data);
+      }
+    }).catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (isPaused) return;
@@ -96,7 +110,7 @@ export default function NewsMediaSection() {
           ref={cardsScrollRef}
           className="flex gap-5 overflow-x-auto pb-4 scrollbar-none scroll-smooth snap-x snap-mandatory"
         >
-          {MEDIA_PRESS.map((item, idx) => {
+          {pressItems.map((item, idx) => {
             const isVideo = item.type.toLowerCase().includes("video") || item.type.toLowerCase().includes("tv") || item.type.toLowerCase().includes("interview");
             return (
               <a
