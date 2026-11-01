@@ -24,6 +24,7 @@ import {
   DOCTORS,
   ASSOCIATED_PARTNERS,
 } from "@/data/clinicData";
+import { getDoctors } from "@/lib/api";
 import BrandJourneyRoadmap from "@/components/about/BrandJourneyRoadmap";
 import { useAuth } from "@/context/AuthContext";
 
@@ -183,11 +184,23 @@ export default function AboutClinicInteractiveSections() {
   const doctorScrollRef = useRef<HTMLDivElement>(null);
   const [isDocPaused, setIsDocPaused] = useState(false);
 
-  const specialistDoctors = DOCTORS.map((doc) =>
-    doc.id === "dr-ipshita-johri"
-      ? { ...doc, image: "/images/doctors/dr-ipshita-johri.webp" }
-      : doc
+  const [specialistDoctors, setSpecialistDoctors] = useState(() =>
+    DOCTORS.map((doc) =>
+      doc.id === "dr-ipshita-johri"
+        ? { ...doc, image: "/images/doctors/dr-ipshita-johri.webp" }
+        : doc
+    )
   );
+
+  useEffect(() => {
+    let active = true;
+    getDoctors().then((docs) => {
+      if (active && docs && docs.length > 0) {
+        setSpecialistDoctors(docs);
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     if (isDocPaused) return;
@@ -453,21 +466,20 @@ export default function AboutClinicInteractiveSections() {
               >
                 <div>
                   <Link
-                    href={`/doctors/${doc.id}`}
+                    href={`/doctors/${doc.slug || doc.id}`}
                     className="block relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-5"
                   >
-                    <Image
+                    <img
                       src={doc.image}
                       alt={doc.name}
-                      fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 block"
                     />
                     <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[11px] font-semibold px-2.5 py-1 rounded backdrop-blur-sm">
                       {doc.experience || "MD Dermatologist"}
                     </div>
                   </Link>
 
-                  <Link href={`/doctors/${doc.id}`}>
+                  <Link href={`/doctors/${doc.slug || doc.id}`}>
                     <h4 className="text-lg font-bold text-slate-900 group-hover:text-brand-700 transition-colors font-serif">
                       {doc.name}
                     </h4>
@@ -485,7 +497,7 @@ export default function AboutClinicInteractiveSections() {
 
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-2">
                   <Link
-                    href={`/doctors/${doc.id}`}
+                    href={`/doctors/${doc.slug || doc.id}`}
                     className="flex-1 text-center py-2 px-2.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"
                   >
                     View Profile

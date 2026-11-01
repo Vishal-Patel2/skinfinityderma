@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Treatment Management | Skinfinity Derma Admin</title>
+  <title>Clinical Treatments | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -11,6 +11,49 @@
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    :root {
+      --skin-emerald: #005B41;
+      --skin-emerald-hover: #004531;
+    }
+    .btn-luxury-emerald {
+      background-color: var(--skin-emerald);
+      color: #FFFFFF;
+      font-weight: 600;
+      border: 1px solid var(--skin-emerald);
+      transition: all 0.2s ease;
+    }
+    .btn-luxury-emerald:hover {
+      background-color: var(--skin-emerald-hover);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 91, 65, 0.2);
+    }
+    .treatment-thumb {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .treatment-slug-text {
+      color: #E11D48;
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+    .action-btn-pill {
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      color: #475569;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+    }
+    .action-btn-pill:hover {
+      background: #F8FAFC;
+      color: #0F172A;
+    }
+  </style>
 </head>
 <body>
 
@@ -25,7 +68,7 @@
         </a>
       </div>
 
-            <div class="sidebar-body">
+      <div class="sidebar-body">
         <div class="sidebar-section-title">Core Operations</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
@@ -42,12 +85,11 @@
           <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
           <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
-          <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
-          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-house-gear-fill text-success"></i><span>Homepage CMS</span></a></li>
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
@@ -72,8 +114,8 @@
         <div class="sidebar-user">
           <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
           <div class="sidebar-user-info">
-            <div class="sidebar-user-name">Staff User</div>
-            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+            <div class="sidebar-user-name">Dr. Ipshita Johri (Founder)</div>
+            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Super Admin</span></div>
           </div>
         </div>
       </div>
@@ -96,16 +138,15 @@
           </div>
         </div>
 
-        <div class="header-right">
-          <a href="treatment-form.html" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i>
-            <span>Add Treatment</span>
+        <div class="header-right d-flex align-items-center gap-2">
+          <a href="treatment-form.html" class="btn btn-luxury-emerald btn-sm rounded-pill px-3 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Add Treatment
           </a>
 
           <div class="dropdown header-profile-dropdown">
             <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
               <img src="assets/img/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
-              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
+              <span class="header-profile-name fw-semibold small">Dr. Ipshita Johri (Founder)</span>
               <i class="bi bi-chevron-down text-muted small ms-1"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
@@ -123,21 +164,21 @@
           <div class="skin-card-body py-3">
             <div class="row g-3 align-items-center">
               <div class="col-lg-3 col-md-6">
-                <label class="form-label small text-muted mb-1">Filter by Category</label>
+                <label class="form-label small text-muted mb-1 fw-semibold">Filter by Category</label>
                 <select id="filterCategory" class="form-select form-select-sm">
                   <option value="">All Categories</option>
                   <!-- Dynamically populated -->
                 </select>
               </div>
               <div class="col-lg-3 col-md-6">
-                <label class="form-label small text-muted mb-1">Filter by Concern</label>
+                <label class="form-label small text-muted mb-1 fw-semibold">Filter by Concern</label>
                 <select id="filterConcern" class="form-select form-select-sm">
                   <option value="">All Concerns</option>
                   <!-- Dynamically populated -->
                 </select>
               </div>
               <div class="col-lg-2 col-md-4">
-                <label class="form-label small text-muted mb-1">Status</label>
+                <label class="form-label small text-muted mb-1 fw-semibold">Status</label>
                 <select id="filterStatus" class="form-select form-select-sm">
                   <option value="">All Statuses</option>
                   <option value="active">Active Only</option>
@@ -145,7 +186,7 @@
                 </select>
               </div>
               <div class="col-lg-2 col-md-4">
-                <label class="form-label small text-muted mb-1">Featured</label>
+                <label class="form-label small text-muted mb-1 fw-semibold">Featured</label>
                 <select id="filterFeatured" class="form-select form-select-sm">
                   <option value="">All Treatments</option>
                   <option value="true">Featured Only</option>
@@ -162,13 +203,16 @@
 
         <!-- DataTable Container -->
         <div class="skin-card">
-          <div class="skin-card-header">
-            <div class="skin-card-title">
-              <i class="bi bi-capsule text-secondary"></i>
-              <span>All Treatments Directory</span>
+          <div class="skin-card-header d-flex justify-content-between align-items-center">
+            <div class="skin-card-title d-flex align-items-center gap-2">
+              <i class="bi bi-capsule text-success fs-5"></i>
+              <span class="fw-bold">All Treatments Directory</span>
             </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-outline-secondary" id="btnReloadTreatments">
+            <div class="d-flex align-items-center gap-2">
+              <a href="treatment-form.html" class="btn btn-luxury-emerald btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-lg me-1"></i> Add Treatment
+              </a>
+              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="btnReloadTreatments">
                 <i class="bi bi-arrow-clockwise me-1"></i> Refresh
               </button>
             </div>
@@ -176,17 +220,17 @@
           <div class="skin-card-body p-0">
             <div class="table-responsive p-3">
               <table id="treatmentsTable" class="table table-hover align-middle w-100">
-                <thead>
+                <thead class="table-light">
                   <tr>
                     <th style="width: 40px;">#</th>
-                    <th style="width: 70px;">Image</th>
-                    <th>Treatment Name</th>
-                    <th>Category</th>
-                    <th>Concerns</th>
-                    <th>Price</th>
-                    <th>Featured</th>
-                    <th>Status</th>
-                    <th style="width: 140px;" class="text-end">Actions</th>
+                    <th style="width: 70px;">IMAGE</th>
+                    <th>TREATMENT NAME</th>
+                    <th>CATEGORY</th>
+                    <th>CONCERNS</th>
+                    <th>PRICE</th>
+                    <th class="text-center" style="width: 80px;">FEATURED</th>
+                    <th class="text-center" style="width: 80px;">STATUS</th>
+                    <th style="width: 130px;" class="text-end">ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody id="treatmentsTableBody">
@@ -199,8 +243,8 @@
       </main>
 
       <footer class="admin-page-footer">
-        <div>&copy; 2026 Skinfinity Derma. All rights reserved.</div>
-        <div class="text-muted">Dermatological Treatment Catalog Manager</div>
+        <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
+        <div class="text-muted">Clinical Treatment Directory &amp; Performance Manager</div>
       </footer>
     </div>
   </div>

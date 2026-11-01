@@ -297,6 +297,79 @@
           $preview.attr('src', '').closest('.image-preview-wrapper').addClass('d-none');
         });
       }
+    },
+
+    // Universal CKEditor 5 Registry & Initializer
+    ckEditors: {},
+
+    destroyCKEditor: function (id) {
+      if (this.ckEditors[id]) {
+        try {
+          this.ckEditors[id].destroy();
+        } catch (e) {}
+        delete this.ckEditors[id];
+      }
+    },
+
+    initCKEditor: function (target, options) {
+      const self = this;
+      const el = typeof target === 'string' ? document.querySelector(target) : target;
+      if (!el) return Promise.resolve(null);
+      const id = el.id || ('ck_' + Math.random().toString(36).substring(2, 9));
+      if (!el.id) el.id = id;
+
+      if (self.ckEditors[id]) {
+        if (self.ckEditors[id].sourceElement && document.body.contains(self.ckEditors[id].sourceElement) && self.ckEditors[id].sourceElement === el) {
+          return Promise.resolve(self.ckEditors[id]);
+        }
+        try { self.ckEditors[id].destroy(); } catch (e) {}
+        delete self.ckEditors[id];
+      }
+
+      if (typeof ClassicEditor === 'undefined') {
+        console.warn('ClassicEditor CDN is not loaded on this page.');
+        return Promise.resolve(null);
+      }
+
+      const defaultToolbar = [
+        'heading', '|',
+        'bold', 'italic', 'underline', 'link', '|',
+        'bulletedList', 'numberedList', 'blockQuote', '|',
+        'undo', 'redo'
+      ];
+
+      return ClassicEditor.create(el, Object.assign({
+        toolbar: defaultToolbar
+      }, options || {}))
+        .then(function (editor) {
+          self.ckEditors[id] = editor;
+          editor.model.document.on('change:data', function () {
+            el.value = editor.getData();
+            $(el).trigger('input').trigger('change');
+          });
+          return editor;
+        })
+        .catch(function (err) {
+          console.error('Failed to init CKEditor on #' + id, err);
+          return null;
+        });
+    },
+
+    getCKData: function (id) {
+      const editor = this.ckEditors[id];
+      if (editor) return editor.getData();
+      const el = document.getElementById(id);
+      return el ? el.value : '';
+    },
+
+    setCKData: function (id, data) {
+      const editor = this.ckEditors[id];
+      if (editor) {
+        editor.setData(data || '');
+      } else {
+        const el = document.getElementById(id);
+        if (el) el.value = data || '';
+      }
     }
   };
 

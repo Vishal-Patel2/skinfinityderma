@@ -33,13 +33,12 @@ export function generateStaticParams() {
   }));
 }
 
-export const dynamicParams = true;
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let doctor: any = null;
   try {
-    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { next: { revalidate: 60 } });
+    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
       if (json?.data) doctor = json.data;
@@ -212,11 +211,19 @@ const DOCTOR_EXTENDED_DETAILS: Record<
 
 export default async function DoctorProfilePage({ params }: Props) {
   let doctor: any = null;
+  let allDoctors: any[] = [];
   try {
-    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { next: { revalidate: 60 } });
-    if (res.ok) {
-      const json = await res.json();
+    const [resDoc, resAll] = await Promise.all([
+      fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" }),
+      fetch(`http://localhost:4000/api/public/doctors`, { cache: "no-store" })
+    ]);
+    if (resDoc.ok) {
+      const json = await resDoc.json();
       if (json?.data) doctor = json.data;
+    }
+    if (resAll.ok) {
+      const jsonAll = await resAll.json();
+      if (jsonAll?.data) allDoctors = jsonAll.data;
     }
   } catch {}
 
@@ -231,8 +238,32 @@ export default async function DoctorProfilePage({ params }: Props) {
   const doctorKey = doctor.id || doctor.slug;
   const details =
     DOCTOR_EXTENDED_DETAILS[doctorKey] ||
-    DOCTOR_EXTENDED_DETAILS["dr-sukriti"];
-  const otherDoctors = DOCTORS.filter((d) => d.id !== doctorKey && d.slug !== doctorKey);
+    DOCTOR_EXTENDED_DETAILS[doctor.slug] ||
+    DOCTOR_EXTENDED_DETAILS["dr-sukriti"] || {
+      highlights: [
+        "10+ Years of Specialized Dermatological Experience",
+        "Expert in Advanced Laser & Aesthetic Protocols",
+        "Personalized Patient Consultation & Evidence-Based Regimens",
+      ],
+      FocusAreas: [
+        "Clinical Dermatology & Acne Protocols",
+        "Laser Aesthetics & Pigmentation Resurfacing",
+        "Hair Loss Diagnostics & Scalp Health",
+      ],
+      education: [
+        doctor.qualifications || "MBBS, MD - Dermatology",
+        "Specialized Clinical Aesthetics Fellowship",
+      ],
+      memberships: [
+        "Indian Association of Dermatologists, Venereologists and Leprologists (IADVL)",
+        "Cosmetic Dermatology Society of India (CDSI)",
+      ],
+      languages: "English, Hindi",
+      consultationTimings: doctor.availability || "Mon – Sat: 10:30 AM – 07:00 PM",
+    };
+
+  const pool = allDoctors.length > 0 ? allDoctors : DOCTORS;
+  const otherDoctors = pool.filter((d: any) => d.slug !== doctor.slug && d.id !== doctor.id && d.name !== doctor.name);
 
   return (
     <div className="bg-white">
@@ -256,12 +287,10 @@ export default async function DoctorProfilePage({ params }: Props) {
             <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
               <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xl">
                 <div className="relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-5">
-                  <Image
+                  <img
                     src={doctor.image}
                     alt={doctor.name}
-                    fill
-                    className="object-cover object-top"
-                    priority
+                    className="w-full h-full object-cover object-top block"
                   />
                   <div className="absolute top-3 right-3 bg-slate-900/85 text-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-sm">
                     {doctor.experience || "Senior Dermatologist"}
@@ -445,19 +474,18 @@ export default async function DoctorProfilePage({ params }: Props) {
           </div>
 
           <div className="flex lg:grid lg:grid-cols-4 gap-5 lg:gap-6 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 scrollbar-none scroll-smooth snap-x snap-mandatory">
-            {otherDoctors.slice(0, 4).map((doc) => (
+            {otherDoctors.slice(0, 4).map((doc: any) => (
               <Link
-                key={doc.id}
-                href={`/doctors/${doc.id}`}
+                key={doc.id || doc.slug}
+                href={`/doctors/${doc.slug || doc.id}`}
                 className="flex-none w-[265px] sm:w-[290px] lg:w-auto snap-start bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
                   <div className="relative rounded-xl overflow-hidden aspect-[4/5] bg-slate-100 mb-3.5">
-                    <Image
+                    <img
                       src={doc.image}
                       alt={doc.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 block"
                     />
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 font-serif">

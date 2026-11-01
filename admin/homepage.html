@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Homepage Section-Wise CMS | Skinfinity Derma Admin</title>
+  <title>Website Pages CMS | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -11,17 +11,173 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
   <style>
-    .section-tab-nav .nav-link {
+    /* Primary Page Tabs */
+    .pages-tab-bar {
+      border-bottom: 2px solid #E2E8F0;
+      background: #FFFFFF;
+      padding: 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pages-tab-bar .nav-link {
       font-weight: 600;
       color: #64748B;
       border: none;
-      border-bottom: 2px solid transparent;
-      padding: 0.75rem 1.25rem;
+      border-bottom: 3px solid transparent;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.925rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 0;
+      transition: all 0.2s ease;
     }
-    .section-tab-nav .nav-link.active {
+    .pages-tab-bar .nav-link:hover {
       color: #005b41;
+      background: rgba(0, 91, 65, 0.03);
+    }
+    .pages-tab-bar .nav-link.active {
+      color: #005b41;
+      font-weight: 700;
       border-bottom-color: #005b41;
       background: transparent;
+    }
+    .pages-tab-bar .nav-link .badge-dynamic {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.45rem;
+      background: #E6F4EA;
+      color: #005b41;
+      border-radius: 999px;
+    }
+
+    /* Sub Tabs within a page */
+    .sub-section-pills {
+      background: #F8FAFC;
+      padding: 0.5rem;
+      border-radius: 12px;
+      border: 1px solid #E2E8F0;
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 1.5rem;
+    }
+    .sub-section-pills .nav-link {
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    .sub-section-pills .nav-link.active {
+      background: #005b41;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 91, 65, 0.2);
+    }
+
+    /* Luxury dropzone & card styling */
+    .upload-dropzone-box {
+      border: 2px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      background: #F8FAFC;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .upload-dropzone-box:hover, .upload-dropzone-box.drag-over {
+      border-color: #005b41;
+      background: #F0FDF4;
+    }
+    .upload-preview-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .upload-preview-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+    .upload-preview-card .btn-remove-preview {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(220, 38, 38, 0.9);
+      color: #FFFFFF;
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .upload-preview-card .btn-remove-preview:hover {
+      background: #DC2626;
+      transform: scale(1.1);
+    }
+
+    /* CKEditor Custom Styling */
+    .ck-editor__editable_inline {
+      min-height: 150px;
+      max-height: 360px;
+      border-radius: 0 0 10px 10px !important;
+      font-size: 0.925rem;
+      line-height: 1.6;
+    }
+    .ck.ck-toolbar {
+      border-radius: 10px 10px 0 0 !important;
+      background: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+    }
+    .ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+      border-color: #CBD5E1 !important;
+    }
+    .ck.ck-editor__main>.ck-editor__editable.ck-focused {
+      border-color: #005b41 !important;
+      box-shadow: 0 0 0 3px rgba(0, 91, 65, 0.12) !important;
+    }
+
+    /* Stat card */
+    .stat-input-box {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    /* Pillar items card */
+    .pillar-item-card {
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      background: #FFFFFF;
+      padding: 1rem;
+      transition: all 0.2s ease;
+    }
+    .pillar-item-card:hover {
+      border-color: #005b41;
+      box-shadow: 0 4px 14px rgba(0, 91, 65, 0.08);
+    }
+
+    /* Active status banner */
+    .section-active-header {
+      background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%);
+      border: 1px solid #BBF7D0;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
     }
   </style>
 </head>
@@ -29,6 +185,7 @@
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="admin-wrapper">
+    <!-- SIDEBAR -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
         <a href="index.html" class="sidebar-brand">
@@ -53,12 +210,12 @@
           <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
           <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
-          <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
+          
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
-          <li class="nav-item"><a href="homepage.html" class="nav-link active"><i class="bi bi-house-gear-fill text-success"></i><span>Homepage CMS</span></a></li>
+          <li class="nav-item"><a href="homepage.html" class="nav-link active"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
@@ -83,276 +240,648 @@
         <div class="sidebar-user">
           <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
           <div class="sidebar-user-info">
-            <div class="sidebar-user-name">Staff User</div>
-            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+            <div class="sidebar-user-name">Dr. Ipshita Johri</div>
+            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Super Admin</span></div>
           </div>
         </div>
       </div>
     </aside>
 
+    <!-- MAIN WRAPPER -->
     <div class="admin-main">
       <header class="admin-header">
         <div class="header-left">
           <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
           <div class="header-title-wrap">
-            <h1>Homepage Section-Wise Content Manager</h1>
-            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Homepage CMS</span></div>
+            <h1>Website Pages & Content CMS</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a><span class="sep">/</span><span>Website Pages CMS</span>
+            </div>
           </div>
         </div>
         <div class="header-right d-flex align-items-center gap-2">
           <a href="http://localhost:3000" target="_blank" class="btn btn-outline-dark btn-sm">
-            <i class="bi bi-box-arrow-up-right me-1"></i> View Live Website
+            <i class="bi bi-box-arrow-up-right me-1"></i> Live Homepage
           </a>
+          <a href="http://localhost:3000/about-clinic" target="_blank" class="btn btn-outline-dark btn-sm">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Live About Clinic
+          </a>
+          <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnHeaderNewPage">
+            <i class="bi bi-plus-lg me-1"></i> Add New Page
+          </button>
         </div>
       </header>
 
       <main class="admin-content">
-        <div class="skin-card">
-          <div class="skin-card-header p-0 bg-white border-bottom">
-            <ul class="nav nav-tabs section-tab-nav px-3" id="homepageTabs" role="tablist">
-              <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-about">
-                  <i class="bi bi-building me-1"></i> About Clinic Showcase
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-trust">
-                  <i class="bi bi-shield-check me-1"></i> Trust Ticker Badges
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-founder">
-                  <i class="bi bi-person-badge me-1"></i> Founder & Medical Director
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-diagnostic">
-                  <i class="bi bi-cpu me-1"></i> Diagnostic Tools
-                </button>
-              </li>
-              <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-franchise">
-                  <i class="bi bi-diagram-3 me-1"></i> Franchise Opportunities
-                </button>
-              </li>
-            </ul>
+        <!-- TOP-LEVEL PAGES TAB NAVIGATION -->
+        <div class="skin-card mb-4">
+          <div class="pages-tab-bar" id="masterPagesTabs" role="tablist">
+            <button class="nav-link active" id="tab-btn-home" data-bs-toggle="tab" data-bs-target="#tab-pane-home" role="tab">
+              <i class="bi bi-house-door-fill text-success"></i> Homepage (Home CRM)
+            </button>
+            <button class="nav-link" id="tab-btn-about" data-bs-toggle="tab" data-bs-target="#tab-pane-about" role="tab">
+              <i class="bi bi-building text-primary"></i> About Clinic Page
+            </button>
+            <button class="nav-link" id="tab-btn-pages-table" data-bs-toggle="tab" data-bs-target="#tab-pane-pages-table" role="tab">
+              <i class="bi bi-table text-info"></i> All Website Pages &amp; Tabs
+            </button>
+            <!-- Dynamically added page tabs will append here -->
           </div>
 
-          <div class="skin-card-body p-4">
-            <div class="tab-content" id="homepageTabsContent">
-              <!-- TAB 1: ABOUT CLINIC SHOWCASE -->
-              <div class="tab-pane fade show active" id="tab-about">
-                <form id="aboutClinicForm">
-                  <div class="row g-3 mb-3">
-                    <div class="col-md-8">
+          <div class="tab-content p-4" id="masterPagesContent">
+
+            <!-- ======================================================== -->
+            <!-- TAB PANE 1: HOMEPAGE (HOME CRM)                         -->
+            <!-- ======================================================== -->
+            <div class="tab-pane fade show active" id="tab-pane-home" role="tabpanel">
+              <!-- Sub-section Navigation Pills -->
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <ul class="nav nav-pills sub-section-pills" id="homeSectionPills" role="tablist">
+                  <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#home-sub-about">
+                      <i class="bi bi-building me-1"></i> About Clinic Showcase
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#home-sub-founder">
+                      <i class="bi bi-person-badge me-1"></i> Founder &amp; Medical Director
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#home-sub-diagnostic">
+                      <i class="bi bi-cpu me-1"></i> Diagnostic Tools
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#home-sub-franchise">
+                      <i class="bi bi-diagram-3 me-1"></i> Franchise Banner
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <a href="banners.html" class="nav-link text-decoration-none">
+                      <i class="bi bi-images me-1"></i> Hero Banners &amp; Ticker <i class="bi bi-arrow-up-right-square ms-1 small"></i>
+                    </a>
+                  </li>
+                </ul>
+
+                <span class="badge bg-emerald-subtle text-emerald border border-emerald-subtle px-3 py-2 rounded-pill small">
+                  <i class="bi bi-broadcast me-1"></i> Real-Time Database Sync Active
+                </span>
+              </div>
+
+              <div class="tab-content" id="homeSubContent">
+                <!-- 1.1: ABOUT CLINIC SHOWCASE (HOMEPAGE VIEW) -->
+                <div class="tab-pane fade show active" id="home-sub-about">
+                  <div id="aboutClinicContainerHome">
+                    <!-- Loaded dynamically or shared via component -->
+                  </div>
+                </div>
+
+                <!-- 1.2: FOUNDER & MEDICAL DIRECTOR -->
+                <div class="tab-pane fade" id="home-sub-founder">
+                  <div id="doctorFounderContainerHome">
+                    <!-- Loaded dynamically or shared via component -->
+                  </div>
+                </div>
+
+                <!-- 1.3: DIAGNOSTIC TOOLS -->
+                <div class="tab-pane fade" id="home-sub-diagnostic">
+                  <form id="diagnosticForm">
+                    <div class="section-active-header d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 class="fw-bold mb-0 text-success"><i class="bi bi-cpu me-2"></i>Diagnostic Assessment Tools Showcase</h6>
+                        <small class="text-muted">Interactive self-assessment tools featured on homepage.</small>
+                      </div>
+                      <div class="form-check form-switch fs-5">
+                        <input class="form-check-input" type="checkbox" id="diagActiveSwitch" checked>
+                        <label class="form-check-label fs-6 fw-semibold ms-2" for="diagActiveSwitch">Active</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
                       <label class="form-label fw-semibold">Section Heading</label>
-                      <input type="text" class="form-control" id="aboutTitle" required>
+                      <input type="text" class="form-control" id="diagTitle" value="Innovative Aesthetic Assessments">
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label fw-semibold">Top Badge Tag</label>
-                      <input type="text" class="form-control" id="aboutBadge">
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Subtitle Description</label>
+                      <textarea class="form-control" id="diagSubtitle" rows="2"></textarea>
                     </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Subtitle / Tagline</label>
-                    <input type="text" class="form-control" id="aboutSubtitle">
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Mission & Clinical Overview Description</label>
-                    <textarea class="form-control" id="aboutDesc" rows="3"></textarea>
-                  </div>
-
-                  <!-- Clinic Image Upload / URL with Case 1-4 Handlers -->
-                  <div class="mb-4 pb-3 border-bottom">
-                    <label class="form-label fw-semibold">Clinic Reception Image (Optional)</label>
-                    <div class="input-group mb-2">
-                      <input type="text" class="form-control" id="aboutMediaUrl" placeholder="/images/custom/clinic-reception.jpg or upload...">
-                      <label class="btn btn-outline-secondary mb-0 cursor-pointer">
-                        <i class="bi bi-upload"></i> Upload
-                        <input type="file" id="fileUploadAbout" class="d-none" accept="image/*">
-                      </label>
-                      <button type="button" class="btn btn-outline-danger" id="btnRemoveAboutImg">
-                        <i class="bi bi-trash"></i> Remove
-                      </button>
-                    </div>
-                    <div class="media-preview-box" id="previewWrapAbout" style="height: 180px; max-width: 320px;">
-                      <img id="previewImgAbout" src="" alt="About Preview" class="d-none">
-                      <span class="text-muted small" id="previewTextAbout">No image selected</span>
-                    </div>
-                  </div>
-
-                  <!-- Statistics Counters -->
-                  <div class="mb-4 pb-3 border-bottom">
-                    <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-success me-1"></i> Key Statistics Counters</h6>
-                    <div class="row g-3">
-                      <div class="col-md-3">
-                        <label class="form-label small">Stat 1 Value</label>
-                        <input type="text" class="form-control form-control-sm" id="stat1Val" placeholder="1,00,000+">
-                        <input type="text" class="form-control form-control-sm mt-1" id="stat1Label" placeholder="Patients Treated">
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label small">Stat 2 Value</label>
-                        <input type="text" class="form-control form-control-sm" id="stat2Val" placeholder="15+">
-                        <input type="text" class="form-control form-control-sm mt-1" id="stat2Label" placeholder="US-FDA Lasers">
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label small">Stat 3 Value</label>
-                        <input type="text" class="form-control form-control-sm" id="stat3Val" placeholder="4.5★">
-                        <input type="text" class="form-control form-control-sm mt-1" id="stat3Label" placeholder="4,500+ Reviews">
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label small">Stat 4 Value</label>
-                        <input type="text" class="form-control form-control-sm" id="stat4Val" placeholder="CMO">
-                        <input type="text" class="form-control form-control-sm mt-1" id="stat4Label" placeholder="Govt. Licensed">
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Primary Button Text</label>
-                      <input type="text" class="form-control" id="aboutBtnText" placeholder="Book Free Consultation">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Primary Button URL</label>
-                      <input type="text" class="form-control" id="aboutBtnUrl" placeholder="/treatments">
-                    </div>
-                  </div>
-
-                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveAbout">
-                    <i class="bi bi-cloud-check me-1"></i> Save About Us Section
-                  </button>
-                </form>
-              </div>
-
-              <!-- TAB 2: TRUST TICKER -->
-              <div class="tab-pane fade" id="tab-trust">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div>
-                    <h5 class="fw-bold mb-0">Trust Bar Badges</h5>
-                    <p class="text-muted small mb-0">Manage the animated trust ticker displayed below the hero carousel.</p>
-                  </div>
-                  <button type="button" class="btn btn-primary btn-sm" id="btnAddTrustItem">
-                    <i class="bi bi-plus-lg me-1"></i> Add Badge
-                  </button>
+                    <button type="submit" class="btn btn-luxury-emerald" id="btnSaveDiag">
+                      <i class="bi bi-cloud-check me-1"></i> Save Diagnostic Settings
+                    </button>
+                  </form>
                 </div>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle">
-                    <thead>
-                      <tr>
-                        <th>Badge Title</th>
-                        <th>Subtitle</th>
-                        <th>Icon Name</th>
-                        <th class="text-end">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="trustTickerBody">
-                      <!-- Dynamic rows -->
-                    </tbody>
-                  </table>
+
+                <!-- 1.4: FRANCHISE BANNER -->
+                <div class="tab-pane fade" id="home-sub-franchise">
+                  <form id="franchiseForm">
+                    <div class="section-active-header d-flex justify-content-between align-items-center">
+                      <div>
+                        <h6 class="fw-bold mb-0 text-success"><i class="bi bi-diagram-3 me-2"></i>Franchise Opportunities Banner</h6>
+                        <small class="text-muted">High-converting callout for medical franchise inquiries.</small>
+                      </div>
+                      <div class="form-check form-switch fs-5">
+                        <input class="form-check-input" type="checkbox" id="franActiveSwitch" checked>
+                        <label class="form-check-label fs-6 fw-semibold ms-2" for="franActiveSwitch">Active</label>
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Franchise Banner Heading</label>
+                      <input type="text" class="form-control" id="franchiseTitle" required>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label fw-semibold">Subtitle</label>
+                      <input type="text" class="form-control" id="franchiseSubtitle">
+                    </div>
+                    <div class="row g-3 mb-4">
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Button Label</label>
+                        <input type="text" class="form-control" id="franchiseBtnText" value="Explore Franchise Model">
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Button Link</label>
+                        <input type="text" class="form-control" id="franchiseBtnUrl" value="/franchise">
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-luxury-emerald" id="btnSaveFranchise">
+                      <i class="bi bi-cloud-check me-1"></i> Save Franchise Banner
+                    </button>
+                  </form>
                 </div>
-              </div>
-
-              <!-- TAB 3: FOUNDER SHOWCASE -->
-              <div class="tab-pane fade" id="tab-founder">
-                <form id="founderForm">
-                  <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Founder Name</label>
-                      <input type="text" class="form-control" id="founderTitle" value="Dr. Ipshita Johri" required>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold">Medical Designation</label>
-                      <input type="text" class="form-control" id="founderSubtitle" value="Founder & Medical Director" required>
-                    </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Founder Biography & Editorial Overview</label>
-                    <textarea class="form-control" id="founderDesc" rows="4"></textarea>
-                  </div>
-
-                  <div class="mb-4 pb-3 border-bottom">
-                    <label class="form-label fw-semibold">Portrait Photo (Optional)</label>
-                    <div class="input-group mb-2">
-                      <input type="text" class="form-control" id="founderMediaUrl" placeholder="/images/doctors/dr-ipshita-johri.webp">
-                      <label class="btn btn-outline-secondary mb-0 cursor-pointer">
-                        <i class="bi bi-upload"></i> Upload
-                        <input type="file" id="fileUploadFounder" class="d-none" accept="image/*">
-                      </label>
-                    </div>
-                    <div class="media-preview-box" id="previewWrapFounder" style="height: 180px; max-width: 240px;">
-                      <img id="previewImgFounder" src="" alt="Founder" class="d-none">
-                      <span class="text-muted small" id="previewTextFounder">No image</span>
-                    </div>
-                  </div>
-
-                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveFounder">
-                    <i class="bi bi-cloud-check me-1"></i> Save Founder Profile
-                  </button>
-                </form>
-              </div>
-
-              <!-- TAB 4: DIAGNOSTIC TOOLS -->
-              <div class="tab-pane fade" id="tab-diagnostic">
-                <form id="diagnosticForm">
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Section Heading</label>
-                    <input type="text" class="form-control" id="diagTitle" value="Innovative Aesthetic Assessments">
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Subtitle Description</label>
-                    <textarea class="form-control" id="diagSubtitle" rows="2"></textarea>
-                  </div>
-                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveDiag">
-                    <i class="bi bi-cloud-check me-1"></i> Save Diagnostic Settings
-                  </button>
-                </form>
-              </div>
-
-              <!-- TAB 5: FRANCHISE OPPORTUNITIES -->
-              <div class="tab-pane fade" id="tab-franchise">
-                <form id="franchiseForm">
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Franchise Banner Heading</label>
-                    <input type="text" class="form-control" id="franchiseTitle" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Subtitle</label>
-                    <input type="text" class="form-control" id="franchiseSubtitle">
-                  </div>
-                  <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Button Label</label>
-                      <input type="text" class="form-control" id="franchiseBtnText" value="Explore Franchise Model">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label fw-semibold small">Button Link</label>
-                      <input type="text" class="form-control" id="franchiseBtnUrl" value="/franchise">
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-luxury-emerald" id="btnSaveFranchise">
-                    <i class="bi bi-cloud-check me-1"></i> Save Franchise Banner
-                  </button>
-                </form>
               </div>
             </div>
+
+            <!-- ======================================================== -->
+            <!-- TAB PANE 2: ABOUT CLINIC PAGE (/about-clinic)           -->
+            <!-- ======================================================== -->
+            <div class="tab-pane fade" id="tab-pane-about" role="tabpanel">
+              <!-- Sync Notice Alert -->
+              <div class="alert alert-info border-0 shadow-sm rounded-3 d-flex align-items-start gap-3 mb-4">
+                <i class="bi bi-info-circle-fill fs-4 text-info shrink-0 mt-0.5"></i>
+                <div class="small">
+                  <div class="fw-bold fs-6 mb-1">Unified Multi-Page Synchronization Active</div>
+                  The <strong>About Clinic Showcase</strong> and <strong>Founder Dr. Ipshita Johri</strong> sections are synchronized across both the <a href="http://localhost:3000" target="_blank" class="fw-bold text-decoration-underline text-dark">Homepage</a> and the dedicated <a href="http://localhost:3000/about-clinic" target="_blank" class="fw-bold text-decoration-underline text-dark">About Clinic Page (/about-clinic)</a>.
+                  Any changes saved here will immediately reflect on both pages in real time!
+                </div>
+              </div>
+
+              <!-- Sub-section selector for About Clinic Page -->
+              <ul class="nav nav-pills sub-section-pills mb-4" role="tablist">
+                <li class="nav-item">
+                  <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#aboutpage-sub-clinic">
+                    <i class="bi bi-building me-1"></i> 1. About Clinic Showcase
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#aboutpage-sub-founder">
+                    <i class="bi bi-person-badge me-1"></i> 2. Founder &amp; Medical Director Showcase
+                  </button>
+                </li>
+              </ul>
+
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="aboutpage-sub-clinic">
+                  <div id="aboutClinicContainerAboutPage">
+                    <!-- Rendered identically to home tab -->
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="aboutpage-sub-founder">
+                  <div id="doctorFounderContainerAboutPage">
+                    <!-- Rendered identically to home tab -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ======================================================== -->
+            <!-- TAB PANE 3: ALL WEBSITE PAGES TABLE & DYNAMIC TABS      -->
+            <!-- ======================================================== -->
+            <div class="tab-pane fade" id="tab-pane-pages-table" role="tabpanel">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                  <h5 class="fw-bold mb-0">Website Pages Directory</h5>
+                  <p class="text-muted small mb-0">Every page registered here can be edited and automatically opens a management tab.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="text" class="form-control form-control-sm" id="pagesSearchInput" placeholder="Search pages..." style="width: 220px;">
+                  <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnAddNewPageFromTable">
+                    <i class="bi bi-plus-lg me-1"></i> Add New Page
+                  </button>
+                </div>
+              </div>
+
+              <div class="table-responsive rounded-3 border">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th style="width: 28%;">Page Name</th>
+                      <th style="width: 22%;">URL Slug</th>
+                      <th style="width: 20%;">Type</th>
+                      <th style="width: 15%;">Status</th>
+                      <th class="text-end" style="width: 15%;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pagesTableBody">
+                    <tr>
+                      <td colspan="5" class="text-center py-4 text-muted">
+                        <div class="spinner-border spinner-border-sm text-success me-2"></div>Loading website pages...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- DYNAMIC CUSTOM PAGE TABS PANE WILL BE APPENDED DYNAMICALLY -->
           </div>
         </div>
       </main>
 
       <footer class="admin-page-footer">
         <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
-        <div class="text-muted">Section-Wise Dynamic Homepage Content Management</div>
+        <div class="text-muted">Enterprise 100% Database-Driven Website Pages CMS</div>
       </footer>
     </div>
   </div>
 
+  <!-- =================================================================== -->
+  <!-- MODAL: ADD / EDIT DYNAMIC WEBSITE PAGE                              -->
+  <!-- =================================================================== -->
+  <div class="modal fade" id="dynamicPageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="pageModalTitle">Create Website Page</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="dynamicPageForm">
+          <input type="hidden" id="dynamicPageId">
+          <div class="modal-body p-4">
+            <div class="row g-3 mb-3">
+              <div class="col-md-7">
+                <label class="form-label fw-semibold small">Page Title <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="dynPageTitle" placeholder="e.g. Pre-Treatment Care Guide" required>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">URL Slug <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light text-muted small">/</span>
+                  <input type="text" class="form-control" id="dynPageSlug" placeholder="pre-care-guide" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Page Subtitle / Tagline</label>
+              <input type="text" class="form-control" id="dynPageSubtitle" placeholder="Clinical preparation guidelines for laser & aesthetic treatments">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Banner Header Image (Optional)</label>
+              <input type="text" class="form-control" id="dynPageBanner" placeholder="/images/breadcrumbbanner/about-us.webp">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Page Content (Rich Text / HTML)</label>
+              <div id="dynPageContentEditor"></div>
+              <input type="hidden" id="dynPageContent">
+            </div>
+
+            <div class="form-check form-switch fs-6 mb-2">
+              <input class="form-check-input" type="checkbox" id="dynPageActive" checked>
+              <label class="form-check-label fw-semibold ms-1" for="dynPageActive">Active on Live Website</label>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald" id="btnSaveDynamicPage">
+              <i class="bi bi-cloud-check me-1"></i> Save Page &amp; Add Tab
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =================================================================== -->
+  <!-- MODAL: ADD / EDIT INFRASTRUCTURE PILLAR                             -->
+  <!-- =================================================================== -->
+  <div class="modal fade" id="pillarModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="pillarModalTitle">Edit Infrastructure Pillar</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="pillarForm">
+          <input type="hidden" id="pillarId">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Pillar Title <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="pillarTitle" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Pillar Icon</label>
+              <select class="form-select" id="pillarIcon">
+                <option value="FlaskConical">FlaskConical (Pathology / Lab)</option>
+                <option value="Pill">Pill (Pharmacy / Medication)</option>
+                <option value="Microscope">Microscope (Technology / Laser)</option>
+                <option value="ShieldCheck">ShieldCheck (Safety / Hygiene)</option>
+                <option value="Award">Award (Certifications / Gold Standard)</option>
+                <option value="Star">Star (Excellence / Ratings)</option>
+                <option value="Sparkles">Sparkles (Aesthetics / Luxury)</option>
+                <option value="CheckCircle2">CheckCircle2 (Verified Protocol)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Description</label>
+              <textarea class="form-control" id="pillarDesc" rows="3" required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald">
+              <i class="bi bi-check-lg me-1"></i> Save Pillar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEMPLATE: ABOUT CLINIC FORM (INJECTED INTO BOTH HOME & ABOUT PAGE TABS) -->
+  <template id="tmplAboutClinicForm">
+    <form class="about-clinic-form">
+      <!-- Active Status Switch Banner -->
+      <div class="section-active-header d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="fw-bold mb-0 text-success"><i class="bi bi-building me-2"></i>About Clinic Infrastructure Showcase</h6>
+          <small class="text-muted">Controls the flagship luxury reception &amp; infrastructure block on Homepage &amp; /about-clinic.</small>
+        </div>
+        <div class="form-check form-switch fs-5">
+          <input class="form-check-input about-active-switch" type="checkbox" checked>
+          <label class="form-check-label fs-6 fw-semibold ms-2 about-active-label">Active on Live Website</label>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label fw-semibold small">Section Main Heading</label>
+          <input type="text" class="form-control about-title" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Top Badge Tag</label>
+          <input type="text" class="form-control about-badge" placeholder="Complete Medical Infrastructure">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">Story Heading / Subtitle</label>
+        <input type="text" class="form-control about-subtitle" placeholder="Where Clinical Expertise Meets Patient Luxury">
+      </div>
+
+      <!-- CKEditor Description -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold small">Clinical Overview &amp; Philosophy (Rich Text)</label>
+        <div class="about-desc-editor"></div>
+        <input type="hidden" class="about-desc">
+      </div>
+
+      <!-- Main Clinic Image Dropzone & Preview -->
+      <div class="mb-4 pb-3 border-bottom">
+        <label class="form-label fw-semibold small d-block">Flagship Reception &amp; Clinic Photo</label>
+        <div class="row g-3 align-items-center">
+          <div class="col-md-7">
+            <label class="upload-dropzone-box d-block mb-2 cursor-pointer">
+              <i class="bi bi-cloud-arrow-up text-success fs-2 d-block mb-1"></i>
+              <span class="fw-semibold text-dark">Click or Drag Image to Upload</span>
+              <span class="d-block text-muted small mt-1">Recommended: 1200 x 800 px (WEBP, JPG, PNG)</span>
+              <input type="file" class="visually-hidden about-file-input" accept="image/*">
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light text-muted small"><i class="bi bi-link-45deg"></i></span>
+              <input type="text" class="form-control form-control-sm about-media-url" placeholder="/images/custom/clinic-reception.jpg">
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="upload-preview-card about-preview-card">
+              <img class="about-preview-img" src="/images/custom/clinic-reception.jpg" alt="Clinic Preview">
+              <button type="button" class="btn-remove-preview about-btn-remove-img" title="Remove Image"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Key Statistics Counters -->
+      <div class="mb-4 pb-3 border-bottom">
+        <h6 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-success me-1"></i> 4 Key Clinical Statistics Counters</h6>
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <div class="stat-input-box">
+              <label class="form-label small fw-bold text-muted mb-1">Stat 1</label>
+              <input type="text" class="form-control form-control-sm mb-1 fw-bold stat1-val" placeholder="1,00,000+">
+              <input type="text" class="form-control form-control-sm text-muted stat1-label" placeholder="Patients Treated">
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-input-box">
+              <label class="form-label small fw-bold text-muted mb-1">Stat 2</label>
+              <input type="text" class="form-control form-control-sm mb-1 fw-bold stat2-val" placeholder="15+">
+              <input type="text" class="form-control form-control-sm text-muted stat2-label" placeholder="US-FDA Lasers">
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-input-box">
+              <label class="form-label small fw-bold text-muted mb-1">Stat 3</label>
+              <input type="text" class="form-control form-control-sm mb-1 fw-bold stat3-val" placeholder="4.5★">
+              <input type="text" class="form-control form-control-sm text-muted stat3-label" placeholder="4,500+ Reviews">
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="stat-input-box">
+              <label class="form-label small fw-bold text-muted mb-1">Stat 4</label>
+              <input type="text" class="form-control form-control-sm mb-1 fw-bold stat4-val" placeholder="CMO">
+              <input type="text" class="form-control form-control-sm text-muted stat4-label" placeholder="Govt. Licensed">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3 Infrastructure Pillars -->
+      <div class="mb-4 pb-3 border-bottom">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0"><i class="bi bi-layers-fill text-success me-1"></i> 3 Core Infrastructure Pillars</h6>
+          <span class="text-muted small">Managed directly in database</span>
+        </div>
+        <div class="row g-3 about-pillars-row">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Primary Button (Text &amp; Link)</label>
+          <div class="input-group">
+            <input type="text" class="form-control about-btn-text" placeholder="Book Clinic Consultation">
+            <input type="text" class="form-control about-btn-url" placeholder="/contact-us#appointment_form">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Secondary Button (Text &amp; Link)</label>
+          <div class="input-group">
+            <input type="text" class="form-control about-sec-btn-text" placeholder="Explore Full Facilities">
+            <input type="text" class="form-control about-sec-btn-url" placeholder="/about-clinic">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-luxury-emerald btn-save-about">
+        <i class="bi bi-cloud-check-fill me-1"></i> Save About Clinic Showcase
+      </button>
+    </form>
+  </template>
+
+  <!-- TEMPLATE: DOCTOR FOUNDER FORM (INJECTED INTO BOTH HOME & ABOUT PAGE TABS) -->
+  <template id="tmplDoctorFounderForm">
+    <form class="doctor-founder-form">
+      <!-- Active Status Switch Banner -->
+      <div class="section-active-header d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="fw-bold mb-0 text-success"><i class="bi bi-person-badge me-2"></i>Founder &amp; Medical Director Editorial Showcase</h6>
+          <small class="text-muted">Controls Dr. Ipshita Johri's credentials, qualifications, biography &amp; pageant card.</small>
+        </div>
+        <div class="form-check form-switch fs-5">
+          <input class="form-check-input founder-active-switch" type="checkbox" checked>
+          <label class="form-check-label fs-6 fw-semibold ms-2 founder-active-label">Active on Live Website</label>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-5">
+          <label class="form-label fw-semibold small">Founder Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control founder-title" value="Dr. Ipshita Johri" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">Medical Designation / Subtitle</label>
+          <input type="text" class="form-control founder-subtitle" value="Founder, Medical Director &amp; Celebrity Dermatologist" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold small">Top Badge Tag</label>
+          <input type="text" class="form-control founder-badge" value="Chief Medical Officer">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-7">
+          <label class="form-label fw-semibold small">Medical Qualifications &amp; Degrees</label>
+          <input type="text" class="form-control founder-qualifications" value="MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label fw-semibold small">Clinical Experience Subhead</label>
+          <input type="text" class="form-control founder-experience" value="12+ Years Clinical Experience across Delhi NCR">
+        </div>
+      </div>
+
+      <!-- CKEditor Primary Biography -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">Primary Clinical Biography (Rich Text)</label>
+        <div class="founder-desc-editor"></div>
+        <input type="hidden" class="founder-desc">
+      </div>
+
+      <!-- CKEditor Sub-Biography / Medical Philosophy -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold small">Medical Philosophy &amp; Core Pillars (Rich Text)</label>
+        <div class="founder-subdesc-editor"></div>
+        <input type="hidden" class="founder-subdesc">
+      </div>
+
+      <!-- Doctor Portrait Photo & Miss Curvy Card -->
+      <div class="row g-4 mb-4 pb-3 border-bottom">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small d-block">Founder Portrait Photo</label>
+          <div class="row g-2 align-items-center">
+            <div class="col-7">
+              <label class="upload-dropzone-box d-block mb-2 cursor-pointer">
+                <i class="bi bi-cloud-arrow-up text-success fs-3 d-block mb-1"></i>
+                <span class="fw-semibold small text-dark">Upload Portrait</span>
+                <input type="file" class="visually-hidden founder-file-input" accept="image/*">
+              </label>
+              <input type="text" class="form-control form-control-sm founder-media-url" placeholder="/images/doctors/dr-ipshita-johri.webp">
+            </div>
+            <div class="col-5">
+              <div class="upload-preview-card" style="height: 140px;">
+                <img class="founder-preview-img" src="/images/doctors/dr-ipshita-johri.webp" style="height: 140px; object-fit: cover;" alt="Dr. Ipshita Johri">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small d-block">Miss India Curvy Pageant Floating Card</label>
+          <div class="row g-2">
+            <div class="col-6">
+              <input type="text" class="form-control form-control-sm mb-1 curvy-title" placeholder="Ms. India Curvy 2020" value="Ms. India Curvy 2020">
+              <input type="text" class="form-control form-control-sm mb-1 curvy-subtitle" placeholder="Runner Up & Pageant Icon" value="Runner Up & Pageant Icon">
+              <input type="text" class="form-control form-control-sm curvy-tagline" placeholder="Empowering Body Positivity" value="Empowering Body Positivity">
+            </div>
+            <div class="col-6">
+              <input type="text" class="form-control form-control-sm mb-1 curvy-image" placeholder="/images/doctors/dr-ipshita-miss-curvy.jpg" value="/images/doctors/dr-ipshita-miss-curvy.jpg">
+              <div class="upload-preview-card" style="height: 70px;">
+                <img class="curvy-preview-img" src="/images/doctors/dr-ipshita-miss-curvy.jpg" style="height: 70px; object-fit: cover;" alt="Ms India Curvy">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Core Highlights / Pillars -->
+      <div class="mb-4 pb-3 border-bottom">
+        <label class="form-label fw-semibold small d-block mb-2"><i class="bi bi-check-circle-fill text-success me-1"></i> 4 Core Clinical Highlights (Bullet Points)</label>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm hl-1" value="Pioneer of Sugarcane HydraFacial">
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm hl-2" value="Advanced Laser Hair Reduction Specialist">
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm hl-3" value="Non-Surgical Facial Contouring &amp; Botox">
+          </div>
+          <div class="col-md-6">
+            <input type="text" class="form-control form-control-sm hl-4" value="Evidence-Based Acne &amp; Scar Protocols">
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Primary Button (Text &amp; Link)</label>
+          <div class="input-group">
+            <input type="text" class="form-control founder-btn-text" value="Read Full Biography &amp; Philosophy">
+            <input type="text" class="form-control founder-btn-url" value="/about-clinic">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">Secondary Action Label</label>
+          <input type="text" class="form-control founder-sec-btn-text" value="Consult with Dr. Ipshita">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-luxury-emerald btn-save-founder">
+        <i class="bi bi-cloud-check-fill me-1"></i> Save Founder Editorial Profile
+      </button>
+    </form>
+  </template>
+
+  <!-- SCRIPTS -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
   <script src="assets/js/api.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/homepage.js"></script>

@@ -16,13 +16,13 @@ export interface RichTreatment {
   aliases?: string[];
   name: string;
   category:
-    | "Laser Hair Reduction"
-    | "Medi-Facials & Glow"
-    | "Acne & Scar Revision"
-    | "Pigmentation & Lasers"
-    | "Hair Restoration"
-    | "Anti-Ageing & Contouring";
-  bodyArea: "Full Body" | "Face" | "Arms" | "Legs" | "Back & Chest" | "Scalp" | "Bikini";
+    | "Skin Treatments"
+    | "Hair Treatments"
+    | "Laser Treatments"
+    | "Body Treatments"
+    | "Wedding Packages"
+    | string;
+  bodyArea: "Full Body" | "Face" | "Face & Neck" | "Arms" | "Legs" | "Back & Chest" | "Scalp" | "Bikini" | string;
   tags: string[];
   rating: number;
   reviewsCount: number;
@@ -47,17 +47,22 @@ export interface RichTreatment {
   beforeTreatment: string[];
   afterTreatment: string[];
   youtubeVideoId?: string;
+  videoUrl?: string;
+  videoThumbnail?: string;
+  image?: string;
+  downtime?: string;
+  isFeatured?: boolean;
+  isActive?: boolean;
   faqs: { question: string; answer: string }[];
 }
 
 export const TREATMENT_CATEGORIES = [
   "All Treatments",
-  "Laser Hair Reduction",
-  "Medi-Facials & Glow",
-  "Acne & Scar Revision",
-  "Pigmentation & Lasers",
-  "Hair Restoration",
-  "Anti-Ageing & Contouring",
+  "Skin Treatments",
+  "Hair Treatments",
+  "Laser Treatments",
+  "Body Treatments",
+  "Wedding Packages",
 ] as const;
 
 export const BODY_AREA_TYPES = [
@@ -1389,80 +1394,140 @@ export function getTreatmentBySlug(slug: string): RichTreatment {
   );
   if (exact) return exact;
 
-  // Fallback generator for any other dynamic treatment URL
-  const formattedTitle = slug
-    .replace(/-noida|-gurgaon/gi, "")
+  const isNoida = normalized.includes("noida");
+  const isGurgaon = normalized.includes("gurgaon");
+  const cityName = isGurgaon ? "Gurgaon" : (isNoida ? "Noida" : "Noida & Gurgaon");
+  const clinicTag = isGurgaon ? "GURGAON GOLF COURSE RD" : (isNoida ? "NOIDA SECTOR 36" : "NOIDA & GURGAON");
+
+  const coreSlug = normalized.replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim();
+
+  // Try matching a rich base treatment from the catalog by core name
+  const baseTreatment = RICH_TREATMENTS.find((t) => {
+    const tNorm = t.slug.toLowerCase().replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim();
+    if (tNorm === coreSlug || t.id.toLowerCase() === coreSlug) return true;
+    return t.aliases?.some((a) => a.toLowerCase().replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim() === coreSlug);
+  });
+
+  const cleanTitle = slug
+    .replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "")
     .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+  const formattedTitle = cleanTitle;
+
+  const displayName = isNoida
+    ? `${cleanTitle} in Noida`
+    : (isGurgaon ? `${cleanTitle} in Gurgaon` : cleanTitle);
+
+  if (baseTreatment) {
+    return {
+      ...baseTreatment,
+      id: slug,
+      slug: slug,
+      name: isNoida ? `${baseTreatment.name} in Noida` : (isGurgaon ? `${baseTreatment.name} in Gurgaon` : baseTreatment.name),
+      tags: Array.from(new Set([...baseTreatment.tags, "US-FDA APPROVED", "MD DERMATOLOGIST LED", clinicTag])),
+      shortDesc: `Doctor-certified clinical protocol for ${baseTreatment.name} in ${cityName} at Skinfinity Derma. US-FDA approved technologies with zero downtime.`,
+      fullDesc: `At Skinfinity Derma ${cityName}, our board-certified dermatologists provide tailored clinical protocols for ${baseTreatment.name}. ${baseTreatment.fullDesc}`,
+    };
+  }
+
+  // Derive Category and Banner image from spreadsheet keywords
+  let category: RichTreatment["category"] = "Skin Treatments" as any;
+  let bannerImage = "/images/treatments/banner-acne.webp";
+
+  if (/hair|prp|gfc|alopecia|scalp|dandruff/i.test(normalized)) {
+    category = "Hair Restoration";
+    bannerImage = "/images/treatments/banner-hair.webp";
+  } else if (/laser|tattoo|wart|mole|tag|beard|q-switch/i.test(normalized)) {
+    category = "Laser Hair Reduction";
+    bannerImage = "/images/treatments/banner-laser.webp";
+  } else if (/body|fat|chin|contouring|hifu/i.test(normalized)) {
+    category = "Anti-Ageing & Contouring";
+    bannerImage = "/images/treatments/banner-laser.webp";
+  } else if (/wedding|bridal|groom|package/i.test(normalized)) {
+    category = "Medi-Facials & Glow";
+    bannerImage = "/images/treatments/banner-hydrafacial.webp";
+  } else if (/hydra|facial|glow|peel|anti-ageing|anti-aging/i.test(normalized)) {
+    category = "Medi-Facials & Glow";
+    bannerImage = "/images/treatments/banner-hydrafacial.webp";
+  } else if (/pigment|melasma|dark|spots/i.test(normalized)) {
+    category = "Pigmentation & Lasers";
+    bannerImage = "/images/treatments/banner-acne.webp";
+  }
 
   return {
     id: slug,
     slug,
-    name: formattedTitle,
-    category: "Medi-Facials & Glow",
-    bodyArea: "Face",
-    tags: ["US-FDA APPROVED", "MD DERMATOLOGIST LED"],
-    rating: 4.9,
-    reviewsCount: 640,
-    duration: "45 mins",
+    name: displayName,
+    category,
+    bodyArea: "Face & Body",
+    tags: ["US-FDA APPROVED", "MD DERMATOLOGIST LED", clinicTag],
+    rating: 4.93,
+    reviewsCount: 680,
+    duration: "45-60 mins",
     price: 3499,
     priceFormatted: "₹3,499",
-    originalPriceFormatted: "₹4,500",
-    discountBadge: "22% OFF",
+    originalPriceFormatted: "₹5,000",
+    discountBadge: "30% OFF",
     emiMonthly: "₹583",
     emiMonths: 6,
     sessionsInfo: "1 Clinical Session",
     cardHighlights: [
-      `Customized medical protocol for ${formattedTitle}`,
-      "Performed with 100% US-FDA approved technology",
-      "Supervised by Dr. Ipshita Johri & senior MD Dermatologists",
+      `US-FDA approved clinical protocol for ${formattedTitle}`,
+      `Senior MD dermatologist consultation available at our ${cityName} clinic`,
+      "Personalized root-cause diagnosis with zero social downtime",
     ],
-    explainedSubtitle: "Evidence-Based, Safe & Personalized Clinical Protocol",
-    shortDesc: `Comprehensive dermatological treatment for ${formattedTitle} at Skinfinity Derma clinics in Noida and Gurgaon.`,
-    fullDesc: `At Skinfinity Derma, our board-certified dermatologists provide tailored clinical protocols for ${formattedTitle}. By combining root-cause medical diagnostics with US-FDA approved technologies, we restore optimal skin health, collagen integrity, and cellular balance with minimal to zero downtime.`,
-    bannerImage: "/images/treatments/banner-hydrafacial.webp",
+    explainedSubtitle: "Evidence-Based, Safe & Doctor-Supervised Clinical Excellence",
+    shortDesc: `Doctor-certified clinical protocol for ${formattedTitle} in ${cityName} at Skinfinity Derma. US-FDA approved technologies with zero downtime.`,
+    fullDesc: `At Skinfinity Derma ${cityName}, our board-certified dermatologists provide tailored clinical protocols for ${formattedTitle}. By combining root-cause medical diagnostics with US-FDA approved gold standard technologies, we deliver safe, predictable, and transformative results.`,
+    bannerImage: bannerImage,
     galleryImages: [
-      { src: "/images/treatments/banner-hydrafacial.webp", caption: `${formattedTitle} at Skinfinity Derma` },
-      { src: "/images/clinic/interior-4.jpg", caption: "State-of-the-Art US-FDA Dermatology Suites" },
+      { src: bannerImage, caption: `${formattedTitle} at Skinfinity Derma ${cityName}` },
+      { src: "/images/clinic/interior-4.jpg", caption: `US-FDA Certified Dermatology Suites in ${cityName}` },
+      { src: "/images/clinic/interior-2.jpg", caption: "Hygienic Sterilized Consultation & Procedure Rooms" },
     ],
     howItWorksSteps: [
-      { stepNumber: "STEP 1", title: "Digital Dermoscopy", desc: "Detailed skin & follicle analysis by senior MD Dermatologist.", image: "/images/clinic/interior-1.jpg" },
-      { stepNumber: "STEP 2", title: "Medical Cleansing", desc: "Deep enzymatic cleansing and pH preparation of the target zone.", image: "/images/treatments/banner-hydrafacial.webp" },
-      { stepNumber: "STEP 3", title: "Calibrated Procedure", desc: "Delivery of US-FDA laser, peel, or bio-remodeling protocol.", image: "/images/clinic/interior-4.jpg" },
-      { stepNumber: "STEP 4", title: "Active Serum Infusion", desc: "Targeted peptides, antioxidants, or growth factors applied.", image: "/images/results/hydrafacial-after.jpg" },
-      { stepNumber: "STEP 5", title: "Barrier Repair & SPF", desc: "Soothing post-procedure recovery balm and SPF 50+ protection.", image: "/images/clinic/interior-5.jpg" },
+      { stepNumber: "STEP 1", title: "Digital Dermoscopy", desc: `Detailed skin & follicle diagnostic analysis by senior MD Dermatologist in ${cityName}.`, image: "/images/clinic/interior-1.jpg" },
+      { stepNumber: "STEP 2", title: "Medical Cleansing & Prep", desc: "Deep enzymatic cleansing, topical sanitization, and pH preparation of target zone.", image: bannerImage },
+      { stepNumber: "STEP 3", title: "Calibrated Procedure", desc: "Delivery of US-FDA approved laser, peel, or bio-remodeling energy calibrated to Indian skin.", image: "/images/clinic/interior-4.jpg" },
+      { stepNumber: "STEP 4", title: "Active Infusion & Healing", desc: "Targeted soothing peptides, growth factors, and cold-compress barrier recovery.", image: "/images/results/hydrafacial-after.jpg" },
+      { stepNumber: "STEP 5", title: "Doctor Review & Post-Care", desc: "Personalized home skincare regimen and broad-spectrum SPF 50+ application.", image: "/images/clinic/interior-5.jpg" },
     ],
-    idealFrequency: "1 session every 2–4 weeks, 4–6 sessions for optimal clinical transformation.",
+    idealFrequency: "1 session every 3–4 weeks (4–6 sessions for permanent remodeling & lasting clinical results).",
     idealFor: [
-      `Persistent concerns related to ${formattedTitle}`,
-      "Uneven texture, dullness, or stubborn pigmentation",
-      "Patients seeking safe, doctor-supervised results",
-      "Indian skin types requiring calibrated wavelengths",
+      `Patients seeking certified clinical ${formattedTitle} in ${cityName}`,
+      "Individuals with persistent texture, tone, or hair concerns",
+      "Safe for Indian skin types with customized dermatologist calibration",
+      "Zero downtime and immediate return to work or social schedule",
     ],
     notIdealFor: [
-      "Active open skin infection on the procedure site",
-      "Uncontrolled photosensitivity",
-      "Recent sunburn within 7 days",
+      "Active open skin lesions or untreated herpes cold sores",
+      "Uncontrolled photosensitivity or recent chemical peeling within 5 days",
+      "Pregnancy or breastfeeding without prior physician clearance",
     ],
     beforeTreatment: [
-      "Keep a clean, makeup-free face before the treatment.",
-      "Pause strong active retinols or exfoliants 48 hours prior.",
-      "Inform your dermatologist about any ongoing medications.",
+      "Arrive with clean skin free from heavy cosmetic makeup or retinoids.",
+      "Avoid direct outdoor sun tanning or beach exposure 48 hours prior.",
+      "Inform the dermatologist about any active oral prescriptions.",
     ],
     afterTreatment: [
-      "Apply broad-spectrum SPF 50+ sunscreen daily.",
-      "Drink 2–3L water and use a gentle ceramide moisturizer.",
-      "Avoid steam, sauna, and harsh scrubs for 48 hours.",
+      "Strict application of prescribed broad-spectrum SPF 50+ sunscreen.",
+      "Avoid hot saunas, steam rooms, or vigorous workouts for 24-48 hours.",
+      "Use only recommended medical gentle cleanser and barrier repair cream.",
     ],
-    youtubeVideoId: "1WmieekXjG4",
+    youtubeVideoId: "BdJ7l2v26e0",
     faqs: [
       {
         question: `How many sessions of ${formattedTitle} are recommended?`,
-        answer: "Most patients see visible improvement after the very first session, with 4 to 6 sessions recommended for comprehensive, long-lasting clinical results.",
+        answer: `Most patients at our ${cityName} clinic observe visible results after the very first session. A typical protocol consists of 4 to 6 sessions spaced 3 to 4 weeks apart for optimal, long-lasting outcomes.`,
       },
       {
-        question: "Is there any downtime after the treatment?",
-        answer: "Our US-FDA protocols are designed for minimal to zero social downtime so you can resume your daily schedule immediately.",
+        question: `Is the procedure painful or does it involve downtime?`,
+        answer: "No. Our treatments use genuine US-FDA approved equipment equipped with contact cooling and topical numbing where necessary, ensuring a virtually painless experience with zero social downtime.",
+      },
+      {
+        question: `Why choose Skinfinity Derma for ${formattedTitle} in ${cityName}?`,
+        answer: `Skinfinity Derma is founded by celebrity dermatologist Dr. Ipshita Johri and operates NABH-grade clinics in ${cityName}. Every procedure is performed or directly supervised by board-certified MD dermatologists using genuine US-FDA technology.`,
       },
     ],
   };

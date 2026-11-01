@@ -238,6 +238,116 @@ router.delete(
 );
 
 /* ========================================================================== */
+/* 2.1 TRUST BADGES (BELOW-BANNER TICKER) CRUD                                */
+/* ========================================================================== */
+
+router.get(
+  '/trust-badges',
+  requirePermission('banners.view'),
+  asyncHandler(async (req, res) => {
+    const rows = await query(
+      "SELECT id, title, icon, image_url, display_order, is_active FROM sid_homepage_items WHERE section_key = 'trust_ticker' ORDER BY display_order ASC, id ASC"
+    );
+    res.json({
+      success: true,
+      data: rows.map((r) => ({
+        id: String(r.id),
+        title: r.title,
+        icon: r.icon || 'CheckCircle2',
+        iconUrl: r.image_url || null,
+        displayOrder: r.display_order,
+        isActive: Boolean(r.is_active),
+      })),
+    });
+  })
+);
+
+router.post(
+  '/trust-badges',
+  requirePermission('banners.create'),
+  asyncHandler(async (req, res) => {
+    const { title, icon = 'CheckCircle2', iconUrl = null, displayOrder = 1, isActive = 1 } = req.body;
+    if (!title || !title.trim()) throw new HttpError(400, 'Badge title is required');
+
+    const r = await query(
+      `INSERT INTO sid_homepage_items (section_key, title, icon, image_url, display_order, is_active)
+       VALUES ('trust_ticker', ?, ?, ?, ?, ?)`,
+      [title.trim(), (icon || 'CheckCircle2').trim(), iconUrl || null, displayOrder, isActive ? 1 : 0]
+    );
+
+    res.status(201).json({ success: true, id: String(r.insertId), message: 'Trust badge created successfully' });
+  })
+);
+
+router.put(
+  '/trust-badges/:id',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { title, icon, iconUrl, displayOrder, isActive } = req.body;
+
+    const b = await one("SELECT * FROM sid_homepage_items WHERE id = ? AND section_key = 'trust_ticker'", [id]);
+    if (!b) throw new HttpError(404, 'Trust badge not found');
+
+    await query(
+      `UPDATE sid_homepage_items
+          SET title = ?, icon = ?, image_url = ?, display_order = ?, is_active = ?
+        WHERE id = ? AND section_key = 'trust_ticker'`,
+      [
+        title !== undefined ? title.trim() : b.title,
+        icon !== undefined ? icon.trim() : b.icon,
+        iconUrl !== undefined ? (iconUrl || null) : b.image_url,
+        displayOrder !== undefined ? displayOrder : b.display_order,
+        isActive !== undefined ? (isActive ? 1 : 0) : b.is_active,
+        id,
+      ]
+    );
+
+    res.json({ success: true, message: 'Trust badge updated successfully' });
+  })
+);
+
+router.patch(
+  '/trust-badges/:id/toggle-status',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const b = await one("SELECT is_active FROM sid_homepage_items WHERE id = ? AND section_key = 'trust_ticker'", [id]);
+    if (!b) throw new HttpError(404, 'Trust badge not found');
+    const next = b.is_active ? 0 : 1;
+    await query("UPDATE sid_homepage_items SET is_active = ? WHERE id = ? AND section_key = 'trust_ticker'", [next, id]);
+    res.json({ success: true, isActive: Boolean(next), message: `Badge is now ${next ? 'active' : 'inactive'}` });
+  })
+);
+
+router.post(
+  '/trust-badges/reorder',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { orderList } = req.body;
+    if (Array.isArray(orderList)) {
+      for (let i = 0; i < orderList.length; i++) {
+        const item = orderList[i];
+        const id = typeof item === 'object' ? item.id : item;
+        const order = typeof item === 'object' && item.displayOrder !== undefined ? item.displayOrder : (i + 1);
+        await query("UPDATE sid_homepage_items SET display_order = ? WHERE id = ? AND section_key = 'trust_ticker'", [order, id]);
+      }
+    }
+    res.json({ success: true, message: 'Badge display order updated' });
+  })
+);
+
+router.delete(
+  '/trust-badges/:id',
+  requirePermission('banners.delete'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await query("DELETE FROM sid_homepage_items WHERE id = ? AND section_key = 'trust_ticker'", [id]);
+    res.json({ success: true, message: 'Trust badge deleted successfully' });
+  })
+);
+
+/* ========================================================================== */
 /* 3. DOCTORS CRUD                                                            */
 /* ========================================================================== */
 
@@ -858,7 +968,11 @@ router.get(
   '/categories',
   requirePermission('categories.view'),
   asyncHandler(async (req, res) => {
-    const rows = await query('SELECT * FROM sid_categories ORDER BY display_order ASC, id ASC');
+    const rows = await query(`
+      SELECT c.*, (SELECT COUNT(*) FROM sid_treatments t WHERE t.category_id = c.id) AS treatment_count
+        FROM sid_categories c
+       ORDER BY c.display_order ASC, c.id ASC
+    `);
     res.json({
       success: true,
       data: rows.map((c) => ({
@@ -869,6 +983,7 @@ router.get(
         thumbnail: c.thumbnail,
         displayOrder: c.display_order,
         isActive: Boolean(c.is_active),
+        treatmentCount: Number(c.treatment_count || 0),
       })),
     });
   })
@@ -1153,11 +1268,14 @@ router.get(
         id: String(b.id),
         patientName: b.patient_name || 'Verified Patient',
         treatment: b.treatment,
+        title: b.treatment,
         treatmentId: b.treatment_id ? String(b.treatment_id) : null,
         description: b.description,
+        caption: b.description,
         beforeImage: b.before_image,
         afterImage: b.after_image,
         resultsType: b.results_type,
+        categoryOrConcern: b.results_type,
         timeframe: b.timeframe,
         hasPatientConsent: Boolean(b.has_patient_consent),
         approvalStatus: b.approval_status,
@@ -1172,8 +1290,29 @@ router.post(
   '/before-after',
   requirePermission('before_after.create'),
   asyncHandler(async (req, res) => {
-    const { patientName, treatment, treatmentId, description, beforeImage, afterImage, resultsType, timeframe, hasPatientConsent = 1, approvalStatus = 'Approved', displayOrder = 1, isActive = 1 } = req.body;
-    if (!treatment || !afterImage) throw new HttpError(400, 'Treatment name and After image are required');
+    const {
+      patientName,
+      treatment,
+      title,
+      treatmentId,
+      description,
+      caption,
+      beforeImage,
+      afterImage,
+      resultsType,
+      categoryOrConcern,
+      timeframe,
+      hasPatientConsent = 1,
+      approvalStatus = 'Approved',
+      displayOrder = 1,
+      isActive = 1,
+    } = req.body;
+
+    const treatmentName = treatment || title;
+    const finalDesc = description || caption;
+    const finalType = resultsType || categoryOrConcern;
+
+    if (!treatmentName || !afterImage) throw new HttpError(400, 'Treatment / Case title and After image are required');
 
     const r = await query(
       `INSERT INTO sid_before_after_cases (
@@ -1182,12 +1321,12 @@ router.post(
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         patientName || 'Verified Patient',
-        treatment,
+        treatmentName,
         treatmentId ? parseInt(treatmentId, 10) : null,
-        description || null,
+        finalDesc || null,
         beforeImage || null,
         afterImage,
-        resultsType || null,
+        finalType || null,
         timeframe || '6 Weeks',
         hasPatientConsent ? 1 : 0,
         approvalStatus,
@@ -1210,6 +1349,10 @@ router.put(
     const b = await one('SELECT * FROM sid_before_after_cases WHERE id = ?', [id]);
     if (!b) throw new HttpError(404, 'Case not found');
 
+    const treatmentName = body.treatment !== undefined ? body.treatment : (body.title !== undefined ? body.title : b.treatment);
+    const finalDesc = body.description !== undefined ? body.description : (body.caption !== undefined ? body.caption : b.description);
+    const finalType = body.resultsType !== undefined ? body.resultsType : (body.categoryOrConcern !== undefined ? body.categoryOrConcern : b.results_type);
+
     await query(
       `UPDATE sid_before_after_cases
           SET patient_name = ?, treatment = ?, treatment_id = ?, description = ?,
@@ -1218,12 +1361,12 @@ router.put(
         WHERE id = ?`,
       [
         body.patientName !== undefined ? body.patientName : b.patient_name,
-        body.treatment !== undefined ? body.treatment : b.treatment,
+        treatmentName,
         body.treatmentId !== undefined ? (body.treatmentId ? parseInt(body.treatmentId, 10) : null) : b.treatment_id,
-        body.description !== undefined ? body.description : b.description,
+        finalDesc,
         body.beforeImage !== undefined ? body.beforeImage : b.before_image,
         body.afterImage !== undefined ? body.afterImage : b.after_image,
-        body.resultsType !== undefined ? body.resultsType : b.results_type,
+        finalType,
         body.timeframe !== undefined ? body.timeframe : b.timeframe,
         body.hasPatientConsent !== undefined ? (body.hasPatientConsent ? 1 : 0) : b.has_patient_consent,
         body.approvalStatus !== undefined ? body.approvalStatus : b.approval_status,
@@ -1865,6 +2008,70 @@ router.post(
     );
 
     res.status(201).json({ success: true, id: String(r.insertId), message: 'Section item added' });
+  })
+);
+
+router.patch(
+  '/homepage/:key/toggle',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { key } = req.params;
+    const sec = await one('SELECT id, is_active FROM sid_homepage_sections WHERE section_key = ?', [key]);
+    if (!sec) throw new HttpError(404, 'Homepage section not found');
+    const next = sec.is_active ? 0 : 1;
+    await query('UPDATE sid_homepage_sections SET is_active = ? WHERE section_key = ?', [next, key]);
+    await audit(req, { action: 'update', entity: 'homepage_sections', entityId: sec.id, summary: `Toggled homepage section "${key}" to ${next ? 'active' : 'inactive'}` });
+    res.json({ success: true, data: { isActive: Boolean(next) } });
+  })
+);
+
+router.put(
+  '/homepage/items/:id',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { title, subtitle, description, icon, imageUrl, linkUrl, badge, extra, displayOrder, isActive } = req.body;
+    await query(
+      `UPDATE sid_homepage_items
+          SET title = COALESCE(?, title),
+              subtitle = ?,
+              description = ?,
+              icon = ?,
+              image_url = ?,
+              link_url = ?,
+              badge = ?,
+              extra_data = ?,
+              display_order = COALESCE(?, display_order),
+              is_active = COALESCE(?, is_active)
+        WHERE id = ?`,
+      [
+        title || null,
+        subtitle !== undefined ? subtitle : null,
+        description !== undefined ? description : null,
+        icon !== undefined ? icon : null,
+        imageUrl !== undefined ? imageUrl : null,
+        linkUrl !== undefined ? linkUrl : null,
+        badge !== undefined ? badge : null,
+        extra ? JSON.stringify(extra) : null,
+        displayOrder !== undefined ? displayOrder : null,
+        isActive !== undefined ? (isActive ? 1 : 0) : null,
+        id
+      ]
+    );
+    res.json({ success: true, message: 'Section item updated' });
+  })
+);
+
+router.patch(
+  '/homepage/items/:id/toggle',
+  requirePermission('banners.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const item = await one('SELECT is_active FROM sid_homepage_items WHERE id = ?', [id]);
+    if (!item) throw new HttpError(404, 'Item not found');
+    const next = item.is_active ? 0 : 1;
+    await query('UPDATE sid_homepage_items SET is_active = ? WHERE id = ?', [next, id]);
+    res.json({ success: true, data: { isActive: Boolean(next) } });
   })
 );
 

@@ -15,6 +15,7 @@ import {
   Award,
   Microscope,
   Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 const DEFAULT_STATS = [
@@ -50,6 +51,7 @@ const DEFAULT_PILLARS = [
 
 export default function AboutClinicShowcase() {
   const [visible, setVisible] = useState(false);
+  const [isSectionActive, setIsSectionActive] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const [sectionData, setSectionData] = useState({
@@ -71,9 +73,14 @@ export default function AboutClinicShowcase() {
   useEffect(() => {
     let active = true;
     getHomepageData().then((hp) => {
-      if (!active || !hp?.aboutClinic) return;
-      const sec = hp.aboutClinic.section;
-      if (sec) {
+      if (!active) return;
+      if (hp?.aboutClinic === null) {
+        setIsSectionActive(false);
+        return;
+      }
+      if (hp?.aboutClinic) {
+        setIsSectionActive(true);
+        const sec = hp.aboutClinic;
         setSectionData((prev) => ({
           ...prev,
           title: sec.title || prev.title,
@@ -87,36 +94,47 @@ export default function AboutClinicShowcase() {
           secondaryButtonText: sec.secondaryButtonText || prev.secondaryButtonText,
           secondaryButtonUrl: sec.secondaryButtonUrl || prev.secondaryButtonUrl,
         }));
-      }
 
-      if (hp.aboutClinic.stats && hp.aboutClinic.stats.length > 0) {
-        setStats(
-          hp.aboutClinic.stats.map((s) => ({
-            value: s.statValue || s.title || "",
-            label: s.statLabel || s.subtitle || "",
-          }))
-        );
-      }
+        if (sec.stats && sec.stats.length > 0) {
+          setStats(
+            sec.stats.map((s: any) => ({
+              value: s.value || s.statValue || s.title || "",
+              label: s.label || s.statLabel || s.subtitle || "",
+            }))
+          );
+        }
 
-      if (hp.aboutClinic.pillars && hp.aboutClinic.pillars.length > 0) {
-        const pillarStyles = [
-          { icon: FlaskConical, color: "bg-amber-50 text-amber-700 border-amber-200", iconBg: "bg-amber-100" },
-          { icon: Pill, color: "bg-teal-50 text-teal-700 border-teal-200", iconBg: "bg-teal-100" },
-          { icon: Microscope, color: "bg-violet-50 text-violet-700 border-violet-200", iconBg: "bg-violet-100" },
-        ];
+        if (sec.pillars && sec.pillars.length > 0) {
+          const iconMap: Record<string, any> = {
+            FlaskConical,
+            Pill,
+            Microscope,
+            ShieldCheck,
+            Award,
+            Star,
+            Sparkles,
+            CheckCircle2,
+          };
+          const pillarStyles = [
+            { icon: FlaskConical, color: "bg-amber-50 text-amber-700 border-amber-200", iconBg: "bg-amber-100" },
+            { icon: Pill, color: "bg-teal-50 text-teal-700 border-teal-200", iconBg: "bg-teal-100" },
+            { icon: Microscope, color: "bg-violet-50 text-violet-700 border-violet-200", iconBg: "bg-violet-100" },
+          ];
 
-        setPillars(
-          hp.aboutClinic.pillars.map((p, idx) => {
-            const style = pillarStyles[idx % pillarStyles.length];
-            return {
-              icon: style.icon,
-              color: style.color,
-              iconBg: style.iconBg,
-              title: p.title,
-              desc: p.description || p.subtitle || "",
-            };
-          })
-        );
+          setPillars(
+            sec.pillars.map((p, idx) => {
+              const style = pillarStyles[idx % pillarStyles.length];
+              const IconComponent = (p.icon && iconMap[p.icon]) ? iconMap[p.icon] : style.icon;
+              return {
+                icon: IconComponent,
+                color: style.color,
+                iconBg: style.iconBg,
+                title: p.title,
+                desc: p.description || p.subtitle || "",
+              };
+            })
+          );
+        }
       }
     }).catch(() => {});
 
@@ -133,6 +151,10 @@ export default function AboutClinicShowcase() {
     if (sectionRef.current) observer.observe(sectionRef.current);
     return () => observer.disconnect();
   }, []);
+
+  if (!isSectionActive) {
+    return null;
+  }
 
   return (
     <section
@@ -268,9 +290,16 @@ export default function AboutClinicShowcase() {
                   )
                 )}
               </h3>
-              <p className="text-sm text-slate-600 leading-relaxed">
-                {sectionData.description}
-              </p>
+              {sectionData.description?.includes("<") ? (
+                <div
+                  className="text-sm text-slate-600 leading-relaxed space-y-2 [&_p]:mb-2 [&_strong]:text-slate-800"
+                  dangerouslySetInnerHTML={{ __html: sectionData.description }}
+                />
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {sectionData.description}
+                </p>
+              )}
             </div>
 
             {/* Medical Pillars */}

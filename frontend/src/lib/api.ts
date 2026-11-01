@@ -28,6 +28,8 @@ import type {
   HomepageData,
   DynamicPage,
   DedicatedService,
+  ApiBlog,
+  BlogListResponse,
 } from "./types";
 
 const DEFAULT_API = "http://localhost:4000/api/public";
@@ -39,7 +41,7 @@ const PUBLIC_BASE = (process.env.NEXT_PUBLIC_API_URL || SERVER_BASE).replace(/\/
 export const API_BASE = typeof window === "undefined" ? SERVER_BASE : PUBLIC_BASE;
 
 export const REVALIDATE_SECONDS = 60;
-const TIMEOUT_MS = 2500;
+const TIMEOUT_MS = 6000;
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.skinfinityderma.com").replace(/\/+$/, "");
 
@@ -196,6 +198,16 @@ export async function getBanners(location?: string): Promise<ApiBanner[] | null>
   return r && Array.isArray(r.data) ? r.data : null;
 }
 
+export async function getCategories(): Promise<{ id: string; name: string; slug: string; description?: string; thumbnail?: string; displayOrder?: number }[] | null> {
+  const r = await request<any[]>("/categories", { revalidate: 0 });
+  return r && Array.isArray(r.data) ? r.data : null;
+}
+
+export async function getTrustBadges(): Promise<{ id: string; title: string; icon: string; displayOrder: number }[] | null> {
+  const r = await request<{ id: string; title: string; icon: string; displayOrder: number }[]>(`/trust-badges`, { revalidate: 0 });
+  return r && Array.isArray(r.data) ? r.data : null;
+}
+
 export async function getTreatments(params: { category?: string; featured?: boolean; limit?: number } = {}): Promise<RichTreatment[] | null> {
   const r = await request<any[]>(
     `/treatments${qs({ category: params.category, featured: params.featured ? 1 : undefined, limit: params.limit })}`
@@ -302,6 +314,38 @@ export async function getDedicatedService(slug: string): Promise<DedicatedServic
 
 export async function getDynamicPage(slug: string): Promise<DynamicPage | null> {
   const r = await request<DynamicPage>(`/pages/${encodeURIComponent(slug)}`);
+  return r && r.data ? r.data : null;
+}
+
+export async function getBlogs(params: {
+  category?: string;
+  tag?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<BlogListResponse | null> {
+  const queryStr = qs({
+    category: params.category,
+    tag: params.tag,
+    search: params.search,
+    page: params.page,
+    limit: params.limit,
+  });
+  const r = await request<ApiBlog[]>(`/blogs${queryStr}`, { revalidate: 60 });
+  if (r && Array.isArray(r.data)) {
+    return {
+      blogs: r.data,
+      total: r.meta?.total || r.data.length,
+      page: r.meta?.page || 1,
+      limit: r.meta?.limit || params.limit || 30,
+      totalPages: r.meta?.totalPages || 1,
+    };
+  }
+  return null;
+}
+
+export async function getBlog(slug: string): Promise<ApiBlog | null> {
+  const r = await request<ApiBlog>(`/blogs/${encodeURIComponent(slug)}`, { revalidate: 60 });
   return r && r.data ? r.data : null;
 }
 

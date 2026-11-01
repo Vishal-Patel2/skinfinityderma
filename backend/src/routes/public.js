@@ -109,6 +109,32 @@ router.get(
 );
 
 /**
+ * GET /api/public/trust-badges
+ */
+router.get(
+  '/trust-badges',
+  asyncHandler(async (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    const rows = await query(
+      "SELECT id, title, icon, image_url, display_order FROM sid_homepage_items WHERE section_key = 'trust_ticker' AND is_active = 1 ORDER BY display_order ASC, id ASC"
+    );
+
+    res.json({
+      success: true,
+      data: rows.map((r) => ({
+        id: String(r.id),
+        title: r.title,
+        icon: r.icon || 'CheckCircle2',
+        iconUrl: r.image_url || null,
+        displayOrder: r.display_order,
+      })),
+    });
+  })
+);
+
+/**
  * GET /api/public/categories
  */
 router.get(
@@ -152,7 +178,7 @@ router.get(
       where.push('t.is_featured = 1');
     }
 
-    const limitNum = parseInt(limit, 10) || 50;
+    const limitNum = parseInt(limit, 10) || 150;
 
     const rows = await query(
       `SELECT t.*, c.name AS category_name, c.slug AS category_slug
@@ -195,6 +221,8 @@ router.get(
       beforeTreatment: parseJson(r.before_treatment, []),
       afterTreatment: parseJson(r.after_treatment, []),
       youtubeVideoId: r.youtube_video_id || undefined,
+      videoUrl: r.video_url || (r.youtube_video_id ? `https://www.youtube.com/watch?v=${r.youtube_video_id}` : undefined),
+      videoThumbnail: r.video_thumbnail || (r.youtube_video_id ? `https://img.youtube.com/vi/${r.youtube_video_id}/hqdefault.jpg` : undefined),
       faqs: parseJson(r.faqs, []),
       seoTitle: r.seo_title,
       seoDescription: r.seo_description,
@@ -318,7 +346,7 @@ router.get(
 router.get(
   '/doctors',
   asyncHandler(async (req, res) => {
-    setPublicCache(res);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const rows = await query(
       `SELECT id, slug, name, role, qualifications, specialty, experience, image, bio,
               consultation_fee, available_locations, availability, display_order
@@ -403,6 +431,7 @@ router.get(
         description: r.description,
         beforeImage: r.before_image,
         image: r.after_image,
+        afterImage: r.after_image,
         resultsType: r.results_type || 'Clinical Results',
         timeframe: r.timeframe || '',
       })),
@@ -639,20 +668,45 @@ router.get(
   '/blogs',
   asyncHandler(async (req, res) => {
     setPublicCache(res);
-    const { category, limit = 20 } = req.query;
+    const { category, tag, search, page = 1, limit = 30 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit, 10) || 30));
+    const offset = (pageNum - 1) * limitNum;
+
     const where = ['is_published = 1'];
     const params = [];
     if (category) {
       where.push('category = ?');
       params.push(category);
     }
+    if (tag) {
+      where.push('(tags LIKE ? OR category LIKE ?)');
+      params.push(`%${tag}%`, `%${tag}%`);
+    }
+    if (search) {
+      where.push('(title LIKE ? OR excerpt LIKE ? OR tags LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const countRow = await one(
+      `SELECT COUNT(*) AS total FROM sid_blogs WHERE ${where.join(' AND ')}`,
+      params
+    );
+    const total = countRow ? countRow.total : 0;
+
     const rows = await query(
       `SELECT id, slug, title, excerpt, featured_image, category, author_name, tags, published_at, created_at
-         FROM sid_blogs WHERE ${where.join(' AND ')} ORDER BY published_at DESC LIMIT ?`,
-      [...params, parseInt(limit, 10)]
+         FROM sid_blogs WHERE ${where.join(' AND ')} ORDER BY published_at DESC LIMIT ? OFFSET ?`,
+      [...params, limitNum, offset]
     );
     res.json({
       success: true,
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
       data: rows.map((b) => ({
         id: String(b.id),
         slug: b.slug,
@@ -660,6 +714,10 @@ router.get(
         excerpt: b.excerpt,
         featuredImage: b.featured_image,
         category: b.category,
+        metaTitle: b.meta_title,
+        metaDescription: b.meta_description,
+        metaKeywords: b.meta_keywords,
+        canonicalUrl: b.canonical_url,
         authorName: b.author_name,
         tags: parseJson(b.tags, []),
         publishedAt: b.published_at,
@@ -679,7 +737,7 @@ router.get(
     const { slug } = req.params;
     const b = await one('SELECT * FROM sid_blogs WHERE slug = ? AND is_published = 1 LIMIT 1', [slug]);
     if (!b) throw new HttpError(404, 'Article not found');
-    await query('UPDATE sid_blogs SET views_count = views_count + 1 WHERE id = ?', [b.id]);
+    query('UPDATE sid_blogs SET views_count = views_count + 1 WHERE id = ?', [b.id]).catch(() => {});
     res.json({
       success: true,
       data: {
@@ -690,6 +748,10 @@ router.get(
         content: b.content,
         featuredImage: b.featured_image,
         category: b.category,
+        metaTitle: b.meta_title,
+        metaDescription: b.meta_description,
+        metaKeywords: b.meta_keywords,
+        canonicalUrl: b.canonical_url,
         authorName: b.author_name,
         tags: parseJson(b.tags, []),
         publishedAt: b.published_at,
@@ -1040,7 +1102,9 @@ router.post(
 router.get(
   '/homepage',
   asyncHandler(async (req, res) => {
-    setPublicCache(res);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     // 1. Sections metadata
     const secRows = await query('SELECT * FROM sid_homepage_sections WHERE is_active = 1 ORDER BY display_order ASC');
@@ -1085,6 +1149,9 @@ router.get(
     // 4. Clinics
     const clinics = await query('SELECT * FROM sid_clinics WHERE is_active = 1 ORDER BY display_order ASC');
 
+    const aboutSec = sections['about_clinic'] || null;
+    const founderSec = sections['doctor_founder'] || null;
+
     res.json({
       success: true,
       data: {
@@ -1097,13 +1164,24 @@ router.get(
           displayOrder: b.display_order,
         })),
         trustTicker: items['trust_ticker'] || [],
-        aboutClinic: {
-          ...(sections['about_clinic'] || {}),
+        trustBadges: items['trust_ticker'] || [],
+        aboutClinic: aboutSec ? {
+          ...aboutSec,
+          isActive: true,
+          stats: (aboutSec.extra && aboutSec.extra.stats) ? aboutSec.extra.stats : [],
           pillars: items['about_clinic_pillars'] || []
-        },
-        doctorFounder: sections['doctor_founder'] || {},
-        diagnosticTools: sections['diagnostic_tools'] || {},
-        franchiseBanner: sections['franchise_banner'] || {},
+        } : null,
+        doctorFounder: founderSec ? {
+          ...founderSec,
+          isActive: true,
+          qualifications: (founderSec.extra && founderSec.extra.qualifications) || null,
+          experience: (founderSec.extra && founderSec.extra.experience) || null,
+          subDescription: (founderSec.extra && founderSec.extra.subDescription) || null,
+          missCurvy: (founderSec.extra && founderSec.extra.missCurvy) || null,
+          highlights: (founderSec.extra && founderSec.extra.highlights) || []
+        } : null,
+        diagnosticTools: sections['diagnostic_tools'] || null,
+        franchiseBanner: sections['franchise_banner'] || null,
         clinics: clinics.map(c => ({
           id: String(c.id),
           slug: c.slug,
@@ -1127,7 +1205,7 @@ router.get(
 router.get(
   '/doctors/:slug',
   asyncHandler(async (req, res) => {
-    setPublicCache(res);
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { slug } = req.params;
     const d = await one('SELECT * FROM sid_doctors WHERE (slug = ? OR id = ?) AND is_active = 1 LIMIT 1', [slug, slug]);
     if (!d) throw new HttpError(404, 'Doctor profile not found');

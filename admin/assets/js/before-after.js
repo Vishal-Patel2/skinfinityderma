@@ -1,15 +1,14 @@
 /**
  * Skinfinity Derma Admin Dashboard
- * Before & After Management Controller
+ * Clinical Before & After Transformation Controller
  */
 
 $(document).ready(function () {
   'use strict';
 
   let baData = [];
-  let treatmentsData = [];
 
-  // Dropzone click bindings
+  // Dropzone click triggers
   $('#baBeforeDropzone').on('click', function () {
     $('#baBeforeFile').trigger('click');
   });
@@ -18,7 +17,7 @@ $(document).ready(function () {
     $('#baAfterFile').trigger('click');
   });
 
-  // Setup Before Image Preview
+  // Setup Image Previews
   window.App.setupImagePreview(
     '#baBeforeFile',
     '#baBeforePreviewImg',
@@ -26,7 +25,6 @@ $(document).ready(function () {
     '#baBeforeImageUrl'
   );
 
-  // Setup After Image Preview
   window.App.setupImagePreview(
     '#baAfterFile',
     '#baAfterPreviewImg',
@@ -34,129 +32,168 @@ $(document).ready(function () {
     '#baAfterImageUrl'
   );
 
-  // Load Treatments for dropdown
-  function loadTreatmentsDropdown() {
-    return window.API.getTreatments().done(function (res) {
-      if (res.success) {
-        treatmentsData = res.data;
-        const $filterSelect = $('#filterBATreatment');
-        const $formSelect = $('#baTreatment');
+  // When typing URL directly, update preview
+  $('#baBeforeImageUrl').on('input', function () {
+    const url = $(this).val().trim();
+    if (url) {
+      $('#baBeforePreviewImg').attr('src', url);
+      $('#baBeforePreviewWrap').removeClass('d-none');
+    } else {
+      $('#baBeforePreviewWrap').addClass('d-none');
+    }
+  });
 
-        $filterSelect.empty().append('<option value="">All Treatments</option>');
-        $formSelect.empty().append('<option value="">Select Treatment...</option>');
+  $('#baAfterImageUrl').on('input', function () {
+    const url = $(this).val().trim();
+    if (url) {
+      $('#baAfterPreviewImg').attr('src', url);
+      $('#baAfterPreviewWrap').removeClass('d-none');
+    } else {
+      $('#baAfterPreviewWrap').addClass('d-none');
+    }
+  });
 
-        treatmentsData.forEach(function (t) {
-          $filterSelect.append(`<option value="${t.id}">${t.name}</option>`);
-          $formSelect.append(`<option value="${t.id}">${t.name}</option>`);
-        });
-      }
-    });
-  }
-
-  // Load Before & After Cases
+  // Load All Cases
   function loadBeforeAfter() {
-    const params = {
-      treatmentId: $('#filterBATreatment').val(),
-      concern: $('#filterBAConcern').val()
-    };
-
-    window.API.getBeforeAfter(params)
+    window.API.getBeforeAfter()
       .done(function (res) {
         if (!res.success) return;
-        baData = res.data;
-        renderCards(baData);
+        baData = res.data || [];
+        updateMetrics(baData);
+        filterAndRender();
       })
-      .fail(function () {
+      .fail(function (xhr) {
         window.App.toast('error', 'Failed to load before & after cases');
       });
   }
 
-  // Render Cases
+  // Update KPI counters
+  function updateMetrics(data) {
+    const total = data.length;
+    const active = data.filter(function (d) { return d.isActive; }).length;
+    const consent = data.filter(function (d) { return d.hasPatientConsent; }).length;
+
+    $('#statTotalCases').text(total);
+    $('#statActiveCases').text(active);
+    $('#statConsentCases').text(consent + '/' + total);
+  }
+
+  // Filter & Render
+  function filterAndRender() {
+    const cat = $('#filterBACategory').val();
+    const status = $('#filterBAStatus').val();
+    const search = $('#filterBASearch').val().toLowerCase().trim();
+
+    const filtered = baData.filter(function (item) {
+      if (cat && item.resultsType !== cat && item.categoryOrConcern !== cat) return false;
+      if (status === 'active' && !item.isActive) return false;
+      if (status === 'inactive' && item.isActive) return false;
+      if (search) {
+        const titleMatch = (item.treatment || item.title || '').toLowerCase().includes(search);
+        const patientMatch = (item.patientName || '').toLowerCase().includes(search);
+        const descMatch = (item.description || item.caption || '').toLowerCase().includes(search);
+        if (!titleMatch && !patientMatch && !descMatch) return false;
+      }
+      return true;
+    });
+
+    renderCards(filtered);
+  }
+
+  // Render Grid Cards
   function renderCards(data) {
     const $container = $('#baListContainer').empty();
 
     if (!data || data.length === 0) {
       $container.html(`
-        <div class="col-12 empty-state">
-          <i class="bi bi-layout-split empty-state-icon"></i>
-          <div class="empty-state-title">No Comparison Cases Recorded</div>
-          <div class="empty-state-text">Add patient transformation before-and-after photographic comparisons.</div>
-          <button type="button" class="btn btn-primary btn-sm" onclick="$('#btnOpenAddBAModal').click()">
-            <i class="bi bi-plus-lg me-1"></i> Add Comparison Case
-          </button>
+        <div class="col-12 text-center py-5">
+          <div class="p-5 bg-white border rounded-4 shadow-sm">
+            <i class="bi bi-layout-split text-muted display-4 mb-3"></i>
+            <h5 class="fw-bold text-dark">No Transformation Cases Found</h5>
+            <p class="text-muted small">No cases match the selected filter criteria.</p>
+            <button type="button" class="btn btn-luxury-emerald btn-sm rounded-pill px-3" onclick="$('#btnOpenAddBAModal').click()">
+              <i class="bi bi-plus-lg me-1"></i> Add Transformation Case
+            </button>
+          </div>
         </div>
       `);
       return;
     }
 
     data.forEach(function (item) {
-      let approvalBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle">Approved</span>';
+      const title = item.treatment || item.title || 'Clinical Case';
+      const patient = item.patientName || 'Verified Patient';
+      const category = item.resultsType || item.categoryOrConcern || 'General';
+      const timeframe = item.timeframe || '6 Weeks';
+      const desc = item.description || item.caption || 'Documented medical transformation.';
+
+      let approvalBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Approved</span>';
       if (item.approvalStatus === 'Pending Review') {
-        approvalBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending Review</span>';
+        approvalBadge = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Pending Review</span>';
       } else if (item.approvalStatus === 'Restricted') {
-        approvalBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Restricted</span>';
+        approvalBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Restricted</span>';
       }
 
       const consentBadge = item.hasPatientConsent ?
-        '<span class="badge bg-light text-success border"><i class="bi bi-check-circle-fill me-1"></i>Consent Verified</span>' :
-        '<span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="bi bi-exclamation-triangle-fill me-1"></i>No Consent</span>';
-
-      const statusSwitch = `
-        <div class="form-check form-switch m-0">
-          <input class="form-check-input btn-toggle-ba-status" type="checkbox" data-id="${item.id}" ${item.isActive ? 'checked' : ''} title="Toggle Visibility">
-        </div>
-      `;
+        '<span class="badge bg-light text-success border small"><i class="bi bi-check-circle-fill me-1"></i>Consent OK</span>' :
+        '<span class="badge bg-danger-subtle text-danger border border-danger-subtle small"><i class="bi bi-exclamation-triangle-fill me-1"></i>No Consent</span>';
 
       const cardHtml = `
-        <div class="col-xl-6 col-lg-6">
-          <div class="ba-card" data-id="${item.id}">
-            <!-- Split Before & After View -->
-            <div class="ba-split-view btn-visualize" data-id="${item.id}" style="cursor: pointer;" title="Click to view enlarged comparison">
-              <div class="ba-pane">
-                <img src="${item.beforeImage}" alt="${item.beforeAltText || item.title + ' Before'}" loading="lazy">
-                <span class="ba-tag ba-tag-before">Before</span>
+        <div class="col-xl-4 col-lg-6">
+          <div class="ba-case-card" data-id="${item.id}">
+            <!-- Interactive Dual-Image Preview -->
+            <div class="ba-slider-preview btn-visualize" data-id="${item.id}" title="Click to view full comparison preview">
+              <div class="ba-slider-pane">
+                <img src="${item.beforeImage}" alt="Before ${title}" loading="lazy" onerror="this.src='assets/img/avatar-default.svg'">
+                <span class="ba-badge-pill ba-badge-before">Before</span>
               </div>
-              <div class="ba-pane border-start">
-                <img src="${item.afterImage}" alt="${item.afterAltText || item.title + ' After'}" loading="lazy">
-                <span class="ba-tag ba-tag-after">After</span>
+              <div class="ba-slider-pane border-start border-2 border-white">
+                <img src="${item.afterImage}" alt="After ${title}" loading="lazy" onerror="this.src='assets/img/avatar-default.svg'">
+                <span class="ba-badge-pill ba-badge-after">After</span>
               </div>
+              <span class="ba-category-tag">${category}</span>
+              <span class="ba-patient-tag">${patient}</span>
             </div>
 
             <!-- Card Content -->
-            <div class="p-3">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div class="fw-bold text-dark fs-6">${item.title}</div>
+            <div class="p-3 d-flex flex-column flex-grow-1">
+              <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <h6 class="fw-bold text-dark mb-0 font-serif" style="font-size: 0.95rem; line-height: 1.35;">
+                  ${title}
+                </h6>
                 ${approvalBadge}
               </div>
 
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge badge-pill-soft"><i class="bi bi-capsule me-1"></i>${item.treatmentName || 'Treatment'}</span>
-                ${item.categoryOrConcern ? `<span class="badge bg-light text-muted border">${item.categoryOrConcern}</span>` : ''}
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="badge bg-light text-muted border small"><i class="bi bi-clock me-1 text-success"></i>${timeframe}</span>
                 ${consentBadge}
+                <span class="text-muted small ms-auto fw-bold">#${item.displayOrder || 1}</span>
               </div>
 
-              <p class="small text-muted mb-0 fst-italic text-truncate-2" style="min-height: 38px;">
-                ${item.caption || 'No clinical observations entered.'}
+              <p class="small text-muted mb-3 flex-grow-1" style="font-size: 0.775rem; line-height: 1.5; min-height: 40px;">
+                ${desc}
               </p>
-            </div>
 
-            <!-- Footer Controls -->
-            <div class="p-2 px-3 bg-light border-top d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center gap-2">
-                <span class="small text-muted">Visible on Site:</span>
-                ${statusSwitch}
-              </div>
+              <!-- Footer Controls -->
+              <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input btn-toggle-ba-status" type="checkbox" data-id="${item.id}" ${item.isActive ? 'checked' : ''} title="Toggle Website Visibility">
+                  </div>
+                  <span class="small fw-semibold ${item.isActive ? 'text-success' : 'text-muted'}">${item.isActive ? 'Live' : 'Hidden'}</span>
+                </div>
 
-              <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-secondary btn-visualize" data-id="${item.id}" title="Enlarge Comparison">
-                  <i class="bi bi-arrows-fullscreen"></i>
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-edit" data-id="${item.id}" title="Edit Case">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-delete" data-id="${item.id}" title="Delete Case">
-                  <i class="bi bi-trash"></i>
-                </button>
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-outline-secondary btn-visualize rounded-start-pill px-2" data-id="${item.id}" title="Enlarge Comparison">
+                    <i class="bi bi-arrows-fullscreen"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-edit px-2" data-id="${item.id}" title="Edit Case">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-danger btn-delete rounded-end-pill px-2" data-id="${item.id}" title="Delete Case">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -166,6 +203,37 @@ $(document).ready(function () {
     });
   }
 
+  // Filter change events
+  $('#filterBACategory, #filterBAStatus').on('change', filterAndRender);
+  $('#filterBASearch').on('input', filterAndRender);
+  $('#btnResetBAFilters').on('click', function () {
+    $('#filterBACategory').val('');
+    $('#filterBAStatus').val('');
+    $('#filterBASearch').val('');
+    filterAndRender();
+  });
+
+  // Toggle Status
+  $(document).on('change', '.btn-toggle-ba-status', function () {
+    const id = $(this).data('id');
+    const $switch = $(this);
+
+    window.API.toggleBeforeAfterStatus(id)
+      .done(function (res) {
+        if (res.success) {
+          window.App.toast('success', res.message || 'Status updated');
+          const item = baData.find(function (b) { return String(b.id) === String(id); });
+          if (item) item.isActive = res.isActive;
+          updateMetrics(baData);
+          $switch.closest('.d-flex').find('span.small').text(res.isActive ? 'Live' : 'Hidden').toggleClass('text-success', res.isActive).toggleClass('text-muted', !res.isActive);
+        }
+      })
+      .fail(function () {
+        $switch.prop('checked', !$switch.prop('checked'));
+        window.App.toast('error', 'Failed to toggle status');
+      });
+  });
+
   // Open Modal for Add
   $('#btnOpenAddBAModal').on('click', function () {
     $('#baForm')[0].reset();
@@ -173,27 +241,30 @@ $(document).ready(function () {
     $('#baBeforeImageUrl, #baAfterImageUrl').val('');
     $('#baBeforePreviewImg, #baAfterPreviewImg').attr('src', '');
     $('#baBeforePreviewWrap, #baAfterPreviewWrap').addClass('d-none');
+    $('#baPatientName').val('Patient ' + String.fromCharCode(65 + (baData.length % 26)));
+    $('#baTimeframe').val('6 Weeks');
+    window.App.setCKData('baDescription', '');
     $('#baPatientConsent').prop('checked', true);
     $('#baIsActive').prop('checked', true);
     $('#baApprovalStatus').val('Approved');
     $('#baOrder').val(baData.length + 1);
-    $('#baModalLabel').text('Add Before & After Case');
+    $('#baModalLabel').text('Add Clinical Transformation Case');
     $('#baModal').modal('show');
   });
 
   // Edit Case
   $(document).on('click', '.btn-edit', function () {
     const id = $(this).data('id');
-    const item = baData.find(b => b.id === id);
+    const item = baData.find(function (b) { return String(b.id) === String(id); });
     if (!item) return;
 
     $('#baId').val(item.id);
-    $('#baTitle').val(item.title);
-    $('#baTreatment').val(item.treatmentId || '');
-    $('#baCategoryOrConcern').val(item.categoryOrConcern || '');
-    $('#baCaption').val(item.caption || '');
-    $('#baBeforeAlt').val(item.beforeAltText || '');
-    $('#baAfterAlt').val(item.afterAltText || '');
+    $('#baTitle').val(item.treatment || item.title || '');
+    $('#baPatientName').val(item.patientName || 'Verified Patient');
+    $('#baCategory').val(item.resultsType || item.categoryOrConcern || 'Acne & Scars');
+    $('#baTimeframe').val(item.timeframe || '');
+    $('#baDescription').val(item.description || item.caption || '');
+    window.App.setCKData('baDescription', item.description || item.caption || '');
     $('#baPatientConsent').prop('checked', item.hasPatientConsent);
     $('#baApprovalStatus').val(item.approvalStatus || 'Approved');
     $('#baOrder').val(item.displayOrder || 1);
@@ -215,7 +286,7 @@ $(document).ready(function () {
       $('#baAfterPreviewWrap').addClass('d-none');
     }
 
-    $('#baModalLabel').text('Edit Case: ' + item.title);
+    $('#baModalLabel').text('Edit Case: ' + (item.treatment || item.title));
     $('#baModal').modal('show');
   });
 
@@ -225,106 +296,94 @@ $(document).ready(function () {
 
     const id = $('#baId').val();
     const title = $('#baTitle').val().trim();
+    const patientName = $('#baPatientName').val().trim() || 'Verified Patient';
+    const category = $('#baCategory').val();
+    const timeframe = $('#baTimeframe').val().trim() || '6 Weeks';
+    const description = window.App.getCKData('baDescription') || $('#baDescription').val().trim();
     const beforeImg = $('#baBeforeImageUrl').val().trim();
     const afterImg = $('#baAfterImageUrl').val().trim();
-    const treatmentId = $('#baTreatment').val();
     const hasConsent = $('#baPatientConsent').is(':checked');
+    const approvalStatus = $('#baApprovalStatus').val();
+    const displayOrder = parseInt($('#baOrder').val(), 10) || 1;
+    const isActive = $('#baIsActive').is(':checked') ? 1 : 0;
 
     if (!title) {
-      window.App.toast('error', 'Case title is required');
+      window.App.toast('error', 'Treatment protocol / case title is required');
       return;
     }
 
-    if (!beforeImg || !afterImg) {
-      window.App.toast('error', 'Both Before and After photographs must be uploaded');
-      return;
-    }
-
-    if (!treatmentId) {
-      window.App.toast('error', 'Please associate a treatment with this case');
-      return;
-    }
-
-    if (!hasConsent && $('#baIsActive').is(':checked')) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Consent Required',
-        text: 'Patient consent must be confirmed before publishing identifiable before & after photographs.',
-        confirmButtonColor: '#124432'
-      });
+    if (!afterImg) {
+      window.App.toast('error', 'After photograph is required');
       return;
     }
 
     const payload = {
+      treatment: title,
       title: title,
-      beforeImage: beforeImg,
+      patientName: patientName,
+      resultsType: category,
+      categoryOrConcern: category,
+      timeframe: timeframe,
+      description: description,
+      caption: description,
+      beforeImage: beforeImg || afterImg,
       afterImage: afterImg,
-      treatmentId: treatmentId,
-      categoryOrConcern: $('#baCategoryOrConcern').val().trim(),
-      caption: $('#baCaption').val().trim(),
-      beforeAltText: $('#baBeforeAlt').val().trim() || `${title} - Before`,
-      afterAltText: $('#baAfterAlt').val().trim() || `${title} - After`,
-      hasPatientConsent: hasConsent,
-      approvalStatus: $('#baApprovalStatus').val(),
-      displayOrder: parseInt($('#baOrder').val()) || 1,
-      isActive: $('#baIsActive').is(':checked')
+      hasPatientConsent: hasConsent ? 1 : 0,
+      approvalStatus: approvalStatus,
+      displayOrder: displayOrder,
+      isActive: isActive
     };
 
     const $btn = $('#btnSaveBA');
-    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
 
-    const request = id ? window.API.updateBeforeAfter(id, payload) : window.API.createBeforeAfter(payload);
+    const req = id ? window.API.updateBeforeAfter(id, payload) : window.API.createBeforeAfter(payload);
 
-    request.done(function (res) {
+    req.done(function (res) {
       if (res.success) {
+        window.App.toast('success', id ? 'Case updated successfully' : 'New transformation added successfully');
         $('#baModal').modal('hide');
-        window.App.toast('success', res.message || 'Case saved successfully');
         loadBeforeAfter();
+      } else {
+        window.App.toast('error', res.message || 'Operation failed');
       }
-    }).fail(function (xhr) {
-      const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Failed to save case';
+    })
+    .fail(function (xhr) {
+      const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Server error occurred';
       window.App.toast('error', msg);
-    }).always(function () {
-      $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i> Save Comparison Case');
+    })
+    .always(function () {
+      $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i> Save Transformation Case');
     });
-  });
-
-  // Toggle Visibility Status
-  $(document).on('change', '.btn-toggle-ba-status', function () {
-    const id = $(this).data('id');
-    const isChecked = $(this).is(':checked');
-
-    window.API.toggleBeforeAfterStatus(id)
-      .done(function (res) {
-        window.App.toast('success', res.message);
-      })
-      .fail(function () {
-        window.App.toast('error', 'Failed to update status');
-        $(this).prop('checked', !isChecked);
-      });
   });
 
   // Delete Case
   $(document).on('click', '.btn-delete', function () {
     const id = $(this).data('id');
-    const item = baData.find(b => b.id === id);
-    if (!item) return;
+    const item = baData.find(function (b) { return String(b.id) === String(id); });
+    const name = item ? (item.treatment || item.title) : 'this comparison';
 
-    window.App.confirm(
-      'Delete Comparison Case?',
-      `Are you sure you want to remove "${item.title}"?`,
-      'Yes, Delete'
-    ).then(function (result) {
+    Swal.fire({
+      title: 'Delete Transformation Case?',
+      text: `Are you sure you want to permanently remove "${name}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, Delete Case'
+    }).then(function (result) {
       if (result.isConfirmed) {
         window.API.deleteBeforeAfter(id)
           .done(function (res) {
             if (res.success) {
               window.App.toast('success', 'Case deleted successfully');
               loadBeforeAfter();
+            } else {
+              window.App.toast('error', res.message || 'Failed to delete case');
             }
           })
           .fail(function () {
-            window.App.toast('error', 'Error deleting case');
+            window.App.toast('error', 'Failed to delete transformation case');
           });
       }
     });
@@ -333,34 +392,17 @@ $(document).ready(function () {
   // Enlarge Visualizer
   $(document).on('click', '.btn-visualize', function () {
     const id = $(this).data('id');
-    const item = baData.find(b => b.id === id);
+    const item = baData.find(function (b) { return String(b.id) === String(id); });
     if (!item) return;
 
-    $('#visualizerTitle').text(item.title);
+    $('#visualizerTitle').text(item.treatment || item.title);
     $('#visBeforeImg').attr('src', item.beforeImage);
     $('#visAfterImg').attr('src', item.afterImage);
-    $('#visCaption').text(item.caption || 'Clinical before-and-after comparison protocol.');
+    $('#visCaption').text((item.timeframe ? `[${item.timeframe}] ` : '') + (item.description || item.caption || ''));
     $('#baVisualizerModal').modal('show');
   });
 
-  // Filters
-  $('#filterBATreatment, #filterBAConcern').on('change input', loadBeforeAfter);
-  $('#btnResetBAFilters').on('click', function () {
-    $('#filterBATreatment').val('');
-    $('#filterBAConcern').val('');
-    loadBeforeAfter();
-  });
-
-  // Check URL params for ?action=new
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('action') === 'new') {
-    setTimeout(function () {
-      $('#btnOpenAddBAModal').trigger('click');
-    }, 200);
-  }
-
-  // Initialize
-  loadTreatmentsDropdown().always(function () {
-    loadBeforeAfter();
-  });
+  // Initial load
+  window.App.initCKEditor('#baDescription');
+  loadBeforeAfter();
 });

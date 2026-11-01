@@ -19,7 +19,8 @@ import {
   ShoppingCart,
   Stethoscope,
   MessageCircle,
-  Quote
+  Quote,
+  MapPin
 } from "lucide-react";
 import { RichTreatment, RICH_TREATMENTS } from "@/data/treatmentsCatalog";
 import { TESTIMONIALS } from "@/data/clinicData";
@@ -44,22 +45,57 @@ export default function TreatmentDetailView({ treatment }: Props) {
     treatment.category === "Pigmentation & Lasers" ||
     treatment.name.toLowerCase().includes("laser");
 
+  const isNoida = treatment.slug?.toLowerCase().includes("noida") || treatment.name?.toLowerCase().includes("noida");
+  const isGurgaon = treatment.slug?.toLowerCase().includes("gurgaon") || treatment.name?.toLowerCase().includes("gurgaon");
+  const cityLocation = isGurgaon ? "Gurgaon" : (isNoida ? "Noida" : null);
+
   const whatsappMessage = encodeURIComponent(
     `Hello Skinfinity Derma, I would like to enquire about ${treatment.name} (Starting at ${treatment.priceFormatted}) and schedule a consultation.`
   );
   const whatsappUrl = `https://wa.me/919871941444?text=${whatsappMessage}`;
 
-  // Ensure at least 4 sub-images for the gallery strip below the main image
+  // Ensure pure clinical images for the hero gallery strip below the main image (excluding YouTube video thumbnails)
   const galleryList = React.useMemo(() => {
-    const base = [...treatment.galleryImages];
-    for (const step of treatment.howItWorksSteps) {
-      if (base.length >= 4) break;
-      if (!base.some((img) => img.src === step.image)) {
-        base.push({ src: step.image, caption: `${step.stepNumber}: ${step.title}` });
+    const raw = Array.isArray(treatment.galleryImages) ? treatment.galleryImages : [];
+    // Filter out YouTube thumbnails or external video links
+    const base = raw
+      .filter((img) => img && img.src && !img.src.includes("img.youtube.com") && !img.src.includes("youtube") && !img.src.includes("youtu.be"))
+      .map((img) => ({ src: img.src, caption: img.caption || treatment.name }));
+
+    // Ensure bannerImage is first if not already present
+    if (treatment.bannerImage && !base.some((b) => b.src === treatment.bannerImage)) {
+      base.unshift({ src: treatment.bannerImage, caption: treatment.name });
+    }
+
+    // Add sub-images from DB columns (subImage1, subImage2, subImage3)
+    const extraSubs = [
+      (treatment as any).subImage1,
+      (treatment as any).subImage2,
+      (treatment as any).subImage3,
+    ].filter(Boolean);
+    for (const sub of extraSubs) {
+      if (!base.some((b) => b.src === sub)) {
+        base.push({ src: sub, caption: `${treatment.name} Clinical View` });
       }
     }
-    return base.slice(0, 4);
-  }, [treatment.galleryImages, treatment.howItWorksSteps]);
+
+    // If still less than 4, include step images
+    if (base.length < 4 && Array.isArray(treatment.howItWorksSteps)) {
+      for (const step of treatment.howItWorksSteps) {
+        if (base.length >= 5) break;
+        if (step.image && !base.some((img) => img.src === step.image)) {
+          base.push({ src: step.image, caption: `${step.stepNumber}: ${step.title}` });
+        }
+      }
+    }
+
+    // Fallback if empty
+    if (base.length === 0) {
+      base.push({ src: treatment.bannerImage || "/images/default-treatment.jpg", caption: treatment.name });
+    }
+
+    return base;
+  }, [treatment]);
 
   const cartItem = items.find((i) => i.id === treatment.id);
   const qtyInCart = cartItem ? cartItem.quantity : 0;
@@ -192,9 +228,14 @@ export default function TreatmentDetailView({ treatment }: Props) {
                 </div>
               </div>
 
-              {/* Sub-Images Row Directly Below Main Image */}
+              {/* Sub-Images Row Directly Below Main Image (Responsive grid for 2-6 images) */}
               {galleryList.length > 1 && (
-                <div className="grid grid-cols-4 gap-2.5 sm:gap-3">
+                <div className={`grid gap-2 sm:gap-2.5 ${
+                  galleryList.length === 2 ? "grid-cols-2" :
+                  galleryList.length === 3 ? "grid-cols-3" :
+                  galleryList.length === 5 ? "grid-cols-5" :
+                  galleryList.length >= 6 ? "grid-cols-6" : "grid-cols-4"
+                }`}>
                   {galleryList.map((img, idx) => {
                     const isSelected = activeSlide === idx;
                     return (
@@ -224,6 +265,12 @@ export default function TreatmentDetailView({ treatment }: Props) {
             {/* RIGHT: Tags, Title, Rating/Duration, Price + EMI + ADD Box, Consultation CTAs & WhatsApp */}
             <div className="lg:col-span-6 space-y-5">
               <div className="flex items-center gap-2 flex-wrap">
+                {cityLocation && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-teal-50 text-teal-850 border border-teal-300 inline-flex items-center gap-1 shadow-sm">
+                    <MapPin className="w-3 h-3 text-teal-600" />
+                    <span>{cityLocation} Clinic</span>
+                  </span>
+                )}
                 {treatment.tags.map((tag, idx) => (
                   <span
                     key={idx}
@@ -476,6 +523,51 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
+      {/* 2.5 Clinical Video Demonstration & Protocol Overview */}
+      {(treatment.youtubeVideoId || treatment.videoUrl) && (
+        <section className="py-6 sm:py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-[#f8fafc] rounded-3xl p-5 sm:p-8 border border-slate-200/80">
+              <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-3">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold uppercase tracking-wider border border-emerald-200/60 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Doctor Procedure Video
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-serif">
+                    Watch {treatment.name} in Action
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Authentic clinical procedure demonstration & expert guidance by Dr. Ipshita Johri
+                  </p>
+                </div>
+                {treatment.videoUrl && (
+                  <a
+                    href={treatment.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-bold text-[#008081] hover:text-[#006d6e] hover:underline"
+                  >
+                    <span>Watch on YouTube</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+
+              <div className="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-950 aspect-video max-w-4xl mx-auto">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${treatment.youtubeVideoId || (treatment.videoUrl?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/)?.[1])}?rel=0&modestbranding=1`}
+                  title={`${treatment.name} Clinical Demonstration`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* 3. IDEAL FREQUENCY, IDEAL FOR / NOT IDEAL FOR & DOCTOR CONSULTATION CARD */}
       <section className="py-4 sm:py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -501,7 +593,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                       {treatment.idealFor.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2 leading-relaxed">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-700 mt-1.5 shrink-0" />
-                          <span>{item}</span>
+                          <span dangerouslySetInnerHTML={{ __html: item }} />
                         </li>
                       ))}
                     </ul>
@@ -516,7 +608,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                       {treatment.notIdealFor.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-2 leading-relaxed">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-700 mt-1.5 shrink-0" />
-                          <span>{item}</span>
+                          <span dangerouslySetInnerHTML={{ __html: item }} />
                         </li>
                       ))}
                     </ul>
@@ -532,11 +624,10 @@ export default function TreatmentDetailView({ treatment }: Props) {
 
                 <div className="relative w-44 h-44 rounded-3xl bg-gradient-to-br from-[#e8f6f3] via-teal-50 to-amber-50 border border-[#d2eee7] flex flex-col items-center justify-center p-4 shadow-inner">
                   <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md mb-2">
-                    <Image
-                      src="/images/doctors/dr-ipshita-johri.jpg"
+                    <img
+                      src="/images/doctors/dr-ipshita-johri.webp"
                       alt="Dr. Ipshita Johri — Senior Dermatologist"
-                      fill
-                      className="object-cover"
+                      className="w-full h-full object-cover block"
                     />
                   </div>
                   <span className="text-[11px] font-extrabold text-[#006d6e] flex items-center gap-1">
@@ -589,7 +680,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     {treatment.beforeTreatment.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-800 mt-2 shrink-0" />
-                        <span>{item}</span>
+                        <span dangerouslySetInnerHTML={{ __html: item }} />
                       </li>
                     ))}
                   </ul>
@@ -605,7 +696,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     {treatment.afterTreatment.map((item, idx) => (
                       <li key={idx} className="flex items-start gap-2.5 leading-relaxed">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-800 mt-2 shrink-0" />
-                        <span>{item}</span>
+                        <span dangerouslySetInnerHTML={{ __html: item }} />
                       </li>
                     ))}
                   </ul>

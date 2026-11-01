@@ -4,6 +4,8 @@ import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import AboutClinicShowcase from "@/components/about/AboutClinicShowcase";
 import AboutClinicInteractiveSections from "@/components/about/AboutClinicInteractiveSections";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "About Skinfinity Derma Clinic | Infrastructure, Journey, Doctors & Lab",
   description:

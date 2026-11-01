@@ -15,42 +15,47 @@ import {
   Building2,
 } from "lucide-react";
 
-const CITY_TREATMENTS: Record<"Noida" | "Gurgaon", string[]> = {
+interface CityTreatmentLink {
+  name: string;
+  slug: string;
+}
+
+const CITY_TREATMENTS: Record<"Noida" | "Gurgaon", CityTreatmentLink[]> = {
   Noida: [
-    "Dermatologist Clinic in Noida",
-    "Laser Hair Reduction in Noida",
-    "Hair Fall Treatment in Noida",
-    "Skin Clinic in Noida",
-    "Acne Treatment in Noida",
-    "Pigmentation Treatment in Noida",
-    "Anti Ageing Treatment in Noida",
-    "Lip Fillers in Noida",
-    "Chemical Peel in Noida",
-    "Dark Circle Treatment in Noida",
-    "HIFU in Noida",
-    "Thread Lifting in Noida",
-    "Skin Boosters in Noida",
-    "Hydra Facials in Noida",
-    "PRP Treatment in Noida",
-    "GFC Treatment in Noida",
+    { name: "Dermatologist Clinic in Noida", slug: "about-clinic" },
+    { name: "Laser Hair Reduction in Noida", slug: "laser-hair-reduction-noida" },
+    { name: "Hair Fall Treatment in Noida", slug: "hair-fall-treatment-noida" },
+    { name: "Skin Clinic in Noida", slug: "about-clinic" },
+    { name: "Acne Treatment in Noida", slug: "acne-pimple-treatment-noida" },
+    { name: "Pigmentation Treatment in Noida", slug: "pigmentation-treatment-noida" },
+    { name: "Anti Ageing Treatment in Noida", slug: "anti-ageing-facials" },
+    { name: "Lip Fillers in Noida", slug: "fillers" },
+    { name: "Chemical Peel in Noida", slug: "chemical-peel-noida" },
+    { name: "Dark Circle Treatment in Noida", slug: "under-eye-treatment" },
+    { name: "HIFU in Noida", slug: "hifu" },
+    { name: "Thread Lifting in Noida", slug: "thread-lift" },
+    { name: "Skin Boosters in Noida", slug: "skin-boosters" },
+    { name: "Hydra Facials in Noida", slug: "sugarcane-hydrafacial" },
+    { name: "PRP Treatment in Noida", slug: "prp-hair-treatment" },
+    { name: "GFC Treatment in Noida", slug: "gfc-hair-treatment" },
   ],
   Gurgaon: [
-    "Dermatologist Clinic in Gurgaon",
-    "Laser Hair Reduction in Gurgaon",
-    "Hair Fall Treatment in Gurgaon",
-    "Skin Clinic in Gurgaon",
-    "Acne Treatment in Gurgaon",
-    "Pigmentation Treatment in Gurgaon",
-    "Anti Ageing Treatment in Gurgaon",
-    "Fillers Treatment in Gurgaon",
-    "Chemical Peel in Gurgaon",
-    "Dark Circle Treatment in Gurgaon",
-    "HIFU in Gurgaon",
-    "Thread Lifting in Gurgaon",
-    "Skin Boosters in Gurgaon",
-    "Hydra Facials in Gurgaon",
-    "PRP Treatment in Gurgaon",
-    "GFC Treatment in Gurgaon",
+    { name: "Dermatologist Clinic in Gurgaon", slug: "dermatologist-in-gurgaon" },
+    { name: "Laser Hair Reduction in Gurgaon", slug: "laser-hair-reduction-noida" },
+    { name: "Hair Fall Treatment in Gurgaon", slug: "hair-fall-treatment-noida" },
+    { name: "Skin Clinic in Gurgaon", slug: "dermatologist-in-gurgaon" },
+    { name: "Acne Treatment in Gurgaon", slug: "acne-pimple-treatment-noida" },
+    { name: "Pigmentation Treatment in Gurgaon", slug: "pigmentation-treatment-noida" },
+    { name: "Anti Ageing Treatment in Gurgaon", slug: "anti-ageing-facials" },
+    { name: "Fillers Treatment in Gurgaon", slug: "fillers" },
+    { name: "Chemical Peel in Gurgaon", slug: "chemical-peel-noida" },
+    { name: "Dark Circle Treatment in Gurgaon", slug: "under-eye-treatment" },
+    { name: "HIFU in Gurgaon", slug: "hifu" },
+    { name: "Thread Lifting in Gurgaon", slug: "thread-lift" },
+    { name: "Skin Boosters in Gurgaon", slug: "skin-boosters" },
+    { name: "Hydra Facials in Gurgaon", slug: "sugarcane-hydrafacial" },
+    { name: "PRP Treatment in Gurgaon", slug: "prp-hair-treatment" },
+    { name: "GFC Treatment in Gurgaon", slug: "gfc-hair-treatment" },
   ],
 };
 
@@ -205,15 +210,16 @@ export default function Footer() {
                   })}
                 </div>
 
-                {/* 4-Column Treatments Grid (Pure UI, no links) */}
+                {/* 4-Column Treatments Grid with Active Links */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-3 text-xs sm:text-[13px] text-slate-300">
                   {CITY_TREATMENTS[selectedCity].map((item, idx) => (
-                    <div
+                    <Link
                       key={idx}
-                      className="py-0.5 text-slate-300 hover:text-white transition-colors select-text"
+                      href={`/${item.slug}`}
+                      className="py-1 text-slate-300 hover:text-teal-300 transition-colors block text-left truncate hover:underline"
                     >
-                      {item}
-                    </div>
+                      {item.name}
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -246,6 +252,7 @@ export default function Footer() {
               <li><Link href="/about-us" className="hover:text-white transition-colors">About Dr. Ipshita Johri</Link></li>
               <li><Link href="/about-clinic" className="hover:text-white transition-colors">About Clinic &amp; Lab</Link></li>
               <li><Link href="/results" className="hover:text-white transition-colors">Real Results Gallery</Link></li>
+              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
               <li><Link href="/testimonials" className="hover:text-white transition-colors">Patient Testimonials</Link></li>
               <li><Link href="/contact-us" className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>

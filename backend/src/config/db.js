@@ -15,6 +15,15 @@ const pool = mysql.createPool({
   dateStrings: ['DATE'], // keep DATE columns as 'YYYY-MM-DD'
 });
 
+// Configure high max_allowed_packet on startup
+(async function initDbConfig() {
+  try {
+    await pool.query('SET GLOBAL max_allowed_packet = 67108864');
+  } catch (e) {
+    // Ignore if permission denied
+  }
+})();
+
 /** Run a query and return the rows. */
 async function query(sql, params) {
   const [rows] = await pool.query(sql, params);

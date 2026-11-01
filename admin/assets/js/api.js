@@ -175,6 +175,26 @@
       return this.delete('/banners/' + id);
     },
 
+    // Trust Badges (Below-Banner Ticker)
+    getTrustBadges: function () {
+      return this.get('/trust-badges');
+    },
+    createTrustBadge: function (data) {
+      return this.post('/trust-badges', data);
+    },
+    updateTrustBadge: function (id, data) {
+      return this.put('/trust-badges/' + id, data);
+    },
+    toggleTrustBadgeStatus: function (id) {
+      return this.patch('/trust-badges/' + id + '/toggle-status');
+    },
+    reorderTrustBadges: function (orderList) {
+      return this.post('/trust-badges/reorder', { orderList: orderList });
+    },
+    deleteTrustBadge: function (id) {
+      return this.delete('/trust-badges/' + id);
+    },
+
     // Doctors
     getDoctors: function (params) {
       return this.get('/doctors', params);
@@ -535,8 +555,17 @@
     updateHomepageSection: function (key, data) {
       return this.put('/homepage/' + key, data);
     },
+    toggleHomepageSection: function (key) {
+      return this.patch('/homepage/' + key + '/toggle');
+    },
     addHomepageItem: function (key, data) {
       return this.post('/homepage/' + key + '/items', data);
+    },
+    updateHomepageItem: function (id, data) {
+      return this.put('/homepage/items/' + id, data);
+    },
+    toggleHomepageItem: function (id) {
+      return this.patch('/homepage/items/' + id + '/toggle');
     },
     deleteHomepageItem: function (id) {
       return this.delete('/homepage/items/' + id);

@@ -157,6 +157,7 @@ export interface ApiPress {
   thumbnail: string;
   link: string;
   videoId: string;
+  shortDesc?: string;
 }
 
 export interface ApiFaq {
@@ -288,21 +289,55 @@ export interface HomepageItem {
 }
 
 export interface HomepageData {
-  sections: Record<string, HomepageSection>;
-  trustBadges: HomepageItem[];
-  aboutClinic: {
-    section: HomepageSection;
-    stats: HomepageItem[];
-    pillars: HomepageItem[];
-  };
-  doctorFounder: {
-    founder: any;
-    doctors: any[];
-    awards: HomepageItem[];
-  };
-  diagnosticTools: HomepageSection;
-  franchiseBanner: HomepageSection;
-  clinics: ApiClinic[];
+  sections?: Record<string, HomepageSection>;
+  trustBadges?: HomepageItem[];
+  aboutClinic?: {
+    title?: string;
+    subtitle?: string;
+    badgeText?: string;
+    description?: string;
+    mediaUrl?: string;
+    mediaAlt?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+    secondaryButtonText?: string;
+    secondaryButtonUrl?: string;
+    extra?: any;
+    isActive?: boolean;
+    stats?: { value: string; label: string }[];
+    pillars?: HomepageItem[];
+    section?: HomepageSection;
+  } | null;
+  doctorFounder?: {
+    title?: string;
+    subtitle?: string;
+    badgeText?: string;
+    description?: string;
+    mediaUrl?: string;
+    mediaAlt?: string;
+    buttonText?: string;
+    buttonUrl?: string;
+    secondaryButtonText?: string;
+    secondaryButtonUrl?: string;
+    extra?: any;
+    isActive?: boolean;
+    qualifications?: string;
+    experience?: string;
+    subDescription?: string;
+    missCurvy?: {
+      title?: string;
+      subtitle?: string;
+      tagline?: string;
+      image?: string;
+    };
+    highlights?: string[];
+    founder?: any;
+    doctors?: any[];
+    awards?: HomepageItem[];
+  } | null;
+  diagnosticTools?: HomepageSection | null;
+  franchiseBanner?: HomepageSection | null;
+  clinics?: ApiClinic[];
 }
 
 export interface DynamicPage {
@@ -338,5 +373,31 @@ export interface DedicatedService {
   procedureSteps?: string[];
   primaryCtaText?: string;
   primaryCtaUrl?: string;
+}
+
+export interface ApiBlog {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content?: string;
+  featuredImage?: string;
+  category?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  canonicalUrl?: string;
+  authorName?: string;
+  tags?: string[];
+  publishedAt?: string;
+  createdAt?: string;
+}
+
+export interface BlogListResponse {
+  blogs: ApiBlog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 

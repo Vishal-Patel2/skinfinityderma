@@ -111,11 +111,10 @@ export default function DedicatedDoctorsCarousel() {
                   href={`/doctors/${doc.id}`}
                   className="block relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-5"
                 >
-                  <Image
+                  <img
                     src={doc.image}
                     alt={doc.name}
-                    fill
-                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 block"
                   />
                   <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[11px] font-semibold px-2.5 py-1 rounded backdrop-blur-sm">
                     {doc.experience || "MD Dermatologist"}

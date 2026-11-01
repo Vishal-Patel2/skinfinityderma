@@ -144,7 +144,7 @@ export const DOCTORS: Doctor[] = [
     qualifications: "MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)",
     specialty: "Celebrity Dermatologist, Advanced Anti-Ageing, Facial Sculpting & Aesthetic Lasers",
     experience: "12+ Years Clinical Experience",
-    image: "/images/doctors/dr-ipshita-johri.jpg",
+    image: "/images/doctors/dr-ipshita-johri.webp",
     bio: "Dr. Ipshita Johri is the visionary founder and medical director of Skinfinity Derma clinics in Noida and Gurgaon. An internationally trained clinical dermatologist holding prestigious credentials from Cardiff University UK, she is renowned for her holistic, root-cause treatment protocols, personalized aesthetics, and pioneering work in medical aesthetics across Delhi NCR. She was also crowned Ms. India Curvy 2020 Runner Up.",
     slug: "about-us",
     consultationFee: 1200,
@@ -208,6 +208,76 @@ export const DOCTORS: Doctor[] = [
     availability: "Tue - Sun: 10:30 AM – 07:30 PM"
   }
 ];
+
+export function getDoctorByAuthorName(authorName?: string | null): {
+  name: string;
+  role: string;
+  image: string;
+  qualifications: string;
+  specialty: string;
+  consultTitle: string;
+} {
+  const raw = (authorName || "").toLowerCase().trim();
+
+  if (raw.includes("aanchal") || raw.includes("anchal")) {
+    const doc = DOCTORS.find((d) => d.id === "dr-aanchal-bansal");
+    return {
+      name: doc?.name || "Dr. Aanchal Bansal",
+      role: doc?.role || "Senior Consultant Dermatologist",
+      image: doc?.image || "/images/doctors/dr-aanchal-bansal.webp",
+      qualifications: doc?.qualifications || "MBBS, MD - Dermatology, Venereology & Leprosy",
+      specialty: doc?.specialty || "Clinical Dermatology, Acne Scar Revision & Pigmentary Disorders",
+      consultTitle: `Consult ${doc?.name || "Dr. Aanchal Bansal"}`,
+    };
+  }
+
+  if (raw.includes("sukriti")) {
+    const doc = DOCTORS.find((d) => d.id === "dr-sukriti");
+    return {
+      name: doc?.name || "Dr. Sukriti",
+      role: doc?.role || "Senior Consultant Dermatologist & Aesthetic Physician",
+      image: doc?.image || "/images/doctors/dr-sukriti.webp",
+      qualifications: doc?.qualifications || "MBBS, MD - Dermatology",
+      specialty: doc?.specialty || "Clinical Dermatology & Laser Aesthetics",
+      consultTitle: `Consult ${doc?.name || "Dr. Sukriti"}`,
+    };
+  }
+
+  if (raw.includes("neha")) {
+    const doc = DOCTORS.find((d) => d.id === "dr-neha-dhankar");
+    return {
+      name: doc?.name || "Dr. Neha Dhankar",
+      role: doc?.role || "Consultant Dermatologist & Aesthetic Physician",
+      image: doc?.image || "/images/doctors/dr-neha-dhankar.webp",
+      qualifications: doc?.qualifications || "MBBS, MD - Dermatology",
+      specialty: doc?.specialty || "Laser Hair Reduction & Skin Rejuvenation",
+      consultTitle: `Consult ${doc?.name || "Dr. Neha Dhankar"}`,
+    };
+  }
+
+  if (raw.includes("shradha") || raw.includes("shraddha")) {
+    const doc = DOCTORS.find((d) => d.id === "dr-shradha-gumber");
+    return {
+      name: doc?.name || "Dr. Shradha",
+      role: doc?.role || "Consultant Dermatologist & Trichologist",
+      image: doc?.image || "/images/doctors/dr-shradha-gumber.webp",
+      qualifications: doc?.qualifications || "MBBS, MD - Dermatology",
+      specialty: doc?.specialty || "Trichology & Hair Loss Reversal",
+      consultTitle: `Consult ${doc?.name || "Dr. Shradha"}`,
+    };
+  }
+
+  // Default to Founder & Chief Dermatologist
+  const doc = DOCTORS[0];
+  return {
+    name: doc?.name || "Dr. Ipshita Johri",
+    role: "Senior MD Dermatologist • Founder & Medical Director",
+    image: doc?.image || "/images/doctors/dr-ipshita-johri.webp",
+    qualifications: doc?.qualifications || "MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff Univ)",
+    specialty: doc?.specialty || "Advanced Anti-Ageing, Facial Sculpting & Aesthetic Lasers",
+    consultTitle: "Consult Dr. Ipshita Johri",
+  };
+}
 
 export const YOUTUBE_VIDEOS: YouTubeVideo[] = [
   {

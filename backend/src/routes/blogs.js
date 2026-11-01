@@ -98,7 +98,7 @@ router.post(
   '/',
   requirePermission('blogs.create'),
   asyncHandler(async (req, res) => {
-    const { title, slug, excerpt, content, featuredImage, category, authorName, tags, isPublished = 1 } = req.body;
+    const { title, slug, excerpt, content, featuredImage, category, authorName, tags, metaTitle, metaDescription, metaKeywords, canonicalUrl, isPublished = 1 } = req.body;
     if (!title) throw new HttpError(400, 'Article title is required');
 
     const cleanSlug = slug ? slugify(slug) : slugify(title);
@@ -109,15 +109,19 @@ router.post(
 
     const r = await query(
       `INSERT INTO sid_blogs (
-        slug, title, excerpt, content, featured_image, category, author_name, tags, is_published, published_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        slug, title, excerpt, content, featured_image, category, meta_title, meta_description, meta_keywords, canonical_url, author_name, tags, is_published, published_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         cleanSlug,
         title.trim(),
         excerpt || null,
         content || null,
-        featuredImage || '/images/treatments/hydrafacial.webp',
+        featuredImage || '/images/treatments/banner-acne.webp',
         category || 'Dermatology Tips',
+        metaTitle || null,
+        metaDescription || null,
+        metaKeywords || null,
+        canonicalUrl || null,
         authorName || 'Dr. Ipshita Johri',
         tags ? JSON.stringify(Array.isArray(tags) ? tags : tags.split(',').map((t) => t.trim())) : null,
         isPublished ? 1 : 0,
@@ -148,7 +152,7 @@ router.put(
   requirePermission('blogs.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { title, slug, excerpt, content, featuredImage, category, authorName, tags, isPublished } = req.body;
+    const { title, slug, excerpt, content, featuredImage, category, authorName, tags, metaTitle, metaDescription, metaKeywords, canonicalUrl, isPublished } = req.body;
 
     const existing = await one('SELECT * FROM sid_blogs WHERE id = ?', [id]);
     if (!existing) throw new HttpError(404, 'Article not found');
@@ -163,6 +167,10 @@ router.put(
          content = COALESCE(?, content),
          featured_image = COALESCE(?, featured_image),
          category = COALESCE(?, category),
+         meta_title = COALESCE(?, meta_title),
+         meta_description = COALESCE(?, meta_description),
+         meta_keywords = COALESCE(?, meta_keywords),
+         canonical_url = COALESCE(?, canonical_url),
          author_name = COALESCE(?, author_name),
          tags = COALESCE(?, tags),
          is_published = COALESCE(?, is_published),
@@ -175,6 +183,10 @@ router.put(
         content !== undefined ? content : existing.content,
         featuredImage !== undefined ? featuredImage : existing.featured_image,
         category || null,
+        metaTitle !== undefined ? metaTitle : existing.meta_title,
+        metaDescription !== undefined ? metaDescription : existing.meta_description,
+        metaKeywords !== undefined ? metaKeywords : existing.meta_keywords,
+        canonicalUrl !== undefined ? canonicalUrl : existing.canonical_url,
         authorName || null,
         tags ? JSON.stringify(Array.isArray(tags) ? tags : tags.split(',').map((t) => t.trim())) : existing.tags,
         isPublished !== undefined ? (isPublished ? 1 : 0) : existing.is_published,

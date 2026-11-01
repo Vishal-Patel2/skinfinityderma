@@ -1301,6 +1301,84 @@ div.swal2-title {
   transform: translateY(-1px);
 }
 
+/* Universal CKEditor 5 Styling */
+.ck.ck-editor {
+  width: 100% !important;
+  margin-bottom: 0.5rem;
+}
+.ck-editor__editable_inline {
+  min-height: 150px !important;
+  max-height: 400px !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  border-radius: 0 0 10px 10px !important;
+  border-color: #CBD5E1 !important;
+  background-color: #FFFFFF !important;
+  padding: 0.85rem 1rem !important;
+}
+.ck-editor__editable_inline:focus {
+  border-color: #005B41 !important;
+  box-shadow: 0 0 0 3px rgba(0, 91, 65, 0.12) !important;
+}
+.ck-editor__editable_inline ul,
+.ck-editor__editable_inline ol {
+  padding-left: 1.25rem !important;
+  margin-bottom: 0.35rem !important;
+}
+.ck-editor__editable_inline li {
+  margin-bottom: 0.2rem !important;
+}
+.ck-editor__editable_inline p {
+  margin-bottom: 0.35rem !important;
+}
+.ck-toolbar {
+  border-radius: 10px 10px 0 0 !important;
+  background: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  border-bottom: 1px solid #E2E8F0 !important;
+}
+.ck.ck-button:hover {
+  background: #EDF2F7 !important;
+}
+.ck.ck-button.ck-on {
+  background: #E2E8F0 !important;
+  color: #005B41 !important;
+}
+/* Decreased compact height for Procedure Steps */
+.procedure-step-card .ck-editor__editable_inline {
+  min-height: 55px !important;
+  max-height: 180px !important;
+  padding: 0.45rem 0.75rem !important;
+  font-size: 0.84rem !important;
+  line-height: 1.45 !important;
+}
+.procedure-step-card .ck-toolbar {
+  padding: 0.15rem 0.35rem !important;
+}
+.procedure-step-card .ck.ck-button {
+  min-height: 26px !important;
+  min-width: 26px !important;
+  padding: 0.15rem 0.3rem !important;
+}
+
+/* Compact height for Suitability, Guidelines, FAQs and Highlights */
+.ck-compact-box .ck-editor__editable_inline,
+.card .ck-editor__editable_inline,
+#faqsContainer .ck-editor__editable_inline {
+  min-height: 65px !important;
+  max-height: 220px !important;
+  padding: 0.55rem 0.8rem !important;
+  font-size: 0.84rem !important;
+  line-height: 1.5 !important;
+}
+
+.ck-overview-box .ck-editor__editable_inline {
+  min-height: 85px !important;
+  max-height: 240px !important;
+  padding: 0.6rem 0.85rem !important;
+  font-size: 0.85rem !important;
+}
+
 /* Step Guidance Timeline Workflow */
 .guide-flow-container {
   display: grid;

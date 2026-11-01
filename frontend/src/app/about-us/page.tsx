@@ -64,14 +64,12 @@ export default function AboutUsPage() {
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-sm lg:max-w-none">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[3/4] bg-slate-100">
-                  <Image
+                  <img
                     src={founder.image}
                     alt={founder.name}
-                    fill
-                    className="object-cover"
-                    priority
+                    className="w-full h-full object-cover object-top block"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
                   
                   <div className="absolute bottom-5 left-5 right-5 text-white">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-slate-900/80 px-2.5 py-1 rounded-md backdrop-blur-sm border border-amber-400/30">
@@ -85,11 +83,10 @@ export default function AboutUsPage() {
                 {/* Pageant Floating Card */}
                 <div className="absolute -bottom-6 -right-4 bg-white rounded-2xl p-4 shadow-xl border border-slate-100 flex items-center gap-3 max-w-[260px]">
                   <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-amber-300">
-                    <Image
+                    <img
                       src="/images/doctors/dr-ipshita-miss-curvy.jpg"
                       alt="Ms. India Curvy 2020 Runner Up"
-                      fill
-                      className="object-cover"
+                      className="w-full h-full object-cover block"
                     />
                   </div>
                   <div>

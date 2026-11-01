@@ -20,6 +20,7 @@ import {
   Phone,
   Calendar,
   X,
+  Play,
 } from "lucide-react";
 import {
   RICH_TREATMENTS,
@@ -496,6 +497,12 @@ function TreatmentsListingContent() {
                             className="object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                          {treatment.youtubeVideoId && (
+                            <span className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/20">
+                              <Play className="w-2.5 h-2.5 fill-current text-red-500" />
+                              <span>Video</span>
+                            </span>
+                          )}
                         </Link>
 
                         {/* Overlapping ADD / Quantity Control Button at Bottom Center of Image */}

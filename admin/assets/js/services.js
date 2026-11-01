@@ -5,6 +5,7 @@
 $(document).ready(function () {
   'use strict';
 
+  let dataTable = null;
   let servicesList = [];
 
   function loadServices() {
@@ -12,6 +13,10 @@ $(document).ready(function () {
       if (!res.success) return;
       servicesList = res.data || [];
       $('#totalServicesCount').text(`${servicesList.length} Services`);
+
+      if (dataTable) {
+        dataTable.destroy();
+      }
 
       const $tbody = $('#servicesTableBody').empty();
       if (servicesList.length === 0) {
@@ -34,6 +39,15 @@ $(document).ready(function () {
           </tr>
         `);
       });
+
+      dataTable = $('table').DataTable({
+        responsive: true,
+        pageLength: 10,
+        language: {
+          search: "_INPUT_",
+          searchPlaceholder: "Search services..."
+        }
+      });
     });
   }
 
@@ -41,6 +55,7 @@ $(document).ready(function () {
     $('#serviceId').val('');
     $('#serviceModalTitle').text('Add New Clinical Service');
     $('#serviceForm')[0].reset();
+    window.App.setCKData('serviceFullDesc', '');
     const modal = new bootstrap.Modal(document.getElementById('serviceModal'));
     modal.show();
   });
@@ -63,6 +78,7 @@ $(document).ready(function () {
     $('#serviceCategory').val(s.categoryName || '');
     $('#serviceShortDesc').val(s.shortDesc || '');
     $('#serviceFullDesc').val(s.fullDesc || '');
+    window.App.setCKData('serviceFullDesc', s.fullDesc || '');
     $('#serviceImage').val(s.image || '');
     $('#serviceCtaText').val(s.ctaText || 'Schedule Service');
     $('#serviceCtaUrl').val(s.ctaUrl || '/treatments');
@@ -78,7 +94,7 @@ $(document).ready(function () {
       name: $('#serviceName').val().trim(),
       slug: $('#serviceSlug').val().trim(),
       shortDesc: $('#serviceShortDesc').val().trim(),
-      fullDesc: $('#serviceFullDesc').val().trim(),
+      fullDesc: window.App.getCKData('serviceFullDesc') || $('#serviceFullDesc').val().trim(),
       image: $('#serviceImage').val().trim() || null,
       ctaText: $('#serviceCtaText').val().trim(),
       ctaUrl: $('#serviceCtaUrl').val().trim(),
@@ -107,5 +123,6 @@ $(document).ready(function () {
     });
   });
 
+  window.App.initCKEditor('#serviceFullDesc');
   loadServices();
 });

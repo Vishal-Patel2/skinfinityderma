@@ -107,6 +107,7 @@ $(document).ready(function () {
     $('#concernThumbnailUrl').val('');
     $('#concernPreviewImg').attr('src', '');
     $('#concernPreviewWrap').addClass('d-none');
+    window.App.setCKData('concernDescription', '');
     $('#concernIsActive').prop('checked', true);
     $('#concernOrder').val(concernsData.length + 1);
     $('#concernModalLabel').text('Add New Concern');
@@ -123,6 +124,7 @@ $(document).ready(function () {
     $('#concernName').val(con.name);
     $('#concernSlug').val(con.slug);
     $('#concernDescription').val(con.description || '');
+    window.App.setCKData('concernDescription', con.description || '');
     $('#concernOrder').val(con.displayOrder || 1);
     $('#concernIsActive').prop('checked', con.isActive);
     $('#concernThumbnailUrl').val(con.thumbnail || '');
@@ -155,7 +157,7 @@ $(document).ready(function () {
     const payload = {
       name: name,
       slug: slug,
-      description: $('#concernDescription').val().trim(),
+      description: window.App.getCKData('concernDescription') || $('#concernDescription').val().trim(),
       thumbnail: $('#concernThumbnailUrl').val(),
       displayOrder: parseInt($('#concernOrder').val()) || 1,
       isActive: $('#concernIsActive').is(':checked')
@@ -228,5 +230,6 @@ $(document).ready(function () {
   });
 
   // Initial load
+  window.App.initCKEditor('#concernDescription');
   loadConcerns();
 });

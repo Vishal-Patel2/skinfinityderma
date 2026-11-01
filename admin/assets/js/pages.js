@@ -36,10 +36,16 @@ $(document).ready(function () {
     });
   }
 
+  $(document).ready(function () {
+    loadPages();
+    window.App.initCKEditor('#pageContent');
+  });
+
   $('#btnOpenNewPageModal').on('click', function () {
     $('#pageId').val('');
     $('#pageModalTitle').text('Create New Dynamic Page');
     $('#pageForm')[0].reset();
+    window.App.setCKData('pageContent', '');
     const modal = new bootstrap.Modal(document.getElementById('pageModal'));
     modal.show();
   });
@@ -62,6 +68,7 @@ $(document).ready(function () {
     $('#pageSubtitle').val(p.subtitle || '');
     $('#pageBanner').val(p.bannerImage || '');
     $('#pageContent').val(p.content || '');
+    window.App.setCKData('pageContent', p.content || '');
     $('#pageSeoTitle').val(p.seoTitle || '');
     $('#pageSeoDesc').val(p.seoDesc || '');
 
@@ -77,7 +84,7 @@ $(document).ready(function () {
       slug: $('#pageSlug').val().trim(),
       subtitle: $('#pageSubtitle').val().trim(),
       bannerImage: $('#pageBanner').val().trim() || null,
-      content: $('#pageContent').val().trim(),
+      content: window.App.getCKData('pageContent') || $('#pageContent').val().trim(),
       seoTitle: $('#pageSeoTitle').val().trim(),
       seoDesc: $('#pageSeoDesc').val().trim(),
       isActive: true

@@ -143,11 +143,10 @@ export default function Hero() {
               {/* Floating Doctor Badge */}
               <div className="absolute -top-4 -left-4 sm:-left-6 bg-white rounded-2xl p-3.5 shadow-xl border border-slate-100 flex items-center gap-3 max-w-[240px]">
                 <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-brand-200">
-                  <Image
-                    src="/images/doctors/dr-ipshita-johri.jpg"
+                  <img
+                    src="/images/doctors/dr-ipshita-johri.webp"
                     alt="Dr. Ipshita Johri"
-                    fill
-                    className="object-cover"
+                    className="w-full h-full object-cover block"
                   />
                 </div>
                 <div>

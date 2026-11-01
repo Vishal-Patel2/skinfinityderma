@@ -107,6 +107,7 @@ $(document).ready(function () {
     $('#categoryThumbnailUrl').val('');
     $('#categoryPreviewImg').attr('src', '');
     $('#categoryPreviewWrap').addClass('d-none');
+    window.App.setCKData('categoryDescription', '');
     $('#categoryIsActive').prop('checked', true);
     $('#categoryOrder').val(categoriesData.length + 1);
     $('#categoryModalLabel').text('Add New Category');
@@ -123,6 +124,7 @@ $(document).ready(function () {
     $('#categoryName').val(cat.name);
     $('#categorySlug').val(cat.slug);
     $('#categoryDescription').val(cat.description || '');
+    window.App.setCKData('categoryDescription', cat.description || '');
     $('#categoryOrder').val(cat.displayOrder || 1);
     $('#categoryIsActive').prop('checked', cat.isActive);
     $('#categoryThumbnailUrl').val(cat.thumbnail || '');
@@ -155,7 +157,7 @@ $(document).ready(function () {
     const payload = {
       name: name,
       slug: slug,
-      description: $('#categoryDescription').val().trim(),
+      description: window.App.getCKData('categoryDescription') || $('#categoryDescription').val().trim(),
       thumbnail: $('#categoryThumbnailUrl').val(),
       displayOrder: parseInt($('#categoryOrder').val()) || 1,
       isActive: $('#categoryIsActive').is(':checked')
@@ -228,5 +230,6 @@ $(document).ready(function () {
   });
 
   // Initial load
+  window.App.initCKEditor('#categoryDescription');
   loadCategories();
 });

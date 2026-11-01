@@ -26,6 +26,7 @@ export default function DoctorFounder() {
 
   const [founder, setFounder] = useState(defaultFounder);
   const [teamDoctors, setTeamDoctors] = useState(defaultTeamDoctors);
+  const [isSectionActive, setIsSectionActive] = useState(true);
   const [founderSection, setFounderSection] = useState({
     title: "Dr. Ipshita Johri",
     subtitle: "Founder, Celebrity Dermatologist & Anti-Ageing Expert",
@@ -34,6 +35,23 @@ export default function DoctorFounder() {
     subDescription: "Her signature medical philosophy rests on four core pillars: Accurate Diagnosis, Root-Cause Eradication, Prevention of Recurrence, and Empowered Patient Education. Under her leadership, Skinfinity Derma has treated over 1,00,000 satisfied patients across India and internationally.",
     qualifications: "MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)",
     experience: "Over 12 years of specialized aesthetic clinical experience in Delhi NCR",
+    mediaUrl: "/images/doctors/dr-ipshita-johri.webp",
+    buttonText: "Read Full Biography & Philosophy",
+    buttonUrl: "/about-clinic",
+    secondaryButtonText: "Consult with Dr. Ipshita",
+    secondaryButtonUrl: "#consultation",
+    missCurvy: {
+      title: "Ms. India Curvy 2020",
+      subtitle: "Runner Up & Pageant Icon",
+      tagline: "Empowering Body Positivity",
+      image: "/images/doctors/dr-ipshita-miss-curvy.jpg",
+    },
+    highlights: [
+      "Pioneer of Sugarcane HydraFacial",
+      "Advanced Laser Hair Reduction Specialist",
+      "Non-Surgical Facial Contouring & Botox",
+      "Evidence-Based Acne & Scar Protocols",
+    ],
   });
 
   const doctorScrollRef = useRef<HTMLDivElement>(null);
@@ -51,7 +69,7 @@ export default function DoctorFounder() {
           setFounder((prev) => ({
             ...prev,
             ...founderDoc,
-            image: founderDoc.image || prev.image,
+            image: prev.image || founderDoc.image,
           }));
         }
       }
@@ -59,16 +77,40 @@ export default function DoctorFounder() {
 
     // Fetch dynamic section overrides from homepage CMS
     getHomepageData().then((hp) => {
-      if (!active || !hp?.doctorFounder) return;
-      const sec = hp.sections?.doctor_founder;
-      if (sec) {
+      if (!active) return;
+      if (hp?.doctorFounder === null) {
+        setIsSectionActive(false);
+        return;
+      }
+      if (hp?.doctorFounder) {
+        setIsSectionActive(true);
+        const sec = hp.doctorFounder;
         setFounderSection((prev) => ({
           ...prev,
           title: sec.title || prev.title,
           subtitle: sec.subtitle || prev.subtitle,
           badgeText: sec.badgeText || prev.badgeText,
           description: sec.description || prev.description,
+          subDescription: sec.subDescription || prev.subDescription,
+          qualifications: sec.qualifications || prev.qualifications,
+          experience: sec.experience || prev.experience,
+          mediaUrl: sec.mediaUrl || prev.mediaUrl,
+          buttonText: sec.buttonText || prev.buttonText,
+          buttonUrl: sec.buttonUrl || prev.buttonUrl,
+          secondaryButtonText: sec.secondaryButtonText || prev.secondaryButtonText,
+          secondaryButtonUrl: sec.secondaryButtonUrl || prev.secondaryButtonUrl,
+          missCurvy: {
+            title: sec.missCurvy?.title || prev.missCurvy.title,
+            subtitle: sec.missCurvy?.subtitle || prev.missCurvy.subtitle,
+            tagline: sec.missCurvy?.tagline || prev.missCurvy.tagline,
+            image: sec.missCurvy?.image || prev.missCurvy.image,
+          },
+          highlights: sec.highlights && sec.highlights.length > 0 ? sec.highlights : prev.highlights,
         }));
+
+        if (sec.mediaUrl) {
+          setFounder((prev) => ({ ...prev, image: sec.mediaUrl! }));
+        }
       }
     }).catch(() => {});
 
@@ -101,6 +143,10 @@ export default function DoctorFounder() {
     doctorScrollRef.current?.scrollBy({ left: 310, behavior: "smooth" });
   };
 
+  if (!isSectionActive) {
+    return null;
+  }
+
   return (
     <section className="py-10 lg:py-14 bg-gradient-to-b from-white via-slate-50/50 to-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -114,42 +160,42 @@ export default function DoctorFounder() {
 
               {/* Founder Image */}
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[3/4] bg-slate-100">
-                <Image
-                  src={founder.image}
-                  alt="Dr. Ipshita Johri - Founder & Celebrity Dermatologist"
-                  fill
-                  className="object-cover"
+                <img
+                  src={founder.image || founderSection.mediaUrl || "/images/doctors/dr-ipshita-johri.webp"}
+                  alt={founder.name || founderSection.title}
+                  className="w-full h-full object-cover object-top block"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
 
                 <div className="absolute bottom-5 left-5 right-5 text-white">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-slate-900/80 px-2.5 py-1 rounded-md backdrop-blur-sm border border-amber-400/30">
                     Founder &amp; Medical Director
                   </span>
-                  <h3 className="text-xl font-bold font-serif mt-1.5">{founder.name}</h3>
-                  <p className="text-xs text-slate-300 font-sans">{founder.qualifications}</p>
+                  <h3 className="text-xl font-bold font-serif mt-1.5">{founder.name || founderSection.title}</h3>
+                  <p className="text-xs text-slate-300 font-sans">{founder.qualifications || founderSection.qualifications}</p>
                 </div>
               </div>
 
-              {/* Miss India Curvy 2020 Runner Up Floating Badge */}
-              <div className="absolute -bottom-6 right-2 sm:-right-6 bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-slate-100 flex items-center gap-3 max-w-[235px] sm:max-w-[250px]">
-                <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 border border-amber-300">
-                  <Image
-                    src="/images/doctors/dr-ipshita-miss-curvy.jpg"
-                    alt="Dr. Ipshita Johri Ms. India Curvy 2020 Runner Up"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
-                    <Award className="w-3.5 h-3.5" />
-                    <span>Ms. India Curvy 2020</span>
+              {/* Miss India Curvy Floating Badge */}
+              {founderSection.missCurvy && (
+                <div className="absolute -bottom-6 right-2 sm:-right-6 bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-slate-100 flex items-center gap-3 max-w-[235px] sm:max-w-[250px] z-10">
+                  <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 border border-amber-300">
+                    <img
+                      src={founderSection.missCurvy.image || "/images/doctors/dr-ipshita-miss-curvy.jpg"}
+                      alt={founderSection.missCurvy.title || "Ms. India Curvy 2020"}
+                      className="w-full h-full object-cover block"
+                    />
                   </div>
-                  <p className="text-[10px] text-slate-700 font-semibold">Runner Up &amp; Pageant Icon</p>
-                  <p className="text-[9px] text-slate-500">Empowering Body Positivity</p>
+                  <div>
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
+                      <Award className="w-3.5 h-3.5" />
+                      <span>{founderSection.missCurvy.title || "Ms. India Curvy 2020"}</span>
+                    </div>
+                    <p className="text-[10px] text-slate-700 font-semibold">{founderSection.missCurvy.subtitle || "Runner Up & Pageant Icon"}</p>
+                    <p className="text-[9px] text-slate-500">{founderSection.missCurvy.tagline || "Empowering Body Positivity"}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
             </div>
           </div>
@@ -176,39 +222,47 @@ export default function DoctorFounder() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {founderSection.description}
-            </p>
+            {founderSection.description?.includes("<") ? (
+              <div
+                className="text-sm text-slate-600 leading-relaxed space-y-2 [&_p]:mb-2 [&_strong]:text-slate-800"
+                dangerouslySetInnerHTML={{ __html: founderSection.description }}
+              />
+            ) : (
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {founderSection.description}
+              </p>
+            )}
 
-            <p className="text-sm text-slate-600 leading-relaxed">
-              {founderSection.subDescription}
-            </p>
+            {founderSection.subDescription && (
+              founderSection.subDescription.includes("<") ? (
+                <div
+                  className="text-sm text-slate-600 leading-relaxed space-y-2 [&_p]:mb-2 [&_strong]:text-slate-800"
+                  dangerouslySetInnerHTML={{ __html: founderSection.subDescription }}
+                />
+              ) : (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {founderSection.subDescription}
+                </p>
+              )
+            )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-medium text-slate-700">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-700 shrink-0" />
-                <span>Pioneer of Sugarcane HydraFacial</span>
+            {founderSection.highlights && founderSection.highlights.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-medium text-slate-700">
+                {founderSection.highlights.map((hl, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-brand-700 shrink-0" />
+                    <span>{hl}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-700 shrink-0" />
-                <span>Advanced Laser Hair Reduction Specialist</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-700 shrink-0" />
-                <span>Non-Surgical Facial Contouring &amp; Botox</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-brand-700 shrink-0" />
-                <span>Evidence-Based Acne &amp; Scar Protocols</span>
-              </div>
-            </div>
+            )}
 
             <div className="pt-4 flex flex-wrap items-center gap-3 sm:gap-4">
               <Link
-                href="/about-us"
+                href={founderSection.buttonUrl || "/about-clinic"}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold text-white bg-brand-700 hover:bg-brand-800 shadow-md hover:shadow-glow transition-all"
               >
-                <span>Read Full Biography &amp; Philosophy</span>
+                <span>{founderSection.buttonText || "Read Full Biography & Philosophy"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <button
@@ -216,7 +270,7 @@ export default function DoctorFounder() {
                 onClick={() => openAppointmentModal("General Dermatologist Consultation")}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 hover:text-brand-700 transition-colors cursor-pointer"
               >
-                <span>Consult with Dr. Ipshita</span>
+                <span>{founderSection.secondaryButtonText || "Consult with Dr. Ipshita"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -284,19 +338,18 @@ export default function DoctorFounder() {
                 className="flex-none w-[275px] sm:w-[290px] lg:w-[calc(25%-18px)] snap-start bg-white rounded-3xl p-5 border border-slate-200/80 shadow-sm hover:shadow-xl hover:border-brand-300 transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
-                  <Link href={`/doctors/${doc.id}`} className="block relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-4">
-                    <Image
+                  <Link href={`/doctors/${doc.slug || doc.id}`} className="block relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-4">
+                    <img
                       src={doc.image}
                       alt={doc.name}
-                      fill
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 block"
                     />
                     <div className="absolute top-3 right-3 bg-slate-900/80 text-white text-[11px] font-semibold px-2.5 py-1 rounded backdrop-blur-sm">
                       {doc.experience || "MD Dermatologist"}
                     </div>
                   </Link>
 
-                  <Link href={`/doctors/${doc.id}`}>
+                  <Link href={`/doctors/${doc.slug || doc.id}`}>
                     <h4 className="text-lg font-bold text-slate-900 group-hover:text-brand-700 transition-colors font-serif">
                       {doc.name}
                     </h4>
@@ -308,7 +361,7 @@ export default function DoctorFounder() {
 
                 <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-2">
                   <Link
-                    href={`/doctors/${doc.id}`}
+                    href={`/doctors/${doc.slug || doc.id}`}
                     className="flex-1 text-center py-2 px-2.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-all"
                   >
                     View Profile

@@ -3,21 +3,311 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Doctor Profiles | Skinfinity Derma Admin</title>
+  <title>Doctor & Specialist Team CMS | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    /* Executive Medical Styling */
+    :root {
+      --skin-emerald: #005b41;
+      --skin-emerald-hover: #004531;
+      --skin-emerald-light: #e6f4ea;
+    }
+
+    /* KPI Summary Cards */
+    .doctor-kpi-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 1.2rem 1.35rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 4px 12px rgba(0,0,0,0.03);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .doctor-kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: #CBD5E1;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+    .doctor-kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+
+    /* Toolbar styling */
+    .doctor-toolbar {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      padding: 0.85rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .doctor-search-box {
+      position: relative;
+      min-width: 260px;
+    }
+    .doctor-search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94A3B8;
+      font-size: 0.95rem;
+    }
+    .doctor-search-box input {
+      padding-left: 38px;
+      border-radius: 999px;
+      border: 1px solid #CBD5E1;
+      font-size: 0.875rem;
+      background: #F8FAFC;
+      transition: all 0.2s ease;
+    }
+    .doctor-search-box input:focus {
+      background: #FFFFFF;
+      border-color: var(--skin-emerald);
+      box-shadow: 0 0 0 3px rgba(0, 91, 65, 0.12);
+    }
+
+    /* Filter pills */
+    .filter-status-group .btn-filter-pill {
+      border: 1px solid #E2E8F0;
+      background: #F8FAFC;
+      color: #475569;
+      font-size: 0.825rem;
+      font-weight: 600;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .filter-status-group .btn-filter-pill:hover {
+      background: #F1F5F9;
+      color: #0F172A;
+    }
+    .filter-status-group .btn-filter-pill.active {
+      background: var(--skin-emerald);
+      color: #FFFFFF;
+      border-color: var(--skin-emerald);
+      box-shadow: 0 2px 6px rgba(0, 91, 65, 0.25);
+    }
+
+    /* Doctors Table Card */
+    .doctors-table-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02), 0 6px 18px rgba(0,0,0,0.03);
+    }
+    .doctors-table thead th {
+      background: #F8FAFC;
+      color: #475569;
+      font-size: 0.725rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 1rem 1.15rem;
+      border-bottom: 1px solid #E2E8F0;
+      white-space: nowrap;
+    }
+    .doctors-table tbody td {
+      padding: 1.15rem 1.15rem;
+      border-bottom: 1px solid #F1F5F9;
+      vertical-align: middle;
+    }
+    .doctors-table tbody tr:hover {
+      background: #FAFCFB;
+    }
+
+    /* Luxury portrait container */
+    .doctor-portrait-box {
+      width: 58px;
+      height: 72px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #E2E8F0;
+      background: #F1F5F9;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+    }
+    .doctor-portrait-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .doctors-table tbody tr:hover .doctor-portrait-box img {
+      transform: scale(1.06);
+    }
+
+    /* Discrete specialty micro tags */
+    .specialty-tag {
+      display: inline-block;
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #334155;
+      font-size: 0.725rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      margin-right: 0.25rem;
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    /* Route Pill */
+    .doctor-route-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      color: #0284C7;
+      background: #F0F9FF;
+      border: 1px solid #BAE6FD;
+      border-radius: 6px;
+      padding: 0.15rem 0.5rem;
+      text-decoration: none;
+      font-family: monospace;
+      transition: all 0.15s ease;
+    }
+    .doctor-route-pill:hover {
+      background: #E0F2FE;
+      color: #0369A1;
+      border-color: #7DD3FC;
+    }
+
+    /* Experience Pill */
+    .experience-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: #005B41;
+      background: #E6F4EA;
+      border-radius: 6px;
+      padding: 0.2rem 0.5rem;
+    }
+
+    /* Location Pill */
+    .location-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.725rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      color: #475569;
+      margin-right: 0.25rem;
+    }
+
+    /* Action button group */
+    .action-btn-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      color: #475569;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+    .action-btn-circle:hover {
+      background: #F8FAFC;
+      border-color: #CBD5E1;
+      color: #0F172A;
+    }
+    .action-btn-circle.btn-edit-doc:hover {
+      background: #F0FDF4;
+      border-color: #86EFAC;
+      color: #005B41;
+    }
+    .action-btn-circle.btn-delete-doc:hover {
+      background: #FEF2F2;
+      border-color: #FCA5A5;
+      color: #DC2626;
+    }
+
+    /* Dropzone inside modal */
+    .doctor-upload-dropzone {
+      border: 2px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 1.15rem;
+      text-align: center;
+      background: #F8FAFC;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: block;
+    }
+    .doctor-upload-dropzone:hover {
+      border-color: #005B41;
+      background: #F0FDF4;
+    }
+    .doctor-preview-card {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #E2E8F0;
+      background: #FFFFFF;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      width: 100%;
+      height: 160px;
+    }
+    .doctor-preview-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+    }
+    .doctor-preview-card .btn-remove-photo {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(220, 38, 38, 0.9);
+      color: #FFFFFF;
+      border: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .doctor-preview-card .btn-remove-photo:hover {
+      background: #DC2626;
+      transform: scale(1.1);
+    }
+  </style>
 </head>
 <body>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="admin-wrapper">
-    <!-- Sidebar Navigation -->
+    <!-- SIDEBAR -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
         <a href="index.html" class="sidebar-brand">
@@ -25,7 +315,7 @@
         </a>
       </div>
 
-            <div class="sidebar-body">
+      <div class="sidebar-body">
         <div class="sidebar-section-title">Core Operations</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
@@ -42,12 +332,12 @@
           <li class="nav-item"><a href="doctors.html" class="nav-link active"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
           <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
-          <li class="nav-item"><a href="concerns.html" class="nav-link"><i class="bi bi-heart-pulse"></i><span>Concerns</span></a></li>
+          
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
-          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-house-gear-fill text-success"></i><span>Homepage CMS</span></a></li>
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
@@ -72,14 +362,14 @@
         <div class="sidebar-user">
           <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
           <div class="sidebar-user-info">
-            <div class="sidebar-user-name">Staff User</div>
-            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+            <div class="sidebar-user-name">Dr. Ipshita Johri</div>
+            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Super Administrator</span></div>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- MAIN WRAPPER -->
     <div class="admin-main">
       <header class="admin-header">
         <div class="header-left">
@@ -87,217 +377,261 @@
             <i class="bi bi-list"></i>
           </button>
           <div class="header-title-wrap">
-            <h1>Doctor Team</h1>
+            <h1>Specialists &amp; Medical Board Management</h1>
             <div class="header-breadcrumb">
               <a href="index.html">Admin</a>
               <span class="sep">/</span>
-              <span>Doctors</span>
+              <span>Doctors Directory</span>
             </div>
           </div>
         </div>
 
-        <div class="header-right">
-          <button type="button" class="btn btn-primary btn-sm" id="btnOpenAddDoctorModal">
-            <i class="bi bi-person-plus-fill"></i>
-            <span>Add Doctor</span>
+        <div class="header-right d-flex align-items-center gap-2">
+          <a href="http://localhost:3000/doctors/dr-ipshita-johri" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Preview Founder Profile
+          </a>
+          <button type="button" class="btn btn-luxury-emerald btn-sm rounded-pill px-3 shadow-sm" id="btnOpenAddDoctorModal">
+            <i class="bi bi-plus-lg me-1"></i> Add Specialist Profile
           </button>
-
-          <div class="dropdown header-profile-dropdown">
-            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="assets/img/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
-              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
-              <i class="bi bi-chevron-down text-muted small ms-1"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
-              <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Clinic Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item py-2 text-danger action-logout" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
-            </ul>
-          </div>
         </div>
       </header>
 
       <main class="admin-content">
-        <!-- Filter Controls -->
-        <div class="skin-card mb-4">
-          <div class="skin-card-body py-3">
-            <div class="row g-3 align-items-center">
-              <div class="col-md-5">
-                <label class="form-label small text-muted mb-1">Filter by Clinic Branch</label>
-                <select id="filterDoctorClinic" class="form-select form-select-sm">
-                  <option value="">All Branches</option>
-                  <option value="Noida">Sector 36, Noida</option>
-                  <option value="Gurugram">Sector 28, Gurugram</option>
-                </select>
+        <!-- 4 LUXURY KPI METRIC CARDS -->
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6 col-lg-3">
+            <div class="doctor-kpi-card d-flex align-items-center gap-3">
+              <div class="doctor-kpi-icon bg-success-subtle text-success">
+                <i class="bi bi-person-badge-fill"></i>
               </div>
-              <div class="col-md-5">
-                <label class="form-label small text-muted mb-1">Filter by Specialization</label>
-                <input type="text" id="filterDoctorSpec" class="form-control form-control-sm" placeholder="e.g. Laser, Trichology, Peels...">
+              <div>
+                <div class="text-muted small fw-semibold">Total Specialists</div>
+                <div class="h3 fw-bold text-dark mb-0" id="statTotalDoctors">5</div>
+                <div class="small text-muted" style="font-size: 0.725rem;">Board-certified MDs</div>
               </div>
-              <div class="col-md-2 d-flex align-items-end">
-                <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="btnResetDoctorFilters">
-                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-                </button>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="doctor-kpi-card d-flex align-items-center gap-3">
+              <div class="doctor-kpi-icon bg-emerald-subtle text-emerald">
+                <i class="bi bi-broadcast"></i>
+              </div>
+              <div>
+                <div class="text-muted small fw-semibold">Live on Website</div>
+                <div class="h3 fw-bold text-success mb-0" id="statActiveDoctors">5</div>
+                <div class="small text-success" style="font-size: 0.725rem;"><i class="bi bi-check-circle-fill me-1"></i>Accepting Consults</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="doctor-kpi-card d-flex align-items-center gap-3">
+              <div class="doctor-kpi-icon bg-warning-subtle text-warning">
+                <i class="bi bi-eye-slash-fill"></i>
+              </div>
+              <div>
+                <div class="text-muted small fw-semibold">Inactive / Draft</div>
+                <div class="h3 fw-bold text-muted mb-0" id="statInactiveDoctors">0</div>
+                <div class="small text-muted" style="font-size: 0.725rem;">Hidden from Carousels</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="doctor-kpi-card d-flex align-items-center gap-3">
+              <div class="doctor-kpi-icon bg-primary-subtle text-primary">
+                <i class="bi bi-hospital-fill"></i>
+              </div>
+              <div>
+                <div class="text-muted small fw-semibold">Clinical Coverage</div>
+                <div class="h4 fw-bold text-primary mb-0">Noida &amp; Gurgaon</div>
+                <div class="small text-muted" style="font-size: 0.725rem;">Sec 36 &amp; Sec 28 Suites</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- DataTable Card -->
-        <div class="skin-card">
-          <div class="skin-card-header">
-            <div class="skin-card-title">
-              <i class="bi bi-person-badge text-secondary"></i>
-              <span>Doctors Directory</span>
+        <!-- INTEGRATED SEARCH & SMART FILTER TOOLBAR -->
+        <div class="doctor-toolbar mb-4">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <!-- Left: Search Box -->
+            <div class="doctor-search-box flex-grow-1 flex-md-grow-0">
+              <i class="bi bi-search"></i>
+              <input type="text" class="form-control" id="doctorGlobalSearch" placeholder="Search by name, role, degree or focus...">
             </div>
-            <button class="btn btn-sm btn-outline-secondary" id="btnReloadDoctors">
-              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-            </button>
+
+            <!-- Center: Status Filter Pills -->
+            <div class="filter-status-group d-flex align-items-center gap-2">
+              <button type="button" class="btn-filter-pill active" data-status="all">
+                All Specialists <span class="badge bg-white text-dark ms-1" id="pillCountAll">5</span>
+              </button>
+              <button type="button" class="btn-filter-pill" data-status="active">
+                ● Live Online <span class="badge bg-white text-dark ms-1" id="pillCountActive">5</span>
+              </button>
+              <button type="button" class="btn-filter-pill" data-status="inactive">
+                ○ Inactive <span class="badge bg-white text-dark ms-1" id="pillCountInactive">0</span>
+              </button>
+            </div>
+
+            <!-- Right: Branch Filter & Refresh -->
+            <div class="d-flex align-items-center gap-2">
+              <select id="filterDoctorClinic" class="form-select form-select-sm rounded-pill" style="min-width: 160px;">
+                <option value="">All Branch Locations</option>
+                <option value="Noida">Noida (Sector 36)</option>
+                <option value="Gurgaon">Gurgaon (Sector 28)</option>
+              </select>
+
+              <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle p-2" id="btnReloadDoctors" title="Refresh Directory">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
           </div>
-          <div class="skin-card-body p-0">
-            <div class="table-responsive p-3">
-              <table id="doctorsTable" class="table table-hover align-middle w-100">
-                <thead>
-                  <tr>
-                    <th style="width: 50px;">Order</th>
-                    <th style="width: 75px;">Photo</th>
-                    <th>Doctor Name & Title</th>
-                    <th>Qualifications</th>
-                    <th>Specialization</th>
-                    <th>Consultation Fee</th>
-                    <th>Associated Clinic</th>
-                    <th>Status</th>
-                    <th style="width: 120px;" class="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="doctorsTableBody">
-                  <!-- Rendered dynamically -->
-                </tbody>
-              </table>
-            </div>
+        </div>
+
+        <!-- DOCTORS DIRECTORY DATA TABLE CARD -->
+        <div class="doctors-table-card">
+          <div class="table-responsive">
+            <table class="table doctors-table align-middle mb-0" id="doctorsMainTable">
+              <thead>
+                <tr>
+                  <th style="width: 60px;"># Order</th>
+                  <th style="width: 80px;">Specialist</th>
+                  <th style="width: 25%;">Doctor Name &amp; Title</th>
+                  <th style="width: 20%;">Credentials &amp; Experience</th>
+                  <th style="width: 25%;">Clinical Focus &amp; Specialty</th>
+                  <th style="width: 12%;">Fee &amp; Location</th>
+                  <th style="width: 10%;" class="text-center">Live Status</th>
+                  <th style="width: 90px;" class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="doctorsTableBody">
+                <!-- Rendered dynamically via JS -->
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
 
       <footer class="admin-page-footer">
         <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
-        <div class="text-muted">Physician & Medical Specialist Management</div>
+        <div class="text-muted">Enterprise Medical Board &amp; Dermatologist Management</div>
       </footer>
     </div>
   </div>
 
-  <!-- Add/Edit Doctor Modal -->
+  <!-- ADD / EDIT DOCTOR PROFILE MODAL -->
   <div class="modal fade" id="doctorModal" tabindex="-1" aria-labelledby="doctorModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content border-0 shadow">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="doctorModalLabel">Add New Doctor Profile</h5>
+        <div class="modal-header bg-light">
+          <h5 class="modal-title fw-bold" id="doctorModalLabel">Add Doctor Profile</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="doctorForm" novalidate>
           <input type="hidden" id="doctorId" name="id">
           <div class="modal-body p-4">
-            <div class="row g-3">
+            <div class="row g-3 mb-3">
               <div class="col-md-7">
                 <div class="mb-3">
-                  <label for="doctorName" class="form-label">Full Name & Title <span class="required">*</span></label>
-                  <input type="text" class="form-control" id="doctorName" placeholder="e.g. Dr. Johar" required>
-                  <div class="invalid-feedback">Doctor name is required.</div>
+                  <label for="doctorName" class="form-label fw-semibold small">Full Name &amp; Medical Honorific <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="doctorName" placeholder="e.g. Dr. Sukriti Agarwal" required>
                 </div>
 
                 <div class="mb-3">
-                  <label for="doctorDesignation" class="form-label">Clinical Designation <span class="required">*</span></label>
-                  <input type="text" class="form-control" id="doctorDesignation" placeholder="e.g. Founder & Chief Dermatologist" required>
+                  <label for="doctorDesignation" class="form-label fw-semibold small">Clinical Designation / Role <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="doctorDesignation" placeholder="e.g. Senior Consultant Dermatologist &amp; Trichologist" required>
                 </div>
 
                 <div class="mb-3">
-                  <label for="doctorQualifications" class="form-label">Medical Qualifications</label>
-                  <input type="text" class="form-control" id="doctorQualifications" placeholder="e.g. MBBS, MD (Dermatology, Venereology & Leprosy), FAM">
-                  <div class="form-text">Authentic medical credentials recognized by medical council.</div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="doctorSpecialization" class="form-label">Specializations</label>
-                  <input type="text" class="form-control" id="doctorSpecialization" placeholder="e.g. Clinical Dermatology, Scar Revision, Anti-Ageing">
+                  <label for="doctorSlug" class="form-label fw-semibold small">Public Profile URL Route <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light text-muted small">/doctors/</span>
+                    <input type="text" class="form-control" id="doctorSlug" placeholder="dr-sukriti-agarwal" required>
+                  </div>
                 </div>
               </div>
 
               <!-- Photo Upload Column -->
               <div class="col-md-5">
-                <label class="form-label">Profile Photograph</label>
-                <input type="hidden" id="doctorPhotoUrl">
-                <div class="image-upload-dropzone mb-2" id="doctorPhotoDropzone" style="height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                  <i class="bi bi-camera dropzone-icon mb-1"></i>
-                  <div class="fw-semibold small">Upload Photo</div>
-                  <div class="text-muted small">Square portrait (JPG, PNG)</div>
-                  <input type="file" id="doctorPhotoFile" class="d-none" accept="image/*">
+                <label class="form-label fw-semibold small d-block">Portrait Photograph</label>
+                <div class="doctor-preview-card mb-2" id="doctorPreviewCard">
+                  <img id="doctorPhotoPreviewImg" src="/images/doctors/dr-ipshita-johri.webp" alt="Doctor photo preview">
+                  <button type="button" class="btn-remove-photo" id="btnRemoveDoctorPhoto" title="Remove Photo"><i class="bi bi-x-lg"></i></button>
                 </div>
-                <div class="image-preview-wrapper d-none w-100 text-center" id="doctorPhotoPreviewWrap">
-                  <img id="doctorPhotoPreviewImg" src="" alt="Doctor photo preview" style="max-height: 180px; border-radius: 8px;">
-                  <button type="button" class="image-preview-remove" id="btnRemoveDoctorPhoto"><i class="bi bi-x"></i></button>
+
+                <label for="doctorPhotoFileInput" class="doctor-upload-dropzone mb-2">
+                  <i class="bi bi-cloud-arrow-up text-success fs-3 d-block mb-1"></i>
+                  <span class="fw-semibold small text-dark d-block">Click to Upload Photo</span>
+                  <span class="text-muted small" style="font-size: 0.725rem;">WEBP, JPG, PNG (Recommended 600x800)</span>
+                  <input type="file" id="doctorPhotoFileInput" class="visually-hidden" accept="image/*">
+                </label>
+
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light"><i class="bi bi-link-45deg"></i></span>
+                  <input type="text" class="form-control form-control-sm" id="doctorPhotoUrl" placeholder="/images/doctors/dr-sukriti-agarwal.webp">
                 </div>
               </div>
             </div>
 
             <div class="row g-3 mb-3">
-              <div class="col-md-4">
-                <label for="doctorConsultationFee" class="form-label fw-semibold text-success">Consultation Fee (₹) <span class="required">*</span></label>
+              <div class="col-md-6">
+                <label for="doctorQualifications" class="form-label fw-semibold small">Medical Degrees &amp; Fellowships</label>
+                <input type="text" class="form-control" id="doctorQualifications" placeholder="e.g. MBBS, MD - Dermatology, Venereology &amp; Leprosy">
+              </div>
+              <div class="col-md-6">
+                <label for="doctorExperience" class="form-label fw-semibold small">Clinical Experience</label>
+                <input type="text" class="form-control" id="doctorExperience" placeholder="e.g. 8+ Years Clinical Experience">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="doctorSpecialization" class="form-label fw-semibold small">Clinical Specializations (Comma separated)</label>
+                <input type="text" class="form-control" id="doctorSpecialization" placeholder="e.g. Acne Scar Subcision, Melasma Revision, Laser Hair Reduction">
+                <div class="form-text small">Each comma separated item renders as a clean badge.</div>
+              </div>
+              <div class="col-md-3">
+                <label for="doctorConsultationFee" class="form-label fw-semibold small">Consult Fee (₹)</label>
                 <div class="input-group">
                   <span class="input-group-text">₹</span>
-                  <input type="number" class="form-control" id="doctorConsultationFee" placeholder="1200" min="0" step="50" required>
+                  <input type="number" class="form-control" id="doctorConsultationFee" placeholder="1000" min="0" step="50" value="1000">
                 </div>
-                <div class="form-text small">Appointed consultation price for bookings.</div>
               </div>
-
-              <div class="col-md-4">
-                <label for="doctorExperience" class="form-label">Clinical Experience</label>
-                <input type="text" class="form-control" id="doctorExperience" placeholder="e.g. 14+ Years Experience">
-              </div>
-
-              <div class="col-md-4">
-                <label for="doctorAvailability" class="form-label">OPD Slot Availability</label>
-                <input type="text" class="form-control" id="doctorAvailability" placeholder="e.g. 10:00 AM - 07:00 PM (Mon-Sat)">
+              <div class="col-md-3">
+                <label for="doctorDisplayOrder" class="form-label fw-semibold small">Display Order</label>
+                <input type="number" class="form-control" id="doctorDisplayOrder" min="1" value="1">
               </div>
             </div>
 
             <div class="row g-3 mb-3">
               <div class="col-md-6">
-                <label for="doctorClinicCity" class="form-label">Associated Clinic / Branch</label>
-                <input type="text" class="form-control" id="doctorClinicCity" placeholder="e.g. Sector 36 Noida, Sector 28 Gurgaon">
+                <label for="doctorClinicCity" class="form-label fw-semibold small">Clinic Branch Locations</label>
+                <input type="text" class="form-control" id="doctorClinicCity" placeholder="Noida, Gurgaon">
               </div>
-
               <div class="col-md-6">
-                <label for="doctorProfileUrl" class="form-label">Profile Page URL (Optional)</label>
-                <input type="text" class="form-control" id="doctorProfileUrl" placeholder="/doctors/dr-ipshita-johri">
+                <label for="doctorAvailability" class="form-label fw-semibold small">OPD Schedule / Availability</label>
+                <input type="text" class="form-control" id="doctorAvailability" placeholder="Mon - Sat: 10:30 AM – 06:30 PM">
               </div>
             </div>
 
             <div class="mb-3">
-              <label for="doctorShortBio" class="form-label">Short Biography (Card Summary)</label>
-              <textarea class="form-control" id="doctorShortBio" rows="2" placeholder="Brief clinical background shown on listing cards..."></textarea>
+              <label for="doctorShortBio" class="form-label fw-semibold small">Clinical Biography &amp; Philosophy</label>
+              <textarea class="form-control" id="doctorShortBio" rows="3" placeholder="Brief clinical background shown on website cards and detail profile..."></textarea>
             </div>
 
-            <div class="mb-3">
-              <label for="doctorFullBio" class="form-label">Full Clinical Biography (Optional)</label>
-              <textarea class="form-control" id="doctorFullBio" rows="3" placeholder="Comprehensive background, memberships, fellowships and research..."></textarea>
-            </div>
-
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label for="doctorDisplayOrder" class="form-label">Display Order</label>
-                <input type="number" class="form-control" id="doctorDisplayOrder" min="1" value="1">
+            <!-- Active Switch -->
+            <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="fw-bold mb-0 text-success"><i class="bi bi-eye me-1"></i> Live Website Visibility</h6>
+                <small class="text-muted">When active, doctor shows on website carousels and detail pages. When inactive, doctor is hidden.</small>
               </div>
-              <div class="col-sm-6 d-flex align-items-end">
-                <div class="form-check form-switch mb-2">
-                  <input class="form-check-input" type="checkbox" id="doctorIsActive" checked>
-                  <label class="form-check-label fw-semibold" for="doctorIsActive">Active on Website</label>
-                </div>
+              <div class="form-check form-switch fs-5">
+                <input class="form-check-input" type="checkbox" id="doctorIsActive" checked>
+                <label class="form-check-label fs-6 fw-semibold ms-2" for="doctorIsActive" id="doctorActiveSwitchLabel">Active</label>
               </div>
             </div>
           </div>
           <div class="modal-footer bg-light">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btnSaveDoctor">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald" id="btnSaveDoctor">
               <i class="bi bi-check-lg me-1"></i> Save Doctor Profile
             </button>
           </div>
@@ -306,13 +640,12 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- SCRIPTS -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
   <script src="assets/js/api.js"></script>
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/doctors.js"></script>
 </body>

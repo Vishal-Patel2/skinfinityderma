@@ -107,7 +107,7 @@ export default function AppointmentModal() {
       qualifications: "MD / DDV Certified Specialist",
       specialty: "Skin, Hair & Laser Consultation",
       experience: "Instant Slot",
-      image: "/images/doctors/dr-ipshita-johri.jpg",
+      image: "/images/doctors/dr-ipshita-johri.webp",
       bio: "Immediate clinical consultation with our on-duty senior MD dermatologist.",
       consultationFee: 1000,
       availableLocations: ["Noida", "Gurgaon"] as ("Noida" | "Gurgaon")[],

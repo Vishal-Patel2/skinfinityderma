@@ -19,6 +19,7 @@ import {
   User,
   UserCheck,
   LogOut,
+  Sparkles,
   LayoutDashboard
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -166,100 +167,130 @@ export default function Header() {
                         {/* Column 1: Skin */}
                         <div>
                           <Link
-                            href="/treatments?category=Medi-Facials+%26+Glow"
+                            href="/treatments?category=Skin+Treatments"
                             onClick={() => setActiveDropdown(null)}
                             className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700 pb-2 mb-2 border-b border-slate-100 hover:underline"
                           >
                             <Award className="w-3.5 h-3.5 text-brand-700" />
-                            Skin &amp; Medi-Facials
+                            Skin Treatments
                           </Link>
                           <ul className="space-y-1.5 text-xs">
                             <li>
-                              <Link href="/acne-pimple-treatment-noida" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Acne &amp; Scar Remodeling
+                              <Link href="/acne-pimple-treatment" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Acne &amp; Pimple Treatment
                               </Link>
                             </li>
                             <li>
-                              <Link href="/sugarcane-hydrafacial" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Sugarcane HydraFacial MD
+                              <Link href="/viscoderm" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Viscoderm Bioremodeling
                               </Link>
                             </li>
                             <li>
-                              <Link href="/slimming-facial-for-women" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Slimming &amp; RF Sculpting Facial
+                              <Link href="/hydrafacial" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                HydraFacial Treatment
                               </Link>
                             </li>
                             <li>
-                              <Link href="/anti-ageing-facials" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Anti-Ageing, Botox &amp; Fillers
+                              <Link href="/pigmentation-treatment" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Pigmentation &amp; Melasma
                               </Link>
                             </li>
                             <li>
-                              <Link href="/pigmentation-treatment-noida" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Pigmentation &amp; Melasma Laser
+                              <Link href="/botox" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Botox &amp; Dermal Fillers
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/profhilo" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Profhilo &amp; Skin Boosters
                               </Link>
                             </li>
                           </ul>
                         </div>
 
-                        {/* Column 2: Hair & Laser */}
+                        {/* Column 2: Hair & Lasers */}
                         <div>
                           <Link
-                            href="/treatments?category=Laser+Hair+Reduction"
+                            href="/treatments?category=Laser+Treatments"
                             onClick={() => setActiveDropdown(null)}
                             className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700 pb-2 mb-2 border-b border-slate-100 hover:underline"
                           >
                             <Zap className="w-3.5 h-3.5 text-brand-700" />
-                            Hair &amp; Lasers
+                            Hair &amp; Laser Treatments
                           </Link>
                           <ul className="space-y-1.5 text-xs">
                             <li>
-                              <Link href="/treatments?category=Laser+Hair+Reduction" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                All Laser Hair Reduction Packages
+                              <Link href="/laser-hair-reduction" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Laser Hair Reduction
                               </Link>
                             </li>
                             <li>
-                              <Link href="/laser-hair-removal-noida" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Full Body Laser Hair Removal
+                              <Link href="/full-body-laser-hair-reduction" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Full Body Laser Reduction
                               </Link>
                             </li>
                             <li>
-                              <Link href="/hair-loss-treatment" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
-                                Hair Loss &amp; GFC / PRP Therapy
+                              <Link href="/prp-hair-treatment" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                PRP &amp; GFC Hair Treatment
                               </Link>
                             </li>
                             <li>
-                              <Link href="/#hair-calculator" onClick={() => setActiveDropdown(null)} className="block py-1 text-brand-700 font-bold hover:underline">
-                                Hair &amp; Baldness Assessment →
+                              <Link href="/hair-transplant" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Hair Transplant Surgery
                               </Link>
                             </li>
                             <li>
-                              <Link href="/#laser-estimator" onClick={() => setActiveDropdown(null)} className="block py-1 text-brand-700 font-bold hover:underline">
-                                Laser Price Estimator →
+                              <Link href="/laser-tattoo-removal" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Laser Tattoo Removal
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/q-switch-ndyag-laser" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Q-Switch Nd:YAG Laser
                               </Link>
                             </li>
                           </ul>
                         </div>
 
-                        {/* Column 3: Diagnostic Tools & Franchise */}
-                        <div className="bg-slate-50/70 p-3.5 rounded-xl border border-slate-100">
-                          <div className="text-xs font-bold uppercase tracking-wider text-amber-600 pb-1.5 mb-2 border-b border-amber-200/50">
-                            Interactive Models
-                          </div>
+                        {/* Column 3: Body & Wedding Packages */}
+                        <div>
+                          <Link
+                            href="/treatments?category=Wedding+Packages"
+                            onClick={() => setActiveDropdown(null)}
+                            className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 pb-2 mb-2 border-b border-slate-100 hover:underline"
+                          >
+                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            Body &amp; Wedding Packages
+                          </Link>
                           <ul className="space-y-1.5 text-xs">
                             <li>
-                              <Link href="/#skin-analyser" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-700 hover:text-brand-700 font-medium transition-colors">
-                                Digital Derma Skin Analyser
+                              <Link href="/body-contouring" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Body Contouring &amp; Fat Loss
                               </Link>
                             </li>
                             <li>
-                              <Link href="/membership" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-700 hover:text-brand-700 font-medium transition-colors">
-                                👑 VIP Membership Club
+                              <Link href="/double-chin-reduction" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                Double Chin Reduction
                               </Link>
                             </li>
                             <li>
-                              <Link href="/franchise" onClick={() => setActiveDropdown(null)} className="block py-1 text-amber-700 hover:text-amber-800 font-bold transition-colors">
-                                🏢 Franchise Partnership (FICO/FOFO)
+                              <Link href="/hifu" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-600 hover:text-brand-700 font-medium transition-colors">
+                                HIFU Non-Surgical Face Lift
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/bridal-packages" onClick={() => setActiveDropdown(null)} className="block py-1 text-amber-700 hover:text-amber-800 font-semibold transition-colors">
+                                💍 Bridal Aesthetic Packages
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/groom-packages" onClick={() => setActiveDropdown(null)} className="block py-1 text-slate-700 hover:text-brand-700 font-semibold transition-colors">
+                                🤵 Groom Grooming Packages
+                              </Link>
+                            </li>
+                            <li>
+                              <Link href="/gold-package" onClick={() => setActiveDropdown(null)} className="block py-1 text-amber-600 hover:text-amber-700 font-semibold transition-colors">
+                                ✨ Gold Wedding Transformation
                               </Link>
                             </li>
                           </ul>
@@ -268,7 +299,7 @@ export default function Header() {
 
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between bg-[#f2faf7] px-4 py-2.5 rounded-xl">
                         <span className="text-xs font-semibold text-slate-700">
-                          Browse 17+ US-FDA Clinical Treatments with Transparent Pricing &amp; Flexible EMI
+                          Browse 58+ US-FDA Doctor-Supervised Clinical Treatments with Transparent Pricing &amp; Flexible EMI
                         </span>
                         <Link
                           href="/treatments"
