@@ -28,7 +28,7 @@ import {
   BODY_AREA_TYPES,
   RichTreatment,
 } from "@/data/treatmentsCatalog";
-import { getTreatments } from "@/lib/api";
+import { getTreatments, getCategories } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 
@@ -43,16 +43,30 @@ function TreatmentsListingContent() {
   const [sortBy, setSortBy] = useState<"popular" | "price-asc" | "price-desc" | "rating">("popular");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [catalogTreatments, setCatalogTreatments] = useState<RichTreatment[]>(RICH_TREATMENTS);
+  const [apiCategories, setApiCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const availableCategories = useMemo(() => {
     const list: string[] = ["All Treatments"];
-    const seen = new Set<string>();
-    TREATMENT_CATEGORIES.forEach((c) => {
-      if (c !== "All Treatments") {
+    const seen = new Set<string>(["All Treatments"]);
+
+    // Categories from dynamic API
+    apiCategories.forEach((c) => {
+      if (c && !seen.has(c)) {
         seen.add(c);
         list.push(c);
       }
     });
+
+    // Default static categories
+    TREATMENT_CATEGORIES.forEach((c) => {
+      if (c && !seen.has(c)) {
+        seen.add(c);
+        list.push(c);
+      }
+    });
+
+    // Categories in treatments
     catalogTreatments.forEach((t) => {
       if (t.category && !seen.has(t.category)) {
         seen.add(t.category);
@@ -60,15 +74,29 @@ function TreatmentsListingContent() {
       }
     });
     return list;
-  }, [catalogTreatments]);
+  }, [apiCategories, catalogTreatments]);
 
   useEffect(() => {
     let isMounted = true;
-    getTreatments().then((data) => {
-      if (isMounted && data && data.length > 0) {
-        setCatalogTreatments(data);
-      }
-    });
+    setIsLoading(true);
+    Promise.all([
+      getTreatments(),
+      getCategories(),
+    ])
+      .then(([treatmentsData, categoriesData]) => {
+        if (!isMounted) return;
+        if (treatmentsData && treatmentsData.length > 0) {
+          setCatalogTreatments(treatmentsData);
+        }
+        if (categoriesData && categoriesData.length > 0) {
+          setApiCategories(categoriesData.map((c) => c.name));
+        }
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
     return () => {
       isMounted = false;
     };
@@ -232,13 +260,38 @@ function TreatmentsListingContent() {
               </select>
 
               <button
-                onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
-                className="lg:hidden inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold"
+                onClick={() => setMobileFilterOpen(true)}
+                className="lg:hidden inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
+                aria-label="Open filters"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span>Filters</span>
+                {(selectedCategory !== "All Treatments" || selectedArea !== "All Areas") && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                )}
               </button>
             </div>
+          </div>
+
+          {/* Quick Category Pills Bar (Smooth swipe on mobile, wrap on desktop) */}
+          <div className="flex items-center gap-2 overflow-x-auto pt-4 pb-1 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+            {availableCategories.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs shrink-0 transition-all ${
+                    isSelected
+                      ? "bg-[#008081] text-white shadow-sm ring-2 ring-[#008081]/20 font-bold"
+                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 font-medium"
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -246,12 +299,8 @@ function TreatmentsListingContent() {
       {/* Main Content Layout: Left Sidebar Filters + Right 2-Column Treatment Cards */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
-          {/* LEFT SIDEBAR: Results Count, Body Area Types & Category Filters (Like Image 2) */}
-          <aside
-            className={`lg:col-span-3 xl:col-span-2.5 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm lg:sticky lg:top-24 space-y-6 ${
-              mobileFilterOpen ? "block" : "hidden lg:block"
-            }`}
-          >
+          {/* DESKTOP SIDEBAR: Results Count, Body Area Types & Category Filters */}
+          <aside className="hidden lg:block lg:col-span-3 xl:col-span-2.5 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm lg:sticky lg:top-24 space-y-6">
             {/* Results Count & Reset */}
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
               <span className="text-sm font-extrabold text-slate-900">
@@ -356,6 +405,110 @@ function TreatmentsListingContent() {
               </button>
             </div>
           </aside>
+
+          {/* MOBILE SLIDE-OVER FILTER DRAWER */}
+          {mobileFilterOpen && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+                onClick={() => setMobileFilterOpen(false)}
+              />
+              <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-2xl p-5 overflow-y-auto z-10 flex flex-col justify-between">
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                    <div>
+                      <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
+                        Filter Treatments
+                      </h2>
+                      <span className="text-xs text-slate-500">
+                        {filteredTreatments.length} matching procedures
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setMobileFilterOpen(false)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                      aria-label="Close filters"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Body Area */}
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2.5">
+                      Types / Body Zone
+                    </h3>
+                    <div className="space-y-1.5">
+                      {BODY_AREA_TYPES.map((area) => {
+                        const isSelected = selectedArea === area;
+                        const count =
+                          area === "All Areas"
+                            ? catalogTreatments.length
+                            : catalogTreatments.filter((t) => t.bodyArea === area).length;
+                        return (
+                          <button
+                            key={area}
+                            type="button"
+                            onClick={() => setSelectedArea(area)}
+                            className={`w-full flex items-center justify-between py-2 px-3 rounded-xl text-xs transition-all ${
+                              isSelected
+                                ? "bg-[#e8f6f3] text-[#006d6e] font-bold"
+                                : "text-slate-600 hover:bg-slate-50 font-medium"
+                            }`}
+                          >
+                            <span>{area}</span>
+                            <span className="text-[10px] text-slate-400 font-semibold">{count}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Clinical Category */}
+                  <div className="pt-3 border-t border-slate-100">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2.5">
+                      Clinical Category
+                    </h3>
+                    <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                      {availableCategories.map((cat) => {
+                        const isSelected = selectedCategory === cat;
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => setSelectedCategory(cat)}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between ${
+                              isSelected
+                                ? "bg-slate-900 text-white font-bold"
+                                : "text-slate-600 hover:bg-slate-100 font-medium"
+                            }`}
+                          >
+                            <span className="truncate">{cat}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex gap-2.5">
+                  <button
+                    onClick={clearFilters}
+                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setMobileFilterOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-[#008081] text-white text-xs font-bold"
+                  >
+                    Apply ({filteredTreatments.length})
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* RIGHT MAIN GRID: 2-Column Horizontal Cards (Like Image 2 + Prices + Add to Cart) */}
           <div className="lg:col-span-9 space-y-6">

@@ -144,7 +144,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
   const customerReviews = TESTIMONIALS.slice(0, 3);
 
   return (
-    <div className="bg-white min-h-screen pb-16">
+    <div className="bg-white min-h-screen pb-24 lg:pb-16">
       {/* 1. COMMON TREATMENT BREADCRUMB BANNER (Fully Responsive for Mobile & Desktop) */}
       <PageBreadcrumbBanner
         image="/images/breadcrumbbanner/service.webp"
@@ -227,14 +227,9 @@ export default function TreatmentDetailView({ treatment }: Props) {
                 </div>
               </div>
 
-              {/* Sub-Images Row Directly Below Main Image (Responsive grid for 2-6 images) */}
+              {/* Sub-Images Row Directly Below Main Image (Responsive touch-scroll on mobile, grid on desktop) */}
               {galleryList.length > 1 && (
-                <div className={`grid gap-2 sm:gap-2.5 ${
-                  galleryList.length === 2 ? "grid-cols-2" :
-                  galleryList.length === 3 ? "grid-cols-3" :
-                  galleryList.length === 5 ? "grid-cols-5" :
-                  galleryList.length >= 6 ? "grid-cols-6" : "grid-cols-4"
-                }`}>
+                <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar sm:grid sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4">
                   {galleryList.map((img, idx) => {
                     const isSelected = activeSlide === idx;
                     return (
@@ -242,7 +237,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                         key={idx}
                         type="button"
                         onClick={() => setActiveSlide(idx)}
-                        className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`relative w-20 sm:w-auto aspect-[4/3] shrink-0 sm:shrink rounded-xl overflow-hidden border-2 transition-all ${
                           isSelected
                             ? "border-[#008081] ring-2 ring-[#008081]/20 opacity-100 shadow-sm"
                             : "border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300"
@@ -955,6 +950,63 @@ export default function TreatmentDetailView({ treatment }: Props) {
           <AppointmentForm initialTreatment={treatment.name} />
         </div>
       </section>
+
+      {/* 9. STICKY MOBILE ACTION BAR (Fixed at bottom on phones) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-4 py-3 shadow-[0_-4px_25px_rgba(0,0,0,0.1)] flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">
+            Starts from
+          </span>
+          <div className="flex items-baseline gap-1.5 truncate">
+            <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+              {treatment.priceFormatted}
+            </span>
+            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
+              {treatment.discountBadge}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          {qtyInCart === 0 ? (
+            <button
+              onClick={handleAddToCart}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-950 hover:bg-[#008081] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-sm"
+              aria-label="Add treatment to cart"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              <span>ADD</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-[#008081] text-white text-xs font-bold shadow-sm">
+              <button
+                onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
+                className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
+                aria-label="Decrease quantity"
+              >
+                -
+              </button>
+              <span className="px-1 min-w-[14px] text-center">{qtyInCart}</span>
+              <button
+                onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
+                className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={openAppointmentModal}
+            className="px-4 py-2.5 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-xs font-extrabold uppercase tracking-wider shadow-md transition-all flex items-center gap-1.5"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Book</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
