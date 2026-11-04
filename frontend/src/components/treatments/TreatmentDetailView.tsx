@@ -27,6 +27,7 @@ import { TESTIMONIALS } from "@/data/clinicData";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 
 interface Props {
   treatment: RichTreatment;
@@ -144,26 +145,24 @@ export default function TreatmentDetailView({ treatment }: Props) {
 
   return (
     <div className="bg-white min-h-screen pb-16">
-      {/* 1. TOP BREADCRUMB & HERO OVERVIEW SECTION */}
-      <section className="pt-5 pb-10 sm:py-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-5 flex-wrap">
-            <Link href="/" className="hover:text-[#008081] transition-colors">
-              home
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link
-              href={`/treatments?category=${encodeURIComponent(treatment.category)}`}
-              className="hover:text-[#008081] transition-colors lowercase"
-            >
-              {treatment.category}
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <span className="text-slate-900 font-semibold lowercase">
-              {treatment.name}
-            </span>
-          </nav>
+      {/* 1. COMMON TREATMENT BREADCRUMB BANNER (Fully Responsive for Mobile & Desktop) */}
+      <PageBreadcrumbBanner
+        image="/images/breadcrumbbanner/service.webp"
+        breadcrumbs={[
+          { label: "Treatments", href: "/treatments" },
+          { label: treatment.category, href: `/treatments?category=${encodeURIComponent(treatment.category)}` },
+          { label: treatment.name },
+        ]}
+        badge="US-FDA Approved Clinical Protocols"
+        title={treatment.name}
+        highlight={treatment.bodyArea ? `• ${treatment.bodyArea} Zone` : undefined}
+        subtitle={treatment.explainedSubtitle || "Doctor-supervised aesthetic dermatology and advanced clinical laser care by Dr. Ipshita Johri"}
+        asHeading="div"
+      />
 
+      {/* 2. TREATMENT OVERVIEW SECTION */}
+      <section className="py-8 sm:py-10 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Split Top Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* LEFT: Main Image + Sub-Images Thumbnail Row */}
@@ -262,55 +261,81 @@ export default function TreatmentDetailView({ treatment }: Props) {
               )}
             </div>
 
-            {/* RIGHT: Tags, Title, Rating/Duration, Price + EMI + ADD Box, Consultation CTAs & WhatsApp */}
+            {/* RIGHT: Title, Rating/Reviews, SKU Points with Checkmarks, Price + EMI + ADD Box, CTAs */}
             <div className="lg:col-span-6 space-y-5">
-              <div className="flex items-center gap-2 flex-wrap">
-                {cityLocation && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-teal-50 text-teal-850 border border-teal-300 inline-flex items-center gap-1 shadow-sm">
-                    <MapPin className="w-3 h-3 text-teal-600" />
-                    <span>{cityLocation} Clinic</span>
-                  </span>
-                )}
-                {treatment.tags.map((tag, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200"
-                  >
-                    {tag}
-                  </span>
-                ))}
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-[#e8f6f3] text-[#006d6e] border border-[#d2eee7]">
-                  {treatment.bodyArea} Zone
-                </span>
-              </div>
-
-              <div className="space-y-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif leading-tight">
+              {/* Service Title */}
+              <div className="space-y-2.5">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-serif leading-tight">
                   {treatment.name}
                 </h1>
 
+                {/* Rating, Reviews & Duration (Placed directly after title) */}
                 <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-600 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-slate-900">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-slate-900">
                       {treatment.rating.toFixed(2)}
                     </span>
                     <div className="flex items-center text-amber-400">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className="w-3.5 h-3.5 fill-amber-400 text-amber-400"
+                          className="w-4 h-4 fill-amber-400 text-amber-400"
                         />
                       ))}
                     </div>
-                    <span className="text-xs text-slate-400">
-                      ({treatment.reviewsCount} reviews)
+                    <span className="text-xs text-slate-500 font-medium">
+                      ({treatment.reviewsCount} verified reviews)
                     </span>
                   </div>
                   <span className="text-slate-300">•</span>
-                  <div className="flex items-center gap-1 text-slate-700 font-medium">
-                    <Clock className="w-4 h-4 text-slate-400" />
+                  <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                    <Clock className="w-4 h-4 text-[#008081]" />
                     <span>{treatment.duration}</span>
                   </div>
+                </div>
+
+                {/* SKU Key Points with Tickmarks (Directly below reviews in a clean, professional aesthetic) */}
+                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap pt-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>US-FDA Approved</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200/90 shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                    <span>Doctor Supervised</span>
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>0% EMI Option</span>
+                  </span>
+                  {treatment.bodyArea && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-[#006d6e] border border-teal-200/90 shadow-xs">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#008081] shrink-0" />
+                      <span>{treatment.bodyArea} Zone</span>
+                    </span>
+                  )}
+                  {cityLocation && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200 shadow-xs">
+                      <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                      <span>{cityLocation} Clinic</span>
+                    </span>
+                  )}
+                  {treatment.tags
+                    ?.filter(
+                      (t) =>
+                        !["US-FDA APPROVED", "DOCTOR SUPERVISED", "0% EMI"].includes(
+                          t.toUpperCase()
+                        )
+                    )
+                    .map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 shadow-xs"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <span>{tag}</span>
+                      </span>
+                    ))}
                 </div>
               </div>
 
@@ -440,16 +465,25 @@ export default function TreatmentDetailView({ treatment }: Props) {
               </div>
 
               {/* "<Treatment Name> Explained" Block */}
-              <div className="pt-2 space-y-1.5">
+              <div className="pt-2 space-y-2">
                 <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
                   {treatment.name} Explained
                 </h2>
-                <p className="text-xs sm:text-sm italic text-slate-500 font-medium">
-                  {treatment.explainedSubtitle}
-                </p>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-                  {treatment.fullDesc}
-                </p>
+                {treatment.explainedSubtitle && (
+                  <p className="text-xs sm:text-sm italic text-slate-500 font-medium">
+                    {treatment.explainedSubtitle}
+                  </p>
+                )}
+                {treatment.fullDesc?.includes("<") ? (
+                  <div
+                    className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1 space-y-2.5 prose prose-slate prose-sm max-w-none [&_p]:leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: treatment.fullDesc }}
+                  />
+                ) : (
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1 whitespace-pre-line">
+                    {treatment.fullDesc}
+                  </p>
+                )}
               </div>
             </div>
           </div>
