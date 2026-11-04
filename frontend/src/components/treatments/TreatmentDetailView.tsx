@@ -143,6 +143,10 @@ export default function TreatmentDetailView({ treatment }: Props) {
 
   const customerReviews = TESTIMONIALS.slice(0, 3);
 
+  const cleanExplainedSubtitle = (treatment.explainedSubtitle || "Doctor-supervised aesthetic dermatology and advanced clinical laser care")
+    .replace(/\s*by\s*Dr\.\s*Ipshita\s*Johri/gi, "")
+    .trim();
+
   return (
     <div className="bg-white min-h-screen pb-24 lg:pb-16">
       {/* 1. COMMON TREATMENT BREADCRUMB BANNER (Fully Responsive for Mobile & Desktop) */}
@@ -155,8 +159,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
         ]}
         badge="US-FDA Approved Clinical Protocols"
         title={treatment.name}
-        highlight={treatment.bodyArea ? `• ${treatment.bodyArea} Zone` : undefined}
-        subtitle={treatment.explainedSubtitle || "Doctor-supervised aesthetic dermatology and advanced clinical laser care"}
+        subtitle={cleanExplainedSubtitle}
         asHeading="div"
       />
 
@@ -256,7 +259,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
               )}
             </div>
 
-            {/* RIGHT: Title, Rating/Reviews, SKU Points with Checkmarks, Price + EMI + ADD Box, CTAs */}
+            {/* RIGHT: Title, Rating/Reviews, Price + EMI + ADD Box, SKU Points with Checkmarks, CTAs */}
             <div className="lg:col-span-6 space-y-5">
               {/* Service Title */}
               <div className="space-y-2.5">
@@ -288,53 +291,9 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     <span>{treatment.duration}</span>
                   </div>
                 </div>
-
-                {/* SKU Key Points with Tickmarks (Directly below reviews in a clean, professional aesthetic) */}
-                <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap pt-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>US-FDA Approved</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200/90 shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                    <span>Doctor Supervised</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                    <span>0% EMI Option</span>
-                  </span>
-                  {treatment.bodyArea && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-[#006d6e] border border-teal-200/90 shadow-xs">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#008081] shrink-0" />
-                      <span>{treatment.bodyArea} Zone</span>
-                    </span>
-                  )}
-                  {cityLocation && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200 shadow-xs">
-                      <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                      <span>{cityLocation} Clinic</span>
-                    </span>
-                  )}
-                  {treatment.tags
-                    ?.filter(
-                      (t) =>
-                        !["US-FDA APPROVED", "DOCTOR SUPERVISED", "0% EMI"].includes(
-                          t.toUpperCase()
-                        )
-                    )
-                    .map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 shadow-xs"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                        <span>{tag}</span>
-                      </span>
-                    ))}
-                </div>
               </div>
 
-              {/* PRICING, EMI & ADD TO CART BOX */}
+              {/* 1. PRICING, EMI & ADD TO CART BOX (Image 3) */}
               <div className="bg-[#f3f4f6] rounded-2xl p-4 sm:p-5 border border-slate-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-3 flex-1">
                   <div>
@@ -435,7 +394,51 @@ export default function TreatmentDetailView({ treatment }: Props) {
                 </div>
               </div>
 
-              {/* Consultation CTA + Quick-Connect WhatsApp Button */}
+              {/* 2. SKU KEY POINTS WITH TICKMARKS (Image 4 - Placed directly AFTER the Price & ADD Box) */}
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/90 shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>US-FDA Approved</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200/90 shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Doctor Supervised</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/90 shadow-xs">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>0% EMI Option</span>
+                </span>
+                {treatment.bodyArea && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-teal-50 text-[#006d6e] border border-teal-200/90 shadow-xs">
+                    <CheckCircle2 className="w-4 h-4 text-[#008081] shrink-0" />
+                    <span>{treatment.bodyArea} Zone</span>
+                  </span>
+                )}
+                {cityLocation && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-200 shadow-xs">
+                    <MapPin className="w-4 h-4 text-teal-600 shrink-0" />
+                    <span>{cityLocation} Clinic</span>
+                  </span>
+                )}
+                {treatment.tags
+                  ?.filter(
+                    (t) =>
+                      !["US-FDA APPROVED", "DOCTOR SUPERVISED", "0% EMI"].includes(
+                        t.toUpperCase()
+                      )
+                  )
+                  .map((tag, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-50 text-slate-700 border border-slate-200 shadow-xs"
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-slate-500 shrink-0" />
+                      <span>{tag}</span>
+                    </span>
+                  ))}
+              </div>
+
+              {/* 3. Consultation CTA + Quick-Connect WhatsApp Button */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <button
                   type="button"
@@ -464,9 +467,9 @@ export default function TreatmentDetailView({ treatment }: Props) {
                 <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
                   {treatment.name} Explained
                 </h2>
-                {treatment.explainedSubtitle && (
+                {cleanExplainedSubtitle && (
                   <p className="text-xs sm:text-sm italic text-slate-500 font-medium">
-                    {treatment.explainedSubtitle}
+                    {cleanExplainedSubtitle}
                   </p>
                 )}
                 {treatment.fullDesc?.includes("<") ? (
@@ -570,17 +573,6 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     Authentic clinical procedure demonstration & expert guidance by Senior Dermatologists
                   </p>
                 </div>
-                {treatment.videoUrl && (
-                  <a
-                    href={treatment.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-bold text-[#008081] hover:text-[#006d6e] hover:underline"
-                  >
-                    <span>Watch on YouTube</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </a>
-                )}
               </div>
 
               <div className="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-950 aspect-video max-w-4xl mx-auto">
