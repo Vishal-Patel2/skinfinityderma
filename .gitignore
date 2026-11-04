@@ -1,18 +1,23 @@
 # Node dependencies
 node_modules/
-*/node_modules/
+**/node_modules/
 
-# Next.js build output
+# Next.js & Vercel build output
 .next/
-*/.next/
+**/.next/
 out/
-*/out/
+**/out/
+.vercel/
 
-# Build artifacts
+# Build & packaging artifacts
 dist/
 build/
+HOSTINGER_UPLOAD_FILES/
+*.zip
+*.tar
+*.tar.gz
 tsconfig.tsbuildinfo
-*/tsconfig.tsbuildinfo
+**/tsconfig.tsbuildinfo
 
 # Environment variables
 .env

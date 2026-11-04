@@ -18,6 +18,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { DOCTORS, CLINIC_LOCATIONS, TESTIMONIALS } from "@/data/clinicData";
+import { API_BASE } from "@/lib/api";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 
@@ -38,7 +39,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   let doctor: any = null;
   try {
-    const res = await fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" });
+    const res = await fetch(`${API_BASE}/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
       if (json?.data) doctor = json.data;
@@ -214,8 +215,8 @@ export default async function DoctorProfilePage({ params }: Props) {
   let allDoctors: any[] = [];
   try {
     const [resDoc, resAll] = await Promise.all([
-      fetch(`http://localhost:4000/api/public/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" }),
-      fetch(`http://localhost:4000/api/public/doctors`, { cache: "no-store" })
+      fetch(`${API_BASE}/doctors/${encodeURIComponent(params.slug)}`, { cache: "no-store" }),
+      fetch(`${API_BASE}/doctors`, { cache: "no-store" })
     ]);
     if (resDoc.ok) {
       const json = await resDoc.json();

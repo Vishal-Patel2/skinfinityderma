@@ -30,6 +30,7 @@ function apiRemotePatterns() {
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 
 const nextConfig = {
+  output: process.env.VERCEL ? undefined : 'standalone',
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,

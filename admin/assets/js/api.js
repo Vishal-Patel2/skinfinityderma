@@ -6,8 +6,15 @@
 (function (window, $) {
   'use strict';
 
-  // Base API URL - easily configurable centrally
-  const API_BASE_URL = (window.location.port === '4000') ? '/api' : 'http://127.0.0.1:4000/api';
+  // Base API URL - auto-detects localhost vs production hostinger domain
+  const isLocalhost = Boolean(
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.hostname === '[::1]'
+  );
+  const API_BASE_URL = window.SKINFINITY_API_URL
+    ? window.SKINFINITY_API_URL
+    : (isLocalhost ? (window.location.port === '4000' ? '/api' : 'http://127.0.0.1:4000/api') : '/api');
 
   const API = {
     baseUrl: API_BASE_URL,

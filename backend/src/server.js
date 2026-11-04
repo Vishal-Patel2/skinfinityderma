@@ -60,14 +60,19 @@ if (!fs.existsSync(config.uploadsDir)) {
 app.use('/uploads', express.static(config.uploadsDir));
 
 // Static frontend public directory for images, banners, icons
-const frontendPublicDir = path.resolve(__dirname, '../../frontend/public');
-if (fs.existsSync(frontendPublicDir)) {
+const frontendPublicDir = [
+  path.resolve(__dirname, '../../frontend/public'),
+  path.resolve(process.cwd(), 'frontend/public'),
+  path.resolve(process.cwd(), 'public'),
+].find((p) => fs.existsSync(p));
+if (frontendPublicDir) {
   app.use(express.static(frontendPublicDir));
 }
 
-// Static Admin Dashboard Panel
+// Static Admin Dashboard Panel (served at root and at /admin)
 if (fs.existsSync(config.adminDir)) {
   app.use(express.static(config.adminDir));
+  app.use('/admin', express.static(config.adminDir));
 }
 
 // Health check

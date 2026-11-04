@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const get = (key, fallback) =>
@@ -27,7 +28,12 @@ const config = {
     .filter(Boolean),
   publicBaseUrl: get('PUBLIC_BASE_URL', 'http://localhost:4000').replace(/\/$/, ''),
   uploadsDir: path.resolve(__dirname, '..', '..', get('UPLOADS_DIR', 'uploads')),
-  adminDir: path.resolve(__dirname, '..', '..', '..', 'admin'),
+  adminDir: [
+    path.resolve(__dirname, '..', '..', '..', 'admin'),
+    path.resolve(__dirname, '..', '..', 'admin'),
+    path.resolve(process.cwd(), 'admin'),
+    path.resolve(process.cwd(), 'public', 'admin'),
+  ].find((p) => fs.existsSync(p)) || path.resolve(__dirname, '..', '..', '..', 'admin'),
 };
 
 if (config.isProd && config.jwt.secret.startsWith('dev-only')) {

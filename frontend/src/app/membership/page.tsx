@@ -14,6 +14,7 @@ import {
   Star 
 } from "lucide-react";
 import { MEMBERSHIP_PLANS } from "@/data/clinicData";
+import { API_BASE } from "@/lib/api";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 
 export default function MembershipPage() {
@@ -22,7 +23,7 @@ export default function MembershipPage() {
 
   useEffect(() => {
     let active = true;
-    fetch("http://localhost:4000/api/public/memberships")
+    fetch(`${API_BASE}/memberships`)
       .then((res) => res.json())
       .then((json) => {
         if (active && json && json.success && Array.isArray(json.data) && json.data.length > 0) {

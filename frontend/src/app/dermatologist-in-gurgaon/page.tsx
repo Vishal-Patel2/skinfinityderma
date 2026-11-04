@@ -15,6 +15,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { CLINIC_LOCATIONS, CLINIC_STATS, DOCTORS, TREATMENTS } from "@/data/clinicData";
+import { API_BASE } from "@/lib/api";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 export default async function GurgaonPage() {
   let clinicData: any = null;
   try {
-    const res = await fetch("http://localhost:4000/api/public/locations/gurgaon-golf-course-road", { next: { revalidate: 60 } });
+    const res = await fetch(`${API_BASE}/locations/gurgaon-golf-course-road`, { next: { revalidate: 60 } });
     if (res.ok) {
       const json = await res.json();
       if (json?.data) clinicData = json.data;
