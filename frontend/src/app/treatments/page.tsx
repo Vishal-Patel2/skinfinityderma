@@ -9,18 +9,15 @@ import {
   Clock,
   ChevronRight,
   Search,
-  SlidersHorizontal,
-  ShieldCheck,
-  Sparkles,
-  Check,
-  Plus,
-  Minus,
+  CheckCircle2,
   ShoppingCart,
   CreditCard,
-  Phone,
-  Calendar,
+  Plus,
+  Minus,
+  ArrowRight,
+  SlidersHorizontal,
   X,
-  Play,
+  Sparkles,
 } from "lucide-react";
 import {
   RICH_TREATMENTS,
@@ -31,58 +28,31 @@ import {
 import { getTreatments, getCategories } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 
 function TreatmentsListingContent() {
   const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") || "All Treatments";
+  const initialCategory = searchParams.get("category") || "All";
   const initialArea = searchParams.get("area") || "All Areas";
 
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialCategory === "All Treatments" ? "All" : initialCategory
+  );
   const [selectedArea, setSelectedArea] = useState<string>(initialArea);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"popular" | "price-asc" | "price-desc" | "rating">("popular");
-  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [catalogTreatments, setCatalogTreatments] = useState<RichTreatment[]>(RICH_TREATMENTS);
   const [apiCategories, setApiCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const availableCategories = useMemo(() => {
-    const list: string[] = ["All Treatments"];
-    const seen = new Set<string>(["All Treatments"]);
+  const { items, addItem, updateQuantity, openCart } = useCart();
+  const { openAppointmentModal, openEmiModal } = useAuth();
 
-    // Categories from dynamic API
-    apiCategories.forEach((c) => {
-      if (c && !seen.has(c)) {
-        seen.add(c);
-        list.push(c);
-      }
-    });
-
-    // Default static categories
-    TREATMENT_CATEGORIES.forEach((c) => {
-      if (c && !seen.has(c)) {
-        seen.add(c);
-        list.push(c);
-      }
-    });
-
-    // Categories in treatments
-    catalogTreatments.forEach((t) => {
-      if (t.category && !seen.has(t.category)) {
-        seen.add(t.category);
-        list.push(t.category);
-      }
-    });
-    return list;
-  }, [apiCategories, catalogTreatments]);
-
+  // Dynamic fetch of all 58 treatments & categories from API
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
-    Promise.all([
-      getTreatments(),
-      getCategories(),
-    ])
+    Promise.all([getTreatments(), getCategories()])
       .then(([treatmentsData, categoriesData]) => {
         if (!isMounted) return;
         if (treatmentsData && treatmentsData.length > 0) {
@@ -102,28 +72,52 @@ function TreatmentsListingContent() {
     };
   }, []);
 
-  const { items, addItem, updateQuantity, openCart, cartCount } = useCart();
-  const { openAppointmentModal, openEmiModal } = useAuth();
-
+  // Sync category param from URL
   useEffect(() => {
     const catParam = searchParams.get("category");
     const areaParam = searchParams.get("area");
-    if (catParam && (TREATMENT_CATEGORIES.includes(catParam as any) || availableCategories.includes(catParam))) {
-      setSelectedCategory(catParam);
-    } else if (!catParam) {
-      setSelectedCategory("All Treatments");
+    if (catParam) {
+      setSelectedCategory(catParam === "All Treatments" ? "All" : catParam);
     }
     if (areaParam && BODY_AREA_TYPES.includes(areaParam as any)) {
       setSelectedArea(areaParam);
-    } else if (!areaParam) {
-      setSelectedArea("All Areas");
     }
-  }, [searchParams, availableCategories]);
+  }, [searchParams]);
 
+  // Dynamic available categories list
+  const availableCategories = useMemo(() => {
+    const list: string[] = ["All"];
+    const seen = new Set<string>(["All", "All Treatments"]);
+
+    apiCategories.forEach((c) => {
+      if (c && !seen.has(c)) {
+        seen.add(c);
+        list.push(c);
+      }
+    });
+
+    TREATMENT_CATEGORIES.forEach((c) => {
+      if (c && !seen.has(c)) {
+        seen.add(c);
+        list.push(c);
+      }
+    });
+
+    catalogTreatments.forEach((t) => {
+      if (t.category && !seen.has(t.category)) {
+        seen.add(t.category);
+        list.push(t.category);
+      }
+    });
+
+    return list;
+  }, [apiCategories, catalogTreatments]);
+
+  // Filtered and sorted treatments
   const filteredTreatments = useMemo(() => {
     let list = [...catalogTreatments];
 
-    if (selectedCategory !== "All Treatments") {
+    if (selectedCategory !== "All" && selectedCategory !== "All Treatments") {
       list = list.filter((t) => t.category === selectedCategory);
     }
 
@@ -137,9 +131,9 @@ function TreatmentsListingContent() {
         (t) =>
           t.name.toLowerCase().includes(q) ||
           t.category.toLowerCase().includes(q) ||
-          t.bodyArea.toLowerCase().includes(q) ||
-          t.shortDesc.toLowerCase().includes(q) ||
-          t.tags.some((tag) => tag.toLowerCase().includes(q))
+          (t.bodyArea && t.bodyArea.toLowerCase().includes(q)) ||
+          (t.shortDesc && t.shortDesc.toLowerCase().includes(q)) ||
+          (t.tags && t.tags.some((tag) => tag.toLowerCase().includes(q)))
       );
     }
 
@@ -154,7 +148,7 @@ function TreatmentsListingContent() {
     }
 
     return list;
-  }, [selectedCategory, selectedArea, searchQuery, sortBy]);
+  }, [catalogTreatments, selectedCategory, selectedArea, searchQuery, sortBy]);
 
   const getCartQuantity = (id: string) => {
     const found = items.find((i) => i.id === id);
@@ -175,106 +169,98 @@ function TreatmentsListingContent() {
   };
 
   const clearFilters = () => {
-    setSelectedCategory("All Treatments");
+    setSelectedCategory("All");
     setSelectedArea("All Areas");
     setSearchQuery("");
+    setSortBy("popular");
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafb] pb-20">
-      {/* Top Breadcrumb & Luxury Header Strip */}
-      <div className="bg-white border-b border-slate-200/80">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-            <Link href="/" className="hover:text-[#008081] font-medium transition-colors">
-              home
-            </Link>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-            <Link
-              href="/treatments"
-              onClick={clearFilters}
-              className={`hover:text-[#008081] transition-colors ${
-                selectedCategory === "All Treatments"
-                  ? "text-slate-900 font-semibold"
-                  : "font-medium"
-              }`}
-            >
-              treatments
-            </Link>
-            {selectedCategory !== "All Treatments" && (
-              <>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-900 font-semibold lowercase">
-                  {selectedCategory}
-                </span>
-              </>
-            )}
-          </nav>
+    <div className="min-h-screen bg-[#f8fafb] pb-24">
+      {/* 1. DISTINCT CLINICAL BREADCRUMB BANNER */}
+      <PageBreadcrumbBanner
+        image="/images/breadcrumbbanner/treatments.png"
+        breadcrumbs={[
+          { label: "Treatments", href: "/treatments" },
+          ...(selectedCategory !== "All"
+            ? [{ label: selectedCategory }]
+            : []),
+        ]}
+        badge="58+ US-FDA Approved Protocols"
+        title="Clinical Dermatology & Aesthetic Treatments"
+        highlight="by Dr. Ipshita Johri"
+        subtitle="Doctor-supervised laser hair reduction, medi-facials, acne scar remodeling & hair regrowth in Noida & Gurgaon"
+        asHeading="h1"
+      />
 
-          {/* Title & Search / Filter Controls */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#e8f6f3] border border-[#d2eee7] text-[#006d6e] text-[11px] font-bold uppercase tracking-wider mb-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>100% US-FDA Approved Protocols • Senior MD Dermatologists</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif">
-                {selectedCategory === "All Treatments"
-                  ? "All Clinical Dermatology & Laser Treatments"
-                  : selectedCategory}
-              </h1>
+      {/* 2. CATEGORY PILL TABS + SEARCH & FILTER CONTROLS */}
+      <section className="bg-white border-b border-slate-200/80 sticky top-0 z-20 shadow-xs">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4 space-y-3.5">
+          {/* Top Bar: Search, Zone Filter, Sort & Count */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search laser, hydrafacial, acne, pigmentation..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-xs sm:text-sm text-slate-800 outline-none focus:border-[#008081] transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            {/* Search & Sort Controls */}
-            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search laser, hydrafacial, acne..."
-                  className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 bg-slate-50/70 focus:bg-white text-xs text-slate-800 outline-none focus:border-[#008081] transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+            {/* Controls Right: Body Zone & Sort */}
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
+              {/* Body Zone Dropdown */}
+              <select
+                value={selectedArea}
+                onChange={(e) => setSelectedArea(e.target.value)}
+                aria-label="Filter by body zone"
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none focus:border-[#008081]"
+              >
+                {BODY_AREA_TYPES.map((area) => (
+                  <option key={area} value={area}>
+                    {area === "All Areas" ? "All Zones" : `${area} Zone`}
+                  </option>
+                ))}
+              </select>
 
+              {/* Sort Dropdown */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 aria-label="Sort treatments"
                 className="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-700 outline-none focus:border-[#008081]"
               >
-                <option value="popular">Sort: Most Popular</option>
+                <option value="popular">Most Popular</option>
+                <option value="rating">Highest Rated (4.9★)</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
-                <option value="rating">Highest Rated (4.9★)</option>
               </select>
 
-              <button
-                onClick={() => setMobileFilterOpen(true)}
-                className="lg:hidden inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors"
-                aria-label="Open filters"
-              >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Filters</span>
-                {(selectedCategory !== "All Treatments" || selectedArea !== "All Areas") && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                )}
-              </button>
+              {(selectedCategory !== "All" || selectedArea !== "All Areas" || searchQuery) && (
+                <button
+                  onClick={clearFilters}
+                  className="text-xs font-bold text-[#008081] hover:underline px-2 py-1"
+                >
+                  Reset
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Quick Category Pills Bar (Smooth swipe on mobile, wrap on desktop) */}
-          <div className="flex items-center gap-2 overflow-x-auto pt-4 pb-1 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+          {/* Category Tabs: Exact Luxury Pill Carousel (Horizontal swipe on mobile) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pt-1 pb-1">
             {availableCategories.map((cat) => {
               const isSelected = selectedCategory === cat;
               return (
@@ -282,484 +268,221 @@ function TreatmentsListingContent() {
                   key={cat}
                   type="button"
                   onClick={() => setSelectedCategory(cat)}
-                  className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs shrink-0 transition-all ${
+                  className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold shrink-0 transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-[#008081] text-white shadow-sm ring-2 ring-[#008081]/20 font-bold"
-                      : "bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 font-medium"
+                      ? "bg-[#008081] text-white shadow-sm ring-2 ring-[#008081]/25"
+                      : "bg-[#f1f5f7] hover:bg-slate-200/80 text-slate-700"
                   }`}
                 >
-                  {cat}
+                  {cat === "All" ? "All" : cat}
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Main Content Layout: Left Sidebar Filters + Right 2-Column Treatment Cards */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
-          {/* DESKTOP SIDEBAR: Results Count, Body Area Types & Category Filters */}
-          <aside className="hidden lg:block lg:col-span-3 xl:col-span-2.5 bg-white rounded-2xl border border-slate-200/90 p-5 shadow-sm lg:sticky lg:top-24 space-y-6">
-            {/* Results Count & Reset */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <span className="text-sm font-extrabold text-slate-900">
-                {filteredTreatments.length}{" "}
-                {filteredTreatments.length === 1 ? "Result" : "Results"}
-              </span>
-              {(selectedCategory !== "All Treatments" ||
-                selectedArea !== "All Areas" ||
-                searchQuery) && (
-                <button
-                  onClick={clearFilters}
-                  className="text-[11px] font-bold text-[#008081] hover:underline"
-                >
-                  Clear All
-                </button>
-              )}
-            </div>
-
-            {/* Body Area / Types Radio Filter (Exactly like Image 2 "Types: Full Body, Arms, Legs, Face, Back, Chest...") */}
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3">
-                Types / Body Zone
-              </h3>
-              <div className="space-y-2">
-                {BODY_AREA_TYPES.map((area) => {
-                  const isSelected = selectedArea === area;
-                  const count =
-                    area === "All Areas"
-                      ? RICH_TREATMENTS.length
-                      : RICH_TREATMENTS.filter((t) => t.bodyArea === area).length;
-                  return (
-                    <label
-                      key={area}
-                      onClick={() => setSelectedArea(area)}
-                      className={`flex items-center justify-between py-1.5 px-2.5 rounded-xl cursor-pointer transition-all text-xs ${
-                        isSelected
-                          ? "bg-[#e8f6f3] text-[#006d6e] font-bold"
-                          : "text-slate-600 hover:bg-slate-50 font-medium"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
-                            isSelected
-                              ? "border-[#008081] bg-[#008081]"
-                              : "border-slate-300 bg-white"
-                          }`}
-                        >
-                          {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </span>
-                        <span>{area}</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-semibold">{count}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Clinical Category Filter */}
-            <div className="pt-4 border-t border-slate-100">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-3">
-                Clinical Category
-              </h3>
-              <div className="space-y-1.5">
-                {availableCategories.map((cat) => {
-                  const isSelected = selectedCategory === cat;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between ${
-                        isSelected
-                          ? "bg-slate-900 text-white font-bold shadow-sm"
-                          : "text-slate-600 hover:bg-slate-100 font-medium"
-                      }`}
-                    >
-                      <span className="truncate">{cat}</span>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Quick Doctor Help Card inside Sidebar */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-[#eef8f5] to-white border border-[#d2eee7] space-y-2.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#008081] block">
-                Need Expert Advice?
-              </span>
-              <p className="text-xs font-bold text-slate-900 leading-snug">
-                Not sure which protocol suits your skin tone?
-              </p>
-              <p className="text-[11px] text-slate-600 leading-relaxed">
-                Consult our senior MD Dermatologists in Noida &amp; Gurgaon.
-              </p>
-              <button
-                onClick={openAppointmentModal}
-                className="w-full py-2 px-3 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-[11px] font-bold transition-all shadow-sm"
-              >
-                Free Doctor Guidance →
-              </button>
-            </div>
-          </aside>
-
-          {/* MOBILE SLIDE-OVER FILTER DRAWER */}
-          {mobileFilterOpen && (
-            <div className="fixed inset-0 z-50 lg:hidden">
-              <div
-                className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-                onClick={() => setMobileFilterOpen(false)}
-              />
-              <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-2xl p-5 overflow-y-auto z-10 flex flex-col justify-between">
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                    <div>
-                      <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">
-                        Filter Treatments
-                      </h2>
-                      <span className="text-xs text-slate-500">
-                        {filteredTreatments.length} matching procedures
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setMobileFilterOpen(false)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-                      aria-label="Close filters"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Body Area */}
-                  <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2.5">
-                      Types / Body Zone
-                    </h3>
-                    <div className="space-y-1.5">
-                      {BODY_AREA_TYPES.map((area) => {
-                        const isSelected = selectedArea === area;
-                        const count =
-                          area === "All Areas"
-                            ? catalogTreatments.length
-                            : catalogTreatments.filter((t) => t.bodyArea === area).length;
-                        return (
-                          <button
-                            key={area}
-                            type="button"
-                            onClick={() => setSelectedArea(area)}
-                            className={`w-full flex items-center justify-between py-2 px-3 rounded-xl text-xs transition-all ${
-                              isSelected
-                                ? "bg-[#e8f6f3] text-[#006d6e] font-bold"
-                                : "text-slate-600 hover:bg-slate-50 font-medium"
-                            }`}
-                          >
-                            <span>{area}</span>
-                            <span className="text-[10px] text-slate-400 font-semibold">{count}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Clinical Category */}
-                  <div className="pt-3 border-t border-slate-100">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-2.5">
-                      Clinical Category
-                    </h3>
-                    <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-                      {availableCategories.map((cat) => {
-                        const isSelected = selectedCategory === cat;
-                        return (
-                          <button
-                            key={cat}
-                            type="button"
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between ${
-                              isSelected
-                                ? "bg-slate-900 text-white font-bold"
-                                : "text-slate-600 hover:bg-slate-100 font-medium"
-                            }`}
-                          >
-                            <span className="truncate">{cat}</span>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 flex gap-2.5">
-                  <button
-                    onClick={clearFilters}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50"
-                  >
-                    Reset
-                  </button>
-                  <button
-                    onClick={() => setMobileFilterOpen(false)}
-                    className="flex-1 py-2.5 rounded-xl bg-[#008081] text-white text-xs font-bold"
-                  >
-                    Apply ({filteredTreatments.length})
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* RIGHT MAIN GRID: 2-Column Horizontal Cards (Like Image 2 + Prices + Add to Cart) */}
-          <div className="lg:col-span-9 space-y-6">
-            {filteredTreatments.length === 0 ? (
-              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4">
-                <p className="text-base font-bold text-slate-800">
-                  No treatments matched your current filter selection.
-                </p>
-                <p className="text-xs text-slate-500">
-                  Try clearing your filters or searching for another skin or hair concern.
-                </p>
-                <button
-                  onClick={clearFilters}
-                  className="px-5 py-2.5 rounded-xl bg-[#008081] text-white text-xs font-bold uppercase tracking-wider"
-                >
-                  Show All Treatments
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-                {filteredTreatments.map((treatment) => {
-                  const qtyInCart = getCartQuantity(treatment.id);
-
-                  return (
-                    <div
-                      key={treatment.id}
-                      className="bg-white rounded-2xl border border-slate-200/90 hover:border-[#008081]/60 shadow-sm hover:shadow-xl transition-all duration-300 p-4 sm:p-6 flex flex-col-reverse sm:flex-row justify-between gap-4 sm:gap-5 group"
-                    >
-                      {/* LEFT SIDE OF CARD: Title, Rating/Duration, Price/EMI, Bullet Points, VIEW DETAILS button */}
-                      <div className="flex-1 flex flex-col justify-between space-y-3.5">
-                        <div className="space-y-2">
-                          {/* Top Tag Badge */}
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#e8f6f3] text-[#006d6e] border border-[#d2eee7]">
-                              {treatment.category}
-                            </span>
-                            {treatment.tags[0] && (
-                              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                {treatment.tags[0]}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Treatment Title */}
-                          <Link
-                            href={`/${treatment.slug}`}
-                            className="block text-base sm:text-lg font-extrabold text-slate-900 group-hover:text-[#008081] transition-colors font-serif leading-snug"
-                          >
-                            {treatment.name}
-                          </Link>
-
-                          {/* Rating & Duration Row (Like Image 2: "4.89 ★ | ⏱ 45 mins") */}
-                          <div className="flex items-center gap-3 text-xs text-slate-600 font-medium">
-                            <span className="inline-flex items-center gap-1 font-bold text-slate-900">
-                              <span>{treatment.rating.toFixed(2)}</span>
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                              <span className="text-[11px] text-slate-400 font-normal">
-                                ({treatment.reviewsCount})
-                              </span>
-                            </span>
-                            <span className="text-slate-300">|</span>
-                            <span className="inline-flex items-center gap-1 text-slate-600">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{treatment.duration}</span>
-                            </span>
-                          </div>
-
-                          {/* Price & 0% EMI Strip — Cleanly Aligned on Desktop & Mobile */}
-                          <div className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 space-y-2">
-                            <div>
-                              <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
-                                Starts from
-                              </span>
-                              <div className="flex items-center flex-wrap gap-2">
-                                <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">
-                                  {treatment.priceFormatted}
-                                </span>
-                                <span className="text-xs text-slate-400 line-through leading-none">
-                                  {treatment.originalPriceFormatted}
-                                </span>
-                                <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md leading-none">
-                                  {treatment.discountBadge}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="pt-2 border-t border-slate-200/70 flex items-center justify-between gap-2 flex-wrap">
-                              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#006d6e] bg-[#e8f6f3] border border-[#d2eee7] px-2.5 py-1 rounded-md leading-none">
-                                <CreditCard className="w-3 h-3 shrink-0" />
-                                <span>EMI: {treatment.emiMonthly}/mo</span>
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openEmiModal({
-                                    treatmentName: treatment.name,
-                                    priceFormatted: treatment.priceFormatted,
-                                    emiMonthly: `${treatment.emiMonthly}/mo (${treatment.emiMonths} months)`,
-                                  })
-                                }
-                                className="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#008081] hover:text-slate-900 underline underline-offset-2 transition-colors cursor-pointer"
-                              >
-                                <span>Apply for EMI</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Concise Clinical Highlights */}
-                          <ul className="space-y-1 text-xs text-slate-600 pt-0.5">
-                            {treatment.cardHighlights.map((pt, i) => (
-                              <li key={i} className="leading-relaxed line-clamp-2">
-                                • {pt}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {/* Bottom Action: VIEW DETAILS button (Exactly like Image 2) */}
-                        <div className="pt-2 flex items-center gap-2.5">
-                          <Link
-                            href={`/${treatment.slug}`}
-                            className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:border-slate-900 bg-white hover:bg-slate-900 text-slate-800 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-all"
-                          >
-                            VIEW DETAILS
-                          </Link>
-                        </div>
-                      </div>
-
-                      {/* RIGHT SIDE OF CARD: Square Thumbnail Image + Overlapping ADD / Quantity Button (Like Image 2) */}
-                      <div className="relative w-full sm:w-36 md:w-40 shrink-0 flex flex-col items-center pb-3">
-                        <Link
-                          href={`/${treatment.slug}`}
-                          className="relative w-full h-44 sm:h-40 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm block"
-                        >
-                          <Image
-                            src={treatment.bannerImage}
-                            alt={treatment.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-                          {treatment.youtubeVideoId && (
-                            <span className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/20">
-                              <Play className="w-2.5 h-2.5 fill-current text-red-500" />
-                              <span>Video</span>
-                            </span>
-                          )}
-                        </Link>
-
-                        {/* Overlapping ADD / Quantity Control Button at Bottom Center of Image */}
-                        <div className="-mt-4 z-10">
-                          {qtyInCart === 0 ? (
-                            <button
-                              onClick={() => handleAddToCart(treatment)}
-                              className="px-6 py-2 rounded-lg bg-slate-950 hover:bg-[#008081] text-white text-xs font-extrabold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all flex items-center gap-1.5 border border-white/20"
-                            >
-                              <span>ADD</span>
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
-                          ) : (
-                            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#008081] text-white shadow-lg border border-white/20">
-                              <button
-                                onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
-                                className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus className="w-3 h-3" />
-                              </button>
-                              <span className="text-xs font-extrabold min-w-[16px] text-center">
-                                {qtyInCart}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
-                                className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* Bottom Consultation Banner */}
-            <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#093b3c] rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-              <div className="space-y-2 max-w-xl">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-teal-950/80 px-3 py-1 rounded-full border border-teal-700">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Customized Multi-Session Packages
-                </span>
-                <h2 className="text-xl sm:text-2xl font-extrabold font-serif">
-                  Not sure which treatment or package is right for your skin?
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Schedule a personalized dermoscopy consultation with Dr. Ipshita Johri &amp; our senior MD Dermatologists at Noida (Sector 36) or Gurgaon (Golf Course Road).
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">
-                <button
-                  onClick={openAppointmentModal}
-                  className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#008081] hover:bg-teal-500 text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>Book Consultation</span>
-                </button>
-                <a
-                  href="tel:+919871941444"
-                  className="w-full sm:w-auto px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-bold flex items-center justify-center gap-2 transition-all"
-                >
-                  <Phone className="w-4 h-4 text-teal-300" />
-                  <span>+91 98719 41444</span>
-                </a>
-              </div>
-            </div>
+      {/* 3. 58 TREATMENTS VERTICAL CARD GRID (Exact Image 2 Luxury Design) */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        {/* Results Counter Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-base sm:text-lg font-extrabold text-slate-900 font-serif">
+              {selectedCategory === "All"
+                ? "All Clinical Treatments"
+                : selectedCategory}
+            </span>
+            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+              {filteredTreatments.length} procedures
+            </span>
           </div>
+
+          <p className="text-xs text-slate-500 hidden sm:block">
+            Doctor-supervised protocols with 0% EMI available
+          </p>
         </div>
-      </div>
 
-      {/* Floating Cart Bar at Bottom if Cart has items */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-xl">
-          <div className="bg-slate-950 text-white rounded-2xl px-5 py-3.5 shadow-2xl border border-teal-500/40 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#008081] text-white flex items-center justify-center font-extrabold text-xs">
-                {cartCount}
-              </div>
-              <div>
-                <span className="text-xs font-bold block">
-                  {cartCount} {cartCount === 1 ? "Treatment" : "Treatments"} in Clinical Cart
-                </span>
-                <span className="text-[11px] text-teal-300">
-                  0% Interest EMI &amp; Package Discounts Available
-                </span>
-              </div>
-            </div>
-
+        {/* Empty State */}
+        {filteredTreatments.length === 0 ? (
+          <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center space-y-4 max-w-lg mx-auto shadow-xs">
+            <p className="text-base font-bold text-slate-800">
+              No clinical treatments found matching your filter.
+            </p>
+            <p className="text-xs text-slate-500">
+              Try searching for another concern or reset filters to view all 58 treatments.
+            </p>
             <button
-              onClick={openCart}
-              className="px-4 py-2 rounded-xl bg-[#008081] hover:bg-teal-500 text-white text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+              onClick={clearFilters}
+              className="px-6 py-2.5 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-xs font-bold uppercase tracking-wider transition-colors"
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              <span>View Cart</span>
+              Show All 58 Treatments
             </button>
           </div>
-        </div>
-      )}
+        ) : (
+          /* Responsive 4-Column Vertical Grid (Image 2 style) */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredTreatments.map((treatment) => {
+              const qtyInCart = getCartQuantity(treatment.id);
+              const highlights =
+                treatment.cardHighlights && treatment.cardHighlights.length > 0
+                  ? treatment.cardHighlights.slice(0, 3)
+                  : [
+                      "US-FDA approved clinical protocol tailored by senior MD dermatologists.",
+                      "Zero downtime or minimal recovery with long-lasting aesthetic outcomes.",
+                      "Safe for Indian skin tones with personalized pre-and-post care guidance.",
+                    ];
+
+              return (
+                <div
+                  key={treatment.id}
+                  className="bg-white rounded-3xl border border-slate-200/90 hover:border-[#008081]/60 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group select-none"
+                >
+                  {/* TOP: Image with Badges Overlays */}
+                  <div>
+                    <Link
+                      href={`/${treatment.slug}`}
+                      className="relative aspect-[4/3] w-full block overflow-hidden bg-slate-100"
+                    >
+                      <Image
+                        src={treatment.bannerImage || "/images/default-treatment.jpg"}
+                        alt={treatment.name}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+
+                      {/* Top Badges: US-FDA Approved (Left) & Rating (Right) */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                        <span className="bg-white/95 backdrop-blur-sm text-slate-900 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
+                          US-FDA APPROVED
+                        </span>
+                        <span className="bg-slate-950/80 backdrop-blur-sm text-amber-400 text-xs font-extrabold px-2.5 py-0.5 rounded-md flex items-center gap-1 shadow-sm border border-white/10">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span>{treatment.rating ? treatment.rating.toFixed(2) : "4.92"}</span>
+                        </span>
+                      </div>
+
+                      {/* Bottom Overlays: Duration (Left) & Zero Downtime (Right) */}
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white pointer-events-none">
+                        <span className="bg-slate-950/70 backdrop-blur-sm text-[11px] font-medium px-2.5 py-0.5 rounded-md flex items-center gap-1.5 border border-white/10">
+                          <Clock className="w-3 h-3 text-teal-300" />
+                          <span>{treatment.duration || "45 mins"}</span>
+                        </span>
+                        <span className="bg-[#008081]/90 backdrop-blur-sm text-[11px] font-bold px-2.5 py-0.5 rounded-md text-white shadow-xs">
+                          Zero Downtime
+                        </span>
+                      </div>
+                    </Link>
+
+                    {/* Content Section */}
+                    <div className="p-5 pb-3 space-y-3">
+                      {/* Category Pill & Apply for EMI Link */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#006d6e] bg-[#e8f6f3] px-2.5 py-0.5 rounded-full border border-[#d2eee7]">
+                          {treatment.category}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEmiModal({
+                              treatmentName: treatment.name,
+                              priceFormatted: treatment.priceFormatted,
+                              emiMonthly: `${treatment.emiMonthly}/mo (${treatment.emiMonths} months)`,
+                            })
+                          }
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#006d6e] hover:text-slate-900 underline transition-colors cursor-pointer"
+                        >
+                          <CreditCard className="w-3 h-3" />
+                          <span>Apply for EMI</span>
+                        </button>
+                      </div>
+
+                      {/* Treatment Title */}
+                      <Link href={`/${treatment.slug}`} className="block">
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-[#008081] transition-colors line-clamp-1 font-serif">
+                          {treatment.name}
+                        </h2>
+                      </Link>
+
+                      {/* 3 Tickmark Clinical Points */}
+                      <ul className="space-y-1.5 pt-1">
+                        {highlights.map((pt, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2 text-xs text-slate-600 leading-snug"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#008081] shrink-0 mt-0.5" />
+                            <span className="line-clamp-1">{pt}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM: Pricing & Action Buttons (ADD + Details) */}
+                  <div className="px-5 pb-5 pt-2">
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                          STARTING FROM
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-lg font-extrabold text-slate-900 font-serif">
+                            {treatment.priceFormatted}
+                          </span>
+                          <span className="text-[10px] text-slate-500">per session</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {/* ADD / Quantity Button */}
+                        {qtyInCart === 0 ? (
+                          <button
+                            onClick={() => handleAddToCart(treatment)}
+                            className="px-3.5 py-2 rounded-xl bg-slate-950 hover:bg-[#008081] text-white text-xs font-bold transition-all flex items-center gap-1 shadow-sm cursor-pointer"
+                            aria-label={`Add ${treatment.name} to cart`}
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                            <span>ADD</span>
+                          </button>
+                        ) : (
+                          <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-[#008081] text-white text-xs font-bold shadow-sm">
+                            <button
+                              onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
+                              className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
+                              aria-label="Decrease quantity"
+                            >
+                              -
+                            </button>
+                            <span className="px-1 min-w-[14px] text-center">{qtyInCart}</span>
+                            <button
+                              onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
+                              className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
+                              aria-label="Increase quantity"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Details Button */}
+                        <Link
+                          href={`/${treatment.slug}`}
+                          className="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold text-[#008081] bg-[#e8f6f3] hover:bg-[#008081] hover:text-white border border-[#d2eee7] transition-all"
+                        >
+                          <span>Details</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -768,8 +491,13 @@ export default function TreatmentsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 text-sm text-slate-600">
-          Loading clinical treatments...
+        <div className="min-h-screen bg-[#f8fafb] flex items-center justify-center py-20">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-3 border-[#008081] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Loading 58+ Clinical Protocols...
+            </p>
+          </div>
         </div>
       }
     >
