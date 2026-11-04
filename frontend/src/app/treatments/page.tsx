@@ -407,21 +407,20 @@ function TreatmentsListingContent() {
                   return (
                     <div
                       key={treatment.id}
-                      className="bg-white rounded-2xl border border-slate-200/90 hover:border-[#008081]/60 shadow-sm hover:shadow-xl transition-all duration-300 p-4 sm:p-5 flex flex-col-reverse sm:flex-row justify-between gap-4 sm:gap-5 group"
+                      className="bg-white rounded-2xl border border-slate-200/90 hover:border-[#008081]/60 shadow-sm hover:shadow-xl transition-all duration-300 p-4 sm:p-5 flex flex-col justify-between group"
                     >
-                      {/* LEFT SIDE OF CARD: Category, Title, Rating/Duration, Price/EMI, Highlights, VIEW DETAILS button */}
-                      <div className="flex-1 flex flex-col justify-between space-y-3">
-                        <div className="space-y-2">
-                          {/* Top Category Tag Badge */}
+                      {/* TOP SECTION: Left (Tags + Title + Rating + Price/EMI Box) & Right (Image + ADD Button) */}
+                      <div className="flex flex-col-reverse sm:flex-row justify-between gap-4 sm:gap-5">
+                        {/* LEFT SIDE: Badges, Title, Rating, Price Box */}
+                        <div className="flex-1 space-y-2">
+                          {/* Top Category Badges */}
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#e8f6f3] text-[#006d6e] border border-[#d2eee7]">
                               {treatment.category}
                             </span>
-                            {treatment.tags && treatment.tags[0] && (
-                              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
-                                {treatment.tags[0]}
-                              </span>
-                            )}
+                            <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+                              US-FDA APPROVED
+                            </span>
                           </div>
 
                           {/* Treatment Title */}
@@ -438,13 +437,13 @@ function TreatmentsListingContent() {
                               <span>{treatment.rating ? treatment.rating.toFixed(2) : "4.92"}</span>
                               <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                               <span className="text-[11px] text-slate-400 font-normal">
-                                ({treatment.reviewsCount || 315})
+                                ({treatment.reviewsCount || 413})
                               </span>
                             </span>
                             <span className="text-slate-300">|</span>
                             <span className="inline-flex items-center gap-1 text-slate-600">
                               <Clock className="w-3.5 h-3.5 text-slate-400" />
-                              <span>{treatment.duration || "45 mins"}</span>
+                              <span>{treatment.duration || treatment.sessionsInfo || "6 - 8 Sessions"}</span>
                             </span>
                           </div>
 
@@ -452,7 +451,7 @@ function TreatmentsListingContent() {
                           <div className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 space-y-2">
                             <div>
                               <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block mb-0.5">
-                                Starts from
+                                STARTS FROM
                               </span>
                               <div className="flex items-center flex-wrap gap-2">
                                 <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-none">
@@ -491,80 +490,81 @@ function TreatmentsListingContent() {
                               </button>
                             </div>
                           </div>
-
-                          {/* Concise Clinical Highlights */}
-                          <ul className="space-y-1 text-xs text-slate-600 pt-0.5">
-                            {highlights.slice(0, 3).map((pt, i) => (
-                              <li key={i} className="leading-relaxed line-clamp-2">
-                                • {pt}
-                              </li>
-                            ))}
-                          </ul>
                         </div>
 
-                        {/* Bottom Action: VIEW DETAILS button */}
-                        <div className="pt-2 flex items-center gap-2.5">
+                        {/* RIGHT SIDE: Square Image Thumbnail + Overlapping ADD / Quantity Button */}
+                        <div className="relative w-full sm:w-36 md:w-40 shrink-0 flex flex-col items-center pb-3 self-start">
+                          <Link
+                            href={`/${treatment.slug}`}
+                            className="relative w-full aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm block"
+                          >
+                            <Image
+                              src={treatment.bannerImage || "/images/default-treatment.jpg"}
+                              alt={treatment.name}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                            {treatment.youtubeVideoId && (
+                              <span className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/20">
+                                <Play className="w-2.5 h-2.5 fill-current text-red-500" />
+                                <span>Video</span>
+                              </span>
+                            )}
+                          </Link>
+
+                          {/* Overlapping ADD / Quantity Control Button */}
+                          <div className="-mt-4 z-10">
+                            {qtyInCart === 0 ? (
+                              <button
+                                onClick={() => handleAddToCart(treatment)}
+                                className="px-6 py-2 rounded-lg bg-slate-950 hover:bg-[#008081] text-white text-xs font-extrabold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all flex items-center gap-1.5 border border-white/20 cursor-pointer"
+                              >
+                                <span>ADD</span>
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#008081] text-white shadow-lg border border-white/20">
+                                <button
+                                  onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
+                                  className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors cursor-pointer"
+                                  aria-label="Decrease quantity"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-extrabold min-w-[16px] text-center">
+                                  {qtyInCart}
+                                </span>
+                                <button
+                                  onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
+                                  className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors cursor-pointer"
+                                  aria-label="Increase quantity"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* BOTTOM SECTION: Full-width Bullet Points across the entire card + VIEW DETAILS Button */}
+                      <div className="pt-3 space-y-3">
+                        <ul className="space-y-1.5 text-xs text-slate-600">
+                          {highlights.slice(0, 3).map((pt, i) => (
+                            <li key={i} className="leading-relaxed">
+                              • {pt}
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div>
                           <Link
                             href={`/${treatment.slug}`}
                             className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-slate-300 hover:border-slate-900 bg-white hover:bg-slate-900 text-slate-800 hover:text-white text-[11px] font-bold uppercase tracking-wider transition-all"
                           >
                             VIEW DETAILS
                           </Link>
-                        </div>
-                      </div>
-
-                      {/* RIGHT SIDE OF CARD: Image Thumbnail + Overlapping ADD / Quantity Button */}
-                      <div className="relative w-full sm:w-36 md:w-40 shrink-0 flex flex-col items-center pb-3">
-                        <Link
-                          href={`/${treatment.slug}`}
-                          className="relative w-full h-44 sm:h-40 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-sm block"
-                        >
-                          <Image
-                            src={treatment.bannerImage || "/images/default-treatment.jpg"}
-                            alt={treatment.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-                          {treatment.youtubeVideoId && (
-                            <span className="absolute top-2 right-2 bg-slate-900/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border border-white/20">
-                              <Play className="w-2.5 h-2.5 fill-current text-red-500" />
-                              <span>Video</span>
-                            </span>
-                          )}
-                        </Link>
-
-                        {/* Overlapping ADD / Quantity Control Button */}
-                        <div className="-mt-4 z-10">
-                          {qtyInCart === 0 ? (
-                            <button
-                              onClick={() => handleAddToCart(treatment)}
-                              className="px-6 py-2 rounded-lg bg-slate-950 hover:bg-[#008081] text-white text-xs font-extrabold uppercase tracking-wider shadow-lg hover:shadow-xl transition-all flex items-center gap-1.5 border border-white/20 cursor-pointer"
-                            >
-                              <span>ADD</span>
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
-                          ) : (
-                            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#008081] text-white shadow-lg border border-white/20">
-                              <button
-                                onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
-                                className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors cursor-pointer"
-                                aria-label="Decrease quantity"
-                              >
-                                <Minus className="w-3 h-3" />
-                              </button>
-                              <span className="text-xs font-extrabold min-w-[16px] text-center">
-                                {qtyInCart}
-                              </span>
-                              <button
-                                onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
-                                className="w-5 h-5 rounded bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors cursor-pointer"
-                                aria-label="Increase quantity"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </button>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
