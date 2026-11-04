@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offers & Coupons Engine | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link active"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
+          <div class="header-title-wrap">
+            <h1 class="font-serif">Offers, Promo Codes & Coupons Engine</h1>
+            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Marketing Promotions</span></div>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-luxury-emerald btn-sm" id="btnOpenAddCoupon"><i class="bi bi-plus-lg me-1"></i> Create New Promo Code</button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <!-- Step-by-Step Workflow Guidance: How to Manage & Apply Coupons -->
+        <div class="guide-flow-container">
+          <div class="guide-step-card active-step">
+            <div class="guide-step-header">
+              <span class="guide-step-num">1</span>
+              <h4 class="guide-step-title">Generate Code & Campaign</h4>
+            </div>
+            <p class="guide-step-desc">Pick an uppercase identifier like <code>DERMA10</code>, <code>GLOW500</code>, or <code>BRIDAL20</code>.</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">2</span>
+              <h4 class="guide-step-title">Select Discount Logic</h4>
+            </div>
+            <p class="guide-step-desc">Configure Percentage (%) with Max Cap OR Flat Cash Discount (₹).</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">3</span>
+              <h4 class="guide-step-title">Set Minimum Cart Rule</h4>
+            </div>
+            <p class="guide-step-desc">Specify minimum subtotal (e.g. ₹2,999) and service eligibility restrictions.</p>
+          </div>
+          <div class="guide-step-card">
+            <div class="guide-step-header">
+              <span class="guide-step-num">4</span>
+              <h4 class="guide-step-title">Test via Live Simulator</h4>
+            </div>
+            <p class="guide-step-desc">Validate instantly using the built-in cart discount calculation simulator below.</p>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+          <!-- KPI Metrics Row -->
+          <div class="col-lg-8">
+            <div class="row g-3">
+              <div class="col-sm-4">
+                <div class="stat-card-luxury">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Active Promo Codes</span>
+                    <div class="stat-icon-wrapper stat-icon-amber"><i class="bi bi-tag-fill"></i></div>
+                  </div>
+                  <div class="fs-2 fw-bold font-serif text-dark" id="statActiveCoupons">4</div>
+                  <div class="small text-muted mt-1"><span class="badge bg-success-subtle text-success me-1">Live in Cart</span> Ready for checkout</div>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="stat-card-luxury">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Total Redemptions</span>
+                    <div class="stat-icon-wrapper stat-icon-emerald"><i class="bi bi-check2-circle"></i></div>
+                  </div>
+                  <div class="fs-2 fw-bold font-serif text-dark" id="statTotalRedemptions">489</div>
+                  <div class="small text-muted mt-1">Applied during online booking</div>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="stat-card-luxury">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Total Patient Savings</span>
+                    <div class="stat-icon-wrapper stat-icon-blue"><i class="bi bi-piggy-bank"></i></div>
+                  </div>
+                  <div class="fs-2 fw-bold font-serif text-dark" id="statTotalSavings">₹3.4 Lakh</div>
+                  <div class="small text-muted mt-1">Direct checkout discount</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Coupons Table List -->
+            <div class="skin-card mt-4">
+              <div class="skin-card-header d-flex justify-content-between align-items-center">
+                <div class="skin-card-title">
+                  <i class="bi bi-tags-fill text-warning"></i>
+                  <span>Active Marketing & Clinical Coupons</span>
+                </div>
+                <div class="d-flex gap-2">
+                  <span class="badge bg-secondary-subtle text-secondary" id="totalCouponsCount">Loading...</span>
+                </div>
+              </div>
+              <div class="skin-card-body p-0">
+                <div class="table-responsive p-3">
+                  <table class="table table-hover align-middle w-100" id="couponsTable">
+                    <thead>
+                      <tr>
+                        <th>Promo Code</th>
+                        <th>Campaign Title</th>
+                        <th>Discount Rate</th>
+                        <th>Min. Order</th>
+                        <th>Applies To</th>
+                        <th>Redemptions</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="couponsTableBody">
+                      <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                          <div class="spinner-border spinner-border-sm text-primary me-2"></div>Loading promo codes...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Coupon Verification Simulator (Right Column) -->
+          <div class="col-lg-4">
+            <div class="skin-card h-100">
+              <div class="skin-card-header">
+                <div class="skin-card-title">
+                  <i class="bi bi-lightning-charge-fill text-warning"></i>
+                  <span>Live Coupon Test Simulator</span>
+                </div>
+              </div>
+              <div class="skin-card-body p-3">
+                <p class="small text-muted mb-3">Test how your coupon behaves in the patient's cart before making it public.</p>
+                
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Test Promo Code</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-tag"></i></span>
+                    <input type="text" class="form-control text-uppercase font-monospace fw-bold" id="simCode" value="DERMA10" placeholder="e.g. DERMA10">
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label small fw-bold">Simulated Cart Subtotal (₹)</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-light">₹</span>
+                    <input type="number" class="form-control fw-bold" id="simSubtotal" value="4999" step="100">
+                  </div>
+                </div>
+
+                <button class="btn btn-luxury-gold w-100 btn-sm mb-3" id="btnRunSimulator">
+                  <i class="bi bi-check-circle me-1"></i> Simulate Cart Validation
+                </button>
+
+                <!-- Simulator Result Card -->
+                <div id="simResultBox" class="p-3 rounded-3 border bg-light">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small fw-bold text-muted">Simulation Result</span>
+                    <span class="badge bg-success" id="simStatusBadge">Valid Code</span>
+                  </div>
+                  <div class="fs-5 fw-bold text-success font-serif" id="simDiscountLabel">10% Clinical Discount</div>
+                  <div class="small text-muted mt-1" id="simMathDetails">Subtotal: ₹4,999 • Discount: -₹500 • Final: <strong>₹4,499</strong></div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                  <span class="small fw-bold text-dark d-block mb-2">Pre-Seeded Clinical Codes:</span>
+                  <div class="d-flex flex-wrap gap-1.5">
+                    <button type="button" class="btn btn-xs btn-outline-secondary font-monospace quick-sim-code" data-code="DERMA10">DERMA10 (10%)</button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary font-monospace quick-sim-code" data-code="SKIN10">SKIN10 (10%)</button>
+                    <button type="button" class="btn btn-xs btn-outline-secondary font-monospace quick-sim-code" data-code="VIP20">VIP20 (20%)</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Add/Edit Coupon Modal with Interactive Live Preview -->
+  <div class="modal fade" id="couponModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="modal-header bg-gradient-to-r" style="background: linear-gradient(135deg, #004D4D 0%, #008081 100%); color: #fff;">
+          <h5 class="modal-title font-serif" id="couponModalTitle"><i class="bi bi-tag-fill me-2"></i>Create New Promo Code</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="couponForm">
+          <input type="hidden" id="couponId">
+          <div class="modal-body p-4">
+            <div class="row g-4">
+              <!-- Left: Form Controls -->
+              <div class="col-md-7">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Coupon Code <span class="text-danger">*</span></label>
+                    <input type="text" id="couponCode" class="form-control text-uppercase font-monospace fw-bold" placeholder="e.g. DERMA10" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Discount Type</label>
+                    <select id="couponType" class="form-select">
+                      <option value="percent">Percentage (%) Discount</option>
+                      <option value="flat">Flat Cash Discount (₹)</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Discount Value <span class="text-danger">*</span></label>
+                    <input type="number" id="couponValue" class="form-control fw-bold" placeholder="e.g. 10 or 500" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Max Discount Cap (₹)</label>
+                    <input type="number" id="couponMaxDiscount" class="form-control" placeholder="Optional (e.g. 1500)">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold">Campaign Title <span class="text-danger">*</span></label>
+                    <input type="text" id="couponTitle" class="form-control" placeholder="e.g. 10% Clinical Dermatology Discount" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Min. Cart Value (₹)</label>
+                    <input type="number" id="couponMinOrder" class="form-control" value="0" placeholder="0">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label small fw-bold">Total Usage Limit</label>
+                    <input type="number" id="couponUsageLimit" class="form-control" placeholder="Optional (e.g. 500)">
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold">Applies To</label>
+                    <select id="couponAppliesTo" class="form-select">
+                      <option value="all">All Clinical Treatments & Packages</option>
+                      <option value="Laser Treatments">Laser Treatments Only</option>
+                      <option value="Medi-Facials">Medi-Facials Only</option>
+                      <option value="Hair Restoration">Hair Restoration Only</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="form-label small fw-bold">Patient Description / Terms</label>
+                    <textarea id="couponDesc" class="form-control" rows="2" placeholder="e.g. Valid on consultations and first treatment sessions at Noida and Gurgaon clinics."></textarea>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check form-switch mt-1">
+                      <input class="form-check-input" type="checkbox" id="couponIsActive" checked>
+                      <label class="form-check-label fw-bold small" for="couponIsActive">Active & Claimable in Patient Cart</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Live Visual Voucher Card Preview -->
+              <div class="col-md-5">
+                <span class="small fw-bold text-muted d-block mb-2">Live Patient Voucher Preview:</span>
+                <div class="coupon-voucher-card text-center p-4">
+                  <div class="small text-uppercase fw-bold text-muted mb-1">Skinfinity Derma Voucher</div>
+                  <h4 class="font-serif fw-bold text-slate-900 mb-2" id="previewTitle">10% Clinical Discount</h4>
+                  
+                  <div class="my-3">
+                    <span class="coupon-voucher-pill" id="previewCode">DERMA10</span>
+                  </div>
+
+                  <div class="fs-3 font-serif fw-bold text-amber-700 my-2" id="previewRate">10% OFF</div>
+                  <p class="small text-muted mb-3" id="previewDesc">Valid on clinical consultations and procedures across clinics.</p>
+
+                  <div class="p-2.5 rounded-2 bg-white border small text-muted text-start">
+                    <div class="d-flex justify-content-between mb-1">
+                      <span>Min. Cart Value:</span>
+                      <strong class="text-dark" id="previewMin">₹0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                      <span>Applies To:</span>
+                      <strong class="text-dark" id="previewApplies">All Treatments</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <span>Status:</span>
+                      <strong class="text-success" id="previewStatus">Active</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light p-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald btn-sm" id="btnSaveCoupon"><i class="bi bi-check-lg me-1"></i> Save Promo Code</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/coupons.js"></script>
+</body>
+</html>

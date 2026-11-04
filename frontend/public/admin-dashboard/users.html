@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff & Role-Based Access Control (RBAC) | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link active"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Dr. Ipshita Johri</div>
+            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Super Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
+          <div class="header-title-wrap">
+            <h1>Staff Accounts & Role-Based Access Control (RBAC)</h1>
+            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Users & RBAC</span></div>
+          </div>
+        </div>
+        <div class="header-right">
+          <button class="btn btn-primary btn-sm" id="btnOpenAddUser"><i class="bi bi-person-plus-fill me-1"></i> Add Staff Account</button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <!-- Role Matrix Legend Card -->
+        <div class="skin-card mb-4">
+          <div class="skin-card-body py-3">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+              <div>
+                <h6 class="fw-bold mb-1 text-dark"><i class="bi bi-shield-lock-fill text-primary me-2"></i>Active Role Architecture</h6>
+                <div class="small text-muted">Each staff account is strictly bounded by role permissions for patient safety, SEO governance, and technical integrity.</div>
+              </div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Super Admin</span>
+                <span class="badge-role-admin"><i class="bi bi-person-badge"></i> Clinic Admin</span>
+                <span class="badge-role-seo"><i class="bi bi-graph-up"></i> SEO Executive</span>
+                <span class="badge-role-dev"><i class="bi bi-code-slash"></i> Technical Dev</span>
+                <span class="badge-role-frontdesk"><i class="bi bi-telephone"></i> Front Desk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="skin-card">
+          <div class="skin-card-header d-flex justify-content-between align-items-center">
+            <div class="skin-card-title">
+              <i class="bi bi-people-fill text-primary"></i>
+              <span>All Staff Users</span>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary" id="totalUsersCount">Loading...</span>
+          </div>
+          <div class="skin-card-body p-0">
+            <div class="table-responsive p-3">
+              <table class="table table-hover align-middle w-100" id="usersTable">
+                <thead>
+                  <tr>
+                    <th>Staff Member</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Assigned Role</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Operations Portal.</div>
+        <div class="text-muted">Enterprise Role-Based Access Control Architecture</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Add/Edit Staff Modal -->
+  <div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="userModalTitle">Add Staff Account</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form id="userForm">
+          <input type="hidden" id="userId">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label">Full Name <span class="text-danger">*</span></label>
+              <input type="text" id="userName" class="form-control" placeholder="e.g. Dr. Rajesh Sharma" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email Address <span class="text-danger">*</span></label>
+              <input type="email" id="userEmail" class="form-control" placeholder="e.g. staff@skinfinityderma.com" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Phone Number</label>
+              <input type="text" id="userPhone" class="form-control" placeholder="+91 98...">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Assigned Role <span class="text-danger">*</span></label>
+              <select id="userRoleSelect" class="form-select" required>
+                <option value="super_admin">Super Administrator (Full System Control)</option>
+                <option value="admin">Clinic Operations Admin (Bookings, Doctors, Catalog)</option>
+                <option value="seo_executive">SEO Executive (SEO, FAQs, Blogs, Content Blocks)</option>
+                <option value="developer">Lead Developer (Settings, Tracking Scripts, Menus)</option>
+                <option value="front_desk">Front Desk Coordinator (Appointments & Enquiries)</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Account Password</label>
+              <input type="password" id="userPassword" class="form-control" placeholder="Default: admin123 (or set new)">
+              <div class="small text-muted">Leave blank on edit to keep existing password.</div>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="userStatus" checked>
+              <label class="form-check-label fw-semibold" for="userStatus">Active User Account</label>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Staff Member</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/users.js"></script>
+</body>
+</html>

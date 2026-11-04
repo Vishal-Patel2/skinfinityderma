@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointments & Calendar Scheduling | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <!-- FullCalendar CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .slot-pill-btn {
+      font-size: 0.8rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .slot-pill-btn:hover {
+      border-color: #005b41;
+      background: #f0fdf9;
+    }
+    .slot-pill-btn.selected {
+      background: #005b41;
+      color: #FFFFFF;
+      border-color: #005b41;
+    }
+    .fc .fc-toolbar-title {
+      font-size: 1.25rem !important;
+      font-weight: 700;
+      color: #0F172A;
+    }
+    .fc .fc-button-primary {
+      background-color: #005b41 !important;
+      border-color: #005b41 !important;
+    }
+    .fc .fc-button-primary:hover {
+      background-color: #024733 !important;
+    }
+    .fc-event {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link active"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-superadmin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="header-title-wrap">
+            <h1>Patient Appointments & Scheduling</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a>
+              <span class="sep">/</span>
+              <span>Appointments</span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right d-flex align-items-center gap-2">
+          <!-- View Toggle -->
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-secondary active" id="btnViewTable">
+              <i class="bi bi-table me-1"></i> Table View
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="btnViewCalendar">
+              <i class="bi bi-calendar3 me-1"></i> Calendar View
+            </button>
+          </div>
+          <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewApptModal">
+            <i class="bi bi-plus-lg me-1"></i> New Booking
+          </button>
+          <button class="btn btn-outline-secondary btn-sm" id="btnRefreshAppts" title="Refresh">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="admin-content">
+        <!-- Filter Bar (For Table View) -->
+        <div class="skin-card mb-4" id="tableFilterSection">
+          <div class="skin-card-body py-3">
+            <div class="row g-3 align-items-center">
+              <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Status Filter</label>
+                <select id="filterStatus" class="form-select form-select-sm">
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending Confirmation</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="no_show">No-Show</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Date Filter</label>
+                <input type="date" id="filterDate" class="form-control form-control-sm">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Search Patient / Phone / Booking #</label>
+                <input type="text" id="filterSearch" class="form-control form-control-sm" placeholder="e.g. Ananya, 9876543210, SKF-APP...">
+              </div>
+              <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-primary btn-sm w-100" id="btnFilterSubmit">
+                  <i class="bi bi-funnel me-1"></i> Filter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointments Table Card -->
+        <div class="skin-card" id="tableViewContainer">
+          <div class="skin-card-header d-flex justify-content-between align-items-center">
+            <div class="skin-card-title">
+              <i class="bi bi-calendar2-check-fill text-success"></i>
+              <span>All Appointments</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-secondary-subtle text-secondary" id="totalApptsCount">Loading...</span>
+            </div>
+          </div>
+          <div class="skin-card-body p-0">
+            <div class="table-responsive p-3">
+              <table class="table table-hover align-middle w-100" id="appointmentsTable">
+                <thead>
+                  <tr>
+                    <th>Booking #</th>
+                    <th>Patient Details</th>
+                    <th>Treatment / Service</th>
+                    <th>Date & Slot</th>
+                    <th>Clinic & Doctor</th>
+                    <th>Estimate</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="appointmentsTableBody">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Calendar View Card (Hidden by default) -->
+        <div class="skin-card d-none" id="calendarViewContainer">
+          <div class="skin-card-header d-flex justify-content-between align-items-center">
+            <div class="skin-card-title">
+              <i class="bi bi-calendar-week-fill text-primary"></i>
+              <span>Interactive Appointment Calendar (Doctor & Slot Matrix)</span>
+            </div>
+            <div class="d-flex gap-2 align-items-center small text-muted">
+              <span class="badge" style="background:#02542D;">Pending</span>
+              <span class="badge" style="background:#0D9488;">Confirmed</span>
+              <span class="badge" style="background:#2563EB;">Completed</span>
+              <span class="badge" style="background:#D97706;">Rescheduled</span>
+              <span class="badge" style="background:#DC2626;">No-Show</span>
+            </div>
+          </div>
+          <div class="skin-card-body p-3">
+            <div id="fullCalendarWrap" style="min-height: 650px;"></div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Operations Portal.</div>
+        <div class="text-muted">Real-Time Clinical Bookings & Dynamic Slot Engine</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Create New Appointment Modal -->
+  <div class="modal fade" id="newApptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <div>
+            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-calendar-plus text-success me-2"></i>Book New Clinical Appointment</h5>
+            <div class="small text-muted">Direct appointment booking & slot allocation</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="newApptForm">
+          <div class="modal-body p-4">
+            <div class="p-3 mb-3 bg-light rounded-3 border">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Patient Full Name <span class="text-danger">*</span></label>
+                  <input type="text" id="newPatientName" class="form-control form-control-sm" placeholder="e.g. Riya Sharma" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                  <input type="tel" id="newPatientPhone" class="form-control form-control-sm" placeholder="9876543210" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold">Email Address</label>
+                  <input type="email" id="newPatientEmail" class="form-control form-control-sm" placeholder="patient@example.com">
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Clinical Service / Treatment <span class="text-danger">*</span></label>
+                <select id="newApptTreatment" class="form-select form-select-sm" required>
+                  <option value="">Select Treatment...</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Clinic Branch Location <span class="text-danger">*</span></label>
+                <select id="newApptClinic" class="form-select form-select-sm" required>
+                  <option value="1">Sector 36 HQ Clinic (Noida, UP)</option>
+                  <option value="2">Sector 28 Golf Course Road (Gurugram, Haryana)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Assign MD Specialist</label>
+                <select id="newApptDoctor" class="form-select form-select-sm">
+                  <option value="">-- Assign Doctor on Arrival --</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Appointment Date <span class="text-danger">*</span></label>
+                <input type="date" id="newApptDate" class="form-control form-control-sm" required>
+              </div>
+            </div>
+
+            <!-- Dynamic Available Slots Container -->
+            <div class="mb-3">
+              <label class="form-label small fw-semibold d-flex justify-content-between">
+                <span>Select Available Slot <span class="text-danger">*</span></span>
+                <span class="text-muted small" id="slotStatusMessage">Choose date above to view slots</span>
+              </label>
+              <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded border" id="newSlotsPillsContainer" style="min-height: 48px;">
+                <span class="text-muted small p-1">Please select an appointment date.</span>
+              </div>
+              <input type="hidden" id="newSelectedSlot" required>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Estimated Amount (₹)</label>
+                <input type="number" id="newApptAmount" class="form-control form-control-sm" placeholder="e.g. 4999">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-semibold">Initial Status</label>
+                <select id="newApptStatus" class="form-select form-select-sm">
+                  <option value="confirmed" selected>Confirmed</option>
+                  <option value="pending">Pending Confirmation</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Staff Internal Remarks</label>
+              <textarea id="newApptNotes" class="form-control form-control-sm" rows="2" placeholder="Clinical history notes, referral source, etc."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald btn-sm" id="btnSubmitNewBooking">
+              <i class="bi bi-calendar-check me-1"></i> Confirm & Book Slot
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reschedule Modal -->
+  <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <div>
+            <h5 class="modal-title fw-bold text-dark"><i class="bi bi-arrow-repeat text-warning me-2"></i>Reschedule Booking</h5>
+            <div class="small text-muted" id="rescheduleBookingNo">Booking #...</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="rescheduleForm">
+          <input type="hidden" id="rescheduleApptId">
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">New Appointment Date <span class="text-danger">*</span></label>
+              <input type="date" id="rescheduleDate" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Select Available Slot <span class="text-danger">*</span></label>
+              <div class="d-flex flex-wrap gap-2 p-2 bg-light rounded border" id="rescheduleSlotsContainer" style="min-height: 48px;">
+                <span class="text-muted small p-1">Select new date above.</span>
+              </div>
+              <input type="hidden" id="rescheduleSelectedSlot" required>
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Reason for Rescheduling</label>
+              <textarea id="rescheduleReason" class="form-control" rows="2" placeholder="Patient request, doctor emergency, etc."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-warning btn-sm" id="btnSubmitReschedule">
+              <i class="bi bi-clock-history me-1"></i> Update & Reschedule
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comprehensive Doctor Assignment & Edit Modal -->
+  <div class="modal fade" id="editApptModal" tabindex="-1" aria-labelledby="editApptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-light">
+          <div>
+            <h5 class="modal-title fw-bold" id="editApptModalLabel"><i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i>Manage Appointment & Doctor Assignment</h5>
+            <div class="small text-muted" id="editApptBookingNo">Booking #SKF-XXXXX</div>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="editApptForm">
+          <input type="hidden" id="editApptId">
+          <div class="modal-body p-4">
+            <!-- Patient Contact Section -->
+            <div class="p-3 mb-3 bg-light rounded-3 border">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Patient Name</label>
+                  <input type="text" id="editPatientName" class="form-control form-control-sm fw-semibold" required>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Phone Number</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                    <input type="text" id="editPatientPhone" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Email Address</label>
+                  <input type="email" id="editPatientEmail" class="form-control form-control-sm" placeholder="patient@example.com">
+                </div>
+              </div>
+            </div>
+
+            <!-- Doctor & Clinic Allocation -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="editApptDoctor" class="form-label fw-semibold text-primary">
+                  <i class="bi bi-person-badge-fill me-1"></i> Assigned MD Doctor
+                </label>
+                <select id="editApptDoctor" class="form-select">
+                  <option value="">-- Assign Doctor on Arrival --</option>
+                </select>
+                <div class="form-text small" id="doctorFeeNotice">Select doctor to automatically apply their consultation fee.</div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="editApptClinic" class="form-label fw-semibold">
+                  <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Clinic Branch Location
+                </label>
+                <select id="editApptClinic" class="form-select">
+                  <option value="1">Sector 36 HQ Clinic (Noida, UP)</option>
+                  <option value="2">Sector 28 Golf Course Road (Gurugram, Haryana)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Date, Time & Status -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="editApptDate" class="form-label fw-semibold">Appointment Date</label>
+                <input type="date" id="editApptDate" class="form-control" required>
+              </div>
+              <div class="col-md-4">
+                <label for="editApptTime" class="form-label fw-semibold">Time Slot</label>
+                <input type="text" id="editApptTime" class="form-control" placeholder="e.g. 11:30 AM" required>
+              </div>
+              <div class="col-md-4">
+                <label for="editApptStatus" class="form-label fw-semibold">Booking Status</label>
+                <select id="editApptStatus" class="form-select">
+                  <option value="pending">Pending Confirmation</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="in_clinic">In-Clinic / Arrived</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="no_show">No-Show</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="editApptService" class="form-label fw-semibold">Requested Clinical Service / Treatment</label>
+              <input type="text" id="editApptService" class="form-control" placeholder="e.g. US-FDA Soprano Titanium Laser Hair Removal">
+            </div>
+
+            <!-- Financial Pricing Breakdown -->
+            <div class="price-breakdown-box mb-3">
+              <div class="fw-bold text-dark small text-uppercase mb-2"><i class="bi bi-receipt me-1"></i> Clinical Billing & Estimate Breakdown</div>
+              <div class="row g-3 align-items-center">
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Doctor Consultation Fee</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" id="editDoctorFee" class="form-control" value="0" readonly>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Treatment / Procedure Price</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" id="editProcedurePrice" class="form-control" value="0" min="0" step="100">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small text-muted mb-1">Coupon Discount</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">- ₹</span>
+                    <input type="number" id="editDiscountAmount" class="form-control" value="0" min="0">
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                <div class="small fw-semibold text-muted">Promo Code: <span class="badge bg-warning-subtle text-dark border" id="editCouponBadge">None</span></div>
+                <div class="fs-5 fw-bold text-success">Net Estimate: <span id="editNetPayable">₹0</span></div>
+              </div>
+            </div>
+
+            <div class="mb-2">
+              <label for="editApptNotes" class="form-label small fw-semibold text-muted">Clinical Notes & Coordinator Remarks</label>
+              <textarea id="editApptNotes" class="form-control" rows="2" placeholder="e.g. Patient requested Dr. Ipshita Johri for acne scar consultation. Confirmed via WhatsApp."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer bg-light justify-content-between">
+            <button type="button" class="btn btn-outline-warning btn-sm" id="btnOpenRescheduleModal">
+              <i class="bi bi-arrow-repeat me-1"></i> Reschedule Slot
+            </button>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="btnSaveApptChanges">
+                <i class="bi bi-check-circle-fill me-1"></i> Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Clinical Appointment Slip Modal -->
+  <div class="modal fade" id="printSlipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4 pt-1" id="printableSlipArea">
+          <div class="text-center mb-3">
+            <img src="assets/img/logo.png" alt="Skinfinity Derma" style="height: 48px;" class="mb-2">
+            <div class="fw-bold font-serif fs-5 text-dark">Skinfinity Derma Aesthetic Clinics</div>
+            <div class="small text-muted" id="slipClinicAddress">B-1/22, Sector 36, Near Golf Course Metro, Noida, UP</div>
+            <div class="small text-muted">Helpline: +91 98719 41444 | appointments@skinfinityderma.com</div>
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center my-2">
+            <span class="badge bg-primary px-2 py-1" id="slipBookingNo">SKF-APP-1001</span>
+            <span class="small text-muted" id="slipGeneratedDate">Date: 27 Oct 2026</span>
+          </div>
+
+          <div class="bg-light p-3 rounded-3 my-3 border">
+            <div class="row g-2 small">
+              <div class="col-6"><span class="text-muted">Patient:</span> <strong id="slipPatientName">—</strong></div>
+              <div class="col-6"><span class="text-muted">Phone:</span> <strong id="slipPatientPhone">—</strong></div>
+              <div class="col-6"><span class="text-muted">Appointment Date:</span> <strong id="slipDate">—</strong></div>
+              <div class="col-6"><span class="text-muted">Time Slot:</span> <strong id="slipTime">—</strong></div>
+              <div class="col-12"><span class="text-muted">Consultant Doctor:</span> <strong id="slipDoctorName" class="text-primary">—</strong></div>
+              <div class="col-12"><span class="text-muted">Service / Procedure:</span> <strong id="slipServiceName">—</strong></div>
+            </div>
+          </div>
+
+          <div class="border rounded-3 p-3 my-3">
+            <div class="fw-bold small text-muted text-uppercase mb-2">Billing Summary</div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Doctor Consultation Fee</span>
+              <span id="slipDoctorFee">₹1,200</span>
+            </div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span>Procedure / Treatment Estimate</span>
+              <span id="slipProcedureFee">₹0</span>
+            </div>
+            <div class="d-flex justify-content-between small text-danger mb-1" id="slipDiscountRow">
+              <span>Coupon Discount Applied</span>
+              <span id="slipDiscountFee">- ₹0</span>
+            </div>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between fw-bold fs-6 text-dark">
+              <span>Total Payable at Clinic</span>
+              <span id="slipTotalPayable" class="text-success">₹1,200</span>
+            </div>
+          </div>
+
+          <div class="text-center small text-muted fst-italic">
+            Please report 10 minutes prior to scheduled slot for complimentary digital skin assessment.
+          </div>
+        </div>
+        <div class="modal-footer bg-light justify-content-between">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-dark btn-sm" id="btnPrintSlip">
+            <i class="bi bi-printer-fill me-1"></i> Print Appointment Slip
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <!-- FullCalendar JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/appointments.js"></script>
+</body>
+</html>

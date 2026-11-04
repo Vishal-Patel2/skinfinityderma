@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Banner Management | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .custom-admin-tabs .nav-link {
+      color: var(--text-body, #334155);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .custom-admin-tabs .nav-link:hover {
+      background-color: #f1f5f9;
+      color: var(--primary, #004D4D);
+    }
+    .custom-admin-tabs .nav-link.active {
+      background: linear-gradient(135deg, #004D4D 0%, #008081 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(0, 77, 77, 0.2);
+    }
+    .custom-admin-tabs .nav-link.active .badge {
+      background-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+            <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+          
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link active"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="header-left">
+          <button type="button" class="header-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="header-title-wrap">
+            <h1>Promotional Banners</h1>
+            <div class="header-breadcrumb">
+              <a href="index.html">Admin</a>
+              <span class="sep">/</span>
+              <span>Banners</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <button type="button" class="btn btn-primary btn-sm" id="btnOpenAddBannerModal">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Banner</span>
+          </button>
+
+          <div class="dropdown header-profile-dropdown">
+            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/img/avatar-default.svg" alt="Doctor Avatar" class="header-profile-avatar">
+              <span class="header-profile-name fw-semibold small">Dr. Johar</span>
+              <i class="bi bi-chevron-down text-muted small ms-1"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border">
+              <li><a class="dropdown-item py-2" href="settings.html"><i class="bi bi-gear me-2"></i>Clinic Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item py-2 text-danger action-logout" href="#"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <main class="admin-content">
+
+        <!-- Navigation Tabs: Hero Banners & Below-Banner Trust Ticker -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+          <ul class="nav nav-pills custom-admin-tabs p-1 bg-white rounded-3 border shadow-xs gap-1" id="bannerTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2" id="tab-banners-btn" data-bs-toggle="pill" data-bs-target="#pane-banners" type="button" role="tab" aria-selected="true">
+                <i class="bi bi-images fs-5"></i>
+                <span>Promotional Hero Banners</span>
+                <span class="badge rounded-pill bg-light text-dark border ms-1" id="bannerCountBadge">0</span>
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link px-4 py-2.5 fw-semibold d-inline-flex align-items-center gap-2" id="tab-trust-badges-btn" data-bs-toggle="pill" data-bs-target="#pane-trust-badges" type="button" role="tab" aria-selected="false">
+                <i class="bi bi-shield-check fs-5"></i>
+                <span>Below-Banner Trust Ticker</span>
+                <span class="badge rounded-pill bg-light text-dark border ms-1" id="badgeCountBadge">0</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-luxury-emerald px-3.5 py-2" id="btnDynamicTabAdd">
+              <i class="bi bi-plus-lg me-1"></i> <span>Add Banner</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content" id="bannerTabsContent">
+          
+          <!-- TAB PANE 1: HERO BANNERS -->
+          <div class="tab-pane fade show active" id="pane-banners" role="tabpanel" aria-labelledby="tab-banners-btn">
+            <!-- Filter Controls -->
+            <div class="skin-card mb-4">
+              <div class="skin-card-body py-3">
+                <div class="row g-3 align-items-center">
+                  <div class="col-md-6">
+                    <label class="form-label small text-muted mb-1">Filter by Status</label>
+                    <select id="filterBannerStatus" class="form-select form-select-sm">
+                      <option value="">All Banners</option>
+                      <option value="active">Active Only</option>
+                      <option value="inactive">Inactive Only</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 d-flex align-items-end justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetBannerFilters">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="btnReloadBanners">
+                      <i class="bi bi-arrow-clockwise me-1"></i> Refresh Banners
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- DataTable Card -->
+            <div class="skin-card">
+              <div class="skin-card-header">
+                <div class="skin-card-title">
+                  <i class="bi bi-images text-secondary"></i>
+                  <span>All Website Banners</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light text-muted border small d-inline-flex align-items-center">
+                    <i class="bi bi-grip-vertical me-1 text-primary"></i> Drag rows to reorder
+                  </span>
+                  <button type="button" class="btn btn-luxury-emerald btn-sm px-3" id="btnOpenAddBannerModalInside">
+                    <i class="bi bi-plus-lg me-1"></i> Add Banner
+                  </button>
+                </div>
+              </div>
+              <div class="skin-card-body p-0">
+                <div class="table-responsive p-3">
+                  <table id="bannersTable" class="table table-hover align-middle w-100">
+                    <thead>
+                      <tr>
+                        <th style="width: 80px;">Order</th>
+                        <th style="width: 260px;">Desktop Banner Image</th>
+                        <th style="width: 160px;">Mobile Banner Image</th>
+                        <th style="width: 130px;" class="text-center">Status</th>
+                        <th style="width: 130px;" class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="bannersTableBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB PANE 2: BELOW-BANNER TRUST TICKER BADGES -->
+          <div class="tab-pane fade" id="pane-trust-badges" role="tabpanel" aria-labelledby="tab-trust-badges-btn">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+              <div class="card-header bg-white py-3 px-4 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                  <h5 class="card-title fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    
+                    Below-Banner Trust Ticker Badges
+                  </h5>
+                  <div class="text-muted small">Pills running in the continuous infinite marquee ticker directly under the hero banners.</div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-light text-muted border py-2 px-3 fw-normal">
+                    <i class="bi bi-arrows-vertical me-1"></i> Drag rows to reorder
+                  </span>
+                  <button type="button" class="btn btn-luxury-emerald btn-sm px-3" id="btnOpenAddBadgeModal">
+                    <i class="bi bi-plus-lg me-1"></i> Add Trust Badge
+                  </button>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0" id="trustBadgesTable">
+                    <thead class="table-light text-uppercase fs-xs text-muted">
+                      <tr>
+                        <th style="width: 70px;">Order</th>
+                        <th style="width: 140px;">Icon</th>
+                        <th>Badge Title / Text</th>
+                        <th style="width: 120px;" class="text-center">Status</th>
+                        <th style="width: 120px;" class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="trustBadgesTableBody">
+                      <!-- Rendered dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+
+      <footer class="admin-page-footer">
+        <div>&copy; 2026 Skinfinity Derma Admin Portal.</div>
+        <div class="text-muted">Dynamic Hero & Campaign Banner Manager</div>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Add/Edit Banner Modal -->
+  <div class="modal fade" id="bannerModal" tabindex="-1" aria-labelledby="bannerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="bannerModalLabel">Add New Banner</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="bannerForm" novalidate>
+          <input type="hidden" id="bannerId" name="id">
+          <input type="hidden" id="bannerDesktopImageUrl" name="desktopImage">
+          <input type="hidden" id="bannerMobileImageUrl" name="mobileImage">
+          <div class="modal-body p-4">
+            
+            <div class="alert alert-light border small text-muted mb-4 d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle text-primary fs-5"></i>
+              <span>Upload desktop and mobile banner creatives. Active status and display sequence are managed directly on the table view.</span>
+            </div>
+
+            <div class="row g-4">
+              <!-- Desktop Image Upload -->
+              <div class="col-md-7">
+                <label class="form-label fw-bold small text-dark d-flex justify-content-between align-items-center">
+                  <span>Desktop Banner Image <span class="text-danger">*</span></span>
+                  <span class="badge bg-light text-muted border fw-normal">3:1 Ultra-Wide</span>
+                </label>
+                
+                <!-- Upload Dropzone (shown if no image) -->
+                <label for="bannerDesktopFile" class="image-upload-dropzone d-block mb-2 text-center" id="bannerDesktopDropzone" style="cursor: pointer;">
+                  <i class="bi bi-cloud-arrow-up-fill dropzone-icon mb-2 text-primary fs-1 d-block"></i>
+                  <span class="fw-semibold text-dark d-block">Click or Drag & Drop to upload Desktop Banner</span>
+                  <span class="text-muted small d-block">Recommended size: 1920 &times; 640 px (PNG, JPG, WEBP)</span>
+                  <input type="file" id="bannerDesktopFile" class="visually-hidden" accept="image/*">
+                </label>
+
+                <!-- Preview Card (shown if image exists) -->
+                <div class="image-preview-wrapper d-none w-100 position-relative border rounded-3 p-2 bg-light shadow-sm" id="bannerDesktopPreviewWrap">
+                  <div class="position-relative overflow-hidden rounded-2 bg-dark" style="aspect-ratio: 3/1; width: 100%;">
+                    <img id="bannerDesktopPreviewImg" src="" alt="Desktop preview" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                    <span class="small text-muted text-truncate" id="bannerDesktopFileName" style="max-width: 250px;">Desktop Creative</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" id="btnRemoveBannerDesktopImg">
+                      <i class="bi bi-arrow-repeat"></i> Change Image
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile Banner Image Upload (Optional) -->
+              <div class="col-md-5">
+                <label class="form-label fw-bold small text-dark d-flex justify-content-between align-items-center">
+                  <span>Mobile Banner <span class="text-muted fw-normal">(Optional)</span></span>
+                  <span class="badge bg-light text-muted border fw-normal">3:4 Portrait</span>
+                </label>
+                
+                <!-- Upload Dropzone (shown if no image) -->
+                <label for="bannerMobileFile" class="image-upload-dropzone d-block mb-2 text-center" id="bannerMobileDropzone" style="cursor: pointer;">
+                  <i class="bi bi-phone-fill dropzone-icon mb-2 text-primary fs-1 d-block"></i>
+                  <span class="fw-semibold text-dark d-block">Click or Drag & Drop to upload Mobile Banner</span>
+                  <span class="text-muted small d-block">Recommended size: 750 &times; 1000 px</span>
+                  <input type="file" id="bannerMobileFile" class="visually-hidden" accept="image/*">
+                </label>
+
+                <!-- Preview Card (shown if image exists) -->
+                <div class="image-preview-wrapper d-none w-100 position-relative border rounded-3 p-2 bg-light shadow-sm" id="bannerMobilePreviewWrap">
+                  <div class="position-relative overflow-hidden rounded-2 bg-dark mx-auto" style="aspect-ratio: 3/4; max-height: 180px; width: auto;">
+                    <img id="bannerMobilePreviewImg" src="" alt="Mobile preview" style="height: 100%; width: auto; object-fit: cover;">
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                    <span class="small text-muted text-truncate" id="bannerMobileFileName" style="max-width: 150px;">Mobile Creative</span>
+                    <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" id="btnRemoveBannerMobileImg">
+                      <i class="bi bi-arrow-repeat"></i> Change Image
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald px-4" id="btnSaveBanner">
+              <i class="bi bi-cloud-check-fill me-1"></i> Save Banner
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Trust Badge Modal -->
+  <div class="modal fade" id="trustBadgeModal" tabindex="-1" aria-labelledby="trustBadgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="trustBadgeModalLabel">Add Trust Badge</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="trustBadgeForm" novalidate>
+          <input type="hidden" id="trustBadgeId" name="id">
+          <div class="modal-body p-4">
+            
+            <div class="alert alert-light border small text-muted mb-4 d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle text-primary fs-5"></i>
+              <span>Enter badge text and select an icon. Badges display in the infinite marquee slider beneath the hero banners.</span>
+            </div>
+
+            <!-- Title -->
+            <div class="mb-3">
+              <label for="trustBadgeTitle" class="form-label fw-bold small text-dark">
+                Badge Title / Text <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control" id="trustBadgeTitle" placeholder="e.g. Hospital-Grade Sanitation" required>
+            </div>
+
+            <!-- Icon Selector: Preset Icon OR Custom Upload -->
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-dark d-block mb-2">
+                Badge Icon Source <span class="text-danger">*</span>
+              </label>
+              <div class="btn-group w-100 mb-3" role="group">
+                <input type="radio" class="btn-check" name="iconTypeRadio" id="iconTypePreset" value="preset" checked>
+                <label class="btn btn-outline-primary btn-sm py-2" for="iconTypePreset">
+                  <i class="bi bi-grid-fill me-1"></i> Preset Clinic Icon
+                </label>
+
+                <input type="radio" class="btn-check" name="iconTypeRadio" id="iconTypeUpload" value="upload">
+                <label class="btn btn-outline-primary btn-sm py-2" for="iconTypeUpload">
+                  <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload Custom Icon / SVG
+                </label>
+              </div>
+
+              <!-- Option 1: Preset Icon Selector -->
+              <div id="sectionPresetIcon">
+                <div class="d-flex align-items-center gap-3">
+                  <select class="form-select flex-grow-1" id="trustBadgeIcon">
+                    <option value="CheckCircle2">CheckCircle2 (Verification & Quality)</option>
+                    <option value="ShieldCheck">ShieldCheck (Safe & Hygienic)</option>
+                    <option value="Award">Award (US-FDA Approved)</option>
+                    <option value="Stethoscope">Stethoscope (Doctor Led Clinic)</option>
+                    <option value="CreditCard">CreditCard (0% EMI Options)</option>
+                    <option value="UserCheck">UserCheck (Senior MD Specialists)</option>
+                    <option value="Star">Star (5-Star Verified Reviews)</option>
+                    <option value="Clock">Clock (10+ Years Excellence)</option>
+                    <option value="FlaskConical">FlaskConical (Integrated Lab / Pharmacy)</option>
+                    <option value="Zap">Zap (Painless Laser Removal)</option>
+                    <option value="Droplets">Droplets (HydraFacial & Aesthetics)</option>
+                    <option value="Sparkles">Sparkles (Aesthetic Glow & Radiance)</option>
+                    <option value="Building">Building (Clinical Infrastructure)</option>
+                    <option value="HeartPulse">HeartPulse (Dermatology Care)</option>
+                  </select>
+
+                  <!-- Live Icon Preview Box -->
+                  <div class="d-flex flex-column align-items-center justify-content-center p-2 rounded-3 border bg-light" style="width: 52px; height: 52px; min-width: 52px;">
+                    <div id="trustBadgeIconPreview" class="text-primary fs-3 d-flex align-items-center justify-content-center">
+                      <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-text small text-muted">Select an icon to visualize and attach to this trust pill.</div>
+              </div>
+
+              <!-- Option 2: Upload Custom Icon -->
+              <div id="sectionUploadIcon" class="d-none">
+                <input type="hidden" id="trustBadgeCustomIconUrl" name="iconUrl">
+                <label for="trustBadgeCustomIconFile" class="image-upload-dropzone d-block text-center py-3 mb-2" id="badgeCustomIconDropzone" style="cursor: pointer;">
+                  <i class="bi bi-cloud-arrow-up-fill dropzone-icon mb-1 text-primary fs-2 d-block"></i>
+                  <span class="fw-semibold text-dark small d-block">Click or Drag & Drop to upload Icon</span>
+                  <span class="text-muted fs-xs d-block">Recommended: 64&times;64 or 128&times;128 px (PNG, SVG, WEBP)</span>
+                  <input type="file" id="trustBadgeCustomIconFile" class="visually-hidden" accept="image/*,.svg">
+                </label>
+                <div class="image-preview-wrapper d-none w-100 position-relative border rounded-3 p-2 bg-light shadow-sm text-center" id="badgeCustomIconPreviewWrap">
+                  <div class="d-flex align-items-center justify-content-center gap-3">
+                    <img id="badgeCustomIconPreviewImg" src="" alt="Custom Icon" style="width: 44px; height: 44px; object-fit: contain; background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 4px;">
+                    <div class="text-start">
+                      <div class="small fw-semibold text-dark" id="badgeCustomIconFileName">icon.png</div>
+                      <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 mt-1" id="btnRemoveBadgeCustomIcon">
+                        <i class="bi bi-arrow-repeat me-1"></i> Change Icon
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pill Live Preview -->
+            <div class="mt-4 pt-3 border-top">
+              <label class="form-label small text-muted fw-bold">Live Ticker Pill Preview:</label>
+              <div class="d-flex">
+                <div class="bg-white rounded-pill px-3.5 py-2 border shadow-sm d-inline-flex align-items-center gap-2" id="trustBadgePillPreview">
+                  <div class="text-primary" id="trustBadgePillIcon">
+                    <i class="bi bi-check-circle-fill"></i>
+                  </div>
+                  <span class="fw-semibold text-dark small" id="trustBadgePillText">Hospital-Grade Sanitation</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald px-4" id="btnSaveTrustBadge">
+              <i class="bi bi-cloud-check-fill me-1"></i> Save Badge
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/banners.js"></script>
+</body>
+</html>

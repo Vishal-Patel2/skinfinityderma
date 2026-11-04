@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | Skinfinity Derma Admin Portal</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- SweetAlert2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 10% 20%, rgba(2, 84, 45, 0.08) 0%, rgba(244, 247, 244, 1) 90%);
+      padding: 1.5rem;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 480px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+      padding: 2.25rem;
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: 1.75rem;
+    }
+    .login-brand img {
+      height: 64px;
+      margin-bottom: 0.75rem;
+    }
+    .role-pills-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .role-pill-btn {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid #d1d5db;
+      background: #f8fafc;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .role-pill-btn:hover, .role-pill-btn.active {
+      background: #02542D;
+      color: #ffffff;
+      border-color: #02542D;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        <h4 class="fw-bold mt-2 mb-1" style="color: #02542D;">Operations & CMS Portal</h4>
+        <p class="text-muted small mb-0">Role-Based Access for Aesthetic Dermatology Clinics</p>
+      </div>
+
+      <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="mb-3">
+          <label for="loginEmail" class="form-label fw-semibold small">Work Email Address <span class="required text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control border-start-0" id="loginEmail" placeholder="superadmin@skinfinityderma.com" value="superadmin@skinfinityderma.com" required>
+          </div>
+          <div class="invalid-feedback">Please enter a valid staff email.</div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="loginPassword" class="form-label fw-semibold small mb-0">Password <span class="required text-danger">*</span></label>
+            <a href="forgot-password.html" class="small text-decoration-none" style="color: #02542D;">Forgot Password?</a>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control border-start-0 border-end-0" id="loginPassword" placeholder="••••••••" value="admin123" required>
+            <button class="btn btn-outline-secondary border-start-0 bg-white" type="button" id="togglePasswordBtn">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+          <div class="invalid-feedback">Please enter your password.</div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+            <label class="form-check-label text-muted small" for="rememberMe">Remember my session</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-2 fs-6 fw-semibold" id="loginSubmitBtn" style="background: #02542D; border-color: #02542D;">
+          <span>Sign In to Clinic Console</span>
+          <i class="bi bi-arrow-right ms-2"></i>
+        </button>
+      </form>
+
+      <!-- Quick Role Fill Pills -->
+      <div class="mt-4 p-3 rounded-3" style="background: #f8faf9; border: 1px dashed #cbd5e1;">
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="fw-bold small text-dark"><i class="bi bi-person-badge text-success me-1"></i> Quick Role Switcher:</span>
+          <span class="badge bg-light text-muted border">Pass: admin123</span>
+        </div>
+        <div class="role-pills-wrap">
+          <button type="button" class="role-pill-btn active" data-email="superadmin@skinfinityderma.com">Super Admin</button>
+          <button type="button" class="role-pill-btn" data-email="admin@skinfinityderma.com">Admin</button>
+          <button type="button" class="role-pill-btn" data-email="manager@skinfinityderma.com">Clinic Manager</button>
+          <button type="button" class="role-pill-btn" data-email="doctor@skinfinityderma.com">Doctor</button>
+          <button type="button" class="role-pill-btn" data-email="reception@skinfinityderma.com">Receptionist</button>
+          <button type="button" class="role-pill-btn" data-email="content@skinfinityderma.com">Content Manager</button>
+          <button type="button" class="role-pill-btn" data-email="marketing@skinfinityderma.com">Marketing Manager</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery & Bootstrap Bundle -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <!-- API & Core JS -->
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/login.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('.role-pill-btn').on('click', function() {
+        $('.role-pill-btn').removeClass('active');
+        $(this).addClass('active');
+        $('#loginEmail').val($(this).data('email'));
+        $('#loginPassword').val('admin123');
+      });
+    });
+  </script>
+</body>
+</html>
