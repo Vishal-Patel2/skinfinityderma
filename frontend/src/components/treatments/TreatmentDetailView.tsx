@@ -156,7 +156,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
         badge="US-FDA Approved Clinical Protocols"
         title={treatment.name}
         highlight={treatment.bodyArea ? `• ${treatment.bodyArea} Zone` : undefined}
-        subtitle={treatment.explainedSubtitle || "Doctor-supervised aesthetic dermatology and advanced clinical laser care by Dr. Ipshita Johri"}
+        subtitle={treatment.explainedSubtitle || "Doctor-supervised aesthetic dermatology and advanced clinical laser care"}
         asHeading="div"
       />
 
@@ -567,7 +567,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     Watch {treatment.name} in Action
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                    Authentic clinical procedure demonstration & expert guidance by Dr. Ipshita Johri
+                    Authentic clinical procedure demonstration & expert guidance by Senior Dermatologists
                   </p>
                 </div>
                 {treatment.videoUrl && (

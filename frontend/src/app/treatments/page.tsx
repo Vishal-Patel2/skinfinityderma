@@ -189,8 +189,11 @@ function TreatmentsListingContent() {
             : []),
         ]}
         badge="100% US-FDA Approved Protocols"
-        title="All Clinical Dermatology & Laser Protocols"
-        highlight="by Dr. Ipshita Johri"
+        title={
+          selectedCategory === "All Treatments"
+            ? "All Clinical Dermatology & Laser Protocols"
+            : selectedCategory
+        }
         subtitle="Doctor-supervised laser hair reduction, medi-facials, acne scar remodeling & hair regrowth in Noida & Gurgaon"
         asHeading="h1"
       />
@@ -584,7 +587,7 @@ function TreatmentsListingContent() {
                   Not sure which treatment or package is right for your skin?
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                  Schedule a personalized dermoscopy consultation with Dr. Ipshita Johri &amp; our senior MD Dermatologists at Noida (Sector 36) or Gurgaon (Golf Course Road).
+                  Schedule a personalized dermoscopy consultation with our senior MD Dermatologists at Noida (Sector 36) or Gurgaon (Golf Course Road).
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full md:w-auto">

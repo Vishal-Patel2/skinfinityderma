@@ -97,7 +97,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${treatment.name} (${treatment.priceFormatted}) | Skinfinity Derma ${locationLabel}`,
-    description: `${treatment.shortDesc} Starts from ${treatment.priceFormatted} with 0% EMI options. US-FDA approved protocols by Dr. Ipshita Johri.`,
+    description: `${treatment.shortDesc} Starts from ${treatment.priceFormatted} with 0% EMI options. US-FDA approved clinical protocols.`,
     alternates: {
       canonical: `/${treatment.slug}`,
     },

@@ -114,8 +114,7 @@ export default function PageBreadcrumbBanner({
           {/* Optional Badge */}
           {badge && (
             <div>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#006d6e] bg-[#e8f6f3] px-3 py-1 rounded-full border border-[#d2eee7]">
-                <Sparkles className="w-3 h-3 text-[#006d6e]" />
+              <span className="inline-flex items-center text-[11px] font-bold uppercase tracking-wider text-[#006d6e] bg-[#e8f6f3] px-3.5 py-1 rounded-full border border-[#d2eee7]">
                 {badge}
               </span>
             </div>
