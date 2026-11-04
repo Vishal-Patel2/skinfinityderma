@@ -580,7 +580,6 @@ function TreatmentsListingContent() {
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#093b3c] rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
               <div className="space-y-2 max-w-xl">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-teal-300 bg-teal-950/80 px-3 py-1 rounded-full border border-teal-700">
-                  <Sparkles className="w-3.5 h-3.5" />
                   Customized Multi-Session Packages
                 </span>
                 <h2 className="text-xl sm:text-2xl font-extrabold font-serif">

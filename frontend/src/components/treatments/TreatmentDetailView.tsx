@@ -33,6 +33,26 @@ interface Props {
   treatment: RichTreatment;
 }
 
+function sanitizeText(str?: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/ΓÇô/g, "–")
+    .replace(/ΓÇö/g, "—")
+    .replace(/Γÿà/g, "★")
+    .replace(/ΓÇÖ/g, "’")
+    .replace(/ΓÇ£/g, "“")
+    .replace(/ΓÇ¥/g, "”")
+    .replace(/<\/?p>/gi, "")
+    .replace(/<\/?span[^>]*>/gi, "")
+    .replace(/\n\s*\n\s*\n/g, "\n\n")
+    .trim();
+}
+
 export default function TreatmentDetailView({ treatment }: Props) {
   const { items, addItem, updateQuantity, openCart } = useCart();
   const { openAppointmentModal, openEmiModal, adminSettings } = useAuth();
@@ -472,16 +492,9 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     {cleanExplainedSubtitle}
                   </p>
                 )}
-                {treatment.fullDesc?.includes("<") ? (
-                  <div
-                    className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1 space-y-2.5 prose prose-slate prose-sm max-w-none [&_p]:leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0"
-                    dangerouslySetInnerHTML={{ __html: treatment.fullDesc }}
-                  />
-                ) : (
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1 whitespace-pre-line">
-                    {treatment.fullDesc}
-                  </p>
-                )}
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1 whitespace-pre-line">
+                  {sanitizeText(treatment.fullDesc)}
+                </p>
               </div>
             </div>
           </div>
@@ -818,8 +831,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
                     </span>
                   </button>
                   {isOpen && (
-                    <div className="px-5 sm:px-6 pb-4 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed bg-white border-t border-slate-200/60">
-                      {faq.answer}
+                    <div className="px-5 sm:px-6 pb-4 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed bg-white border-t border-slate-200/60 whitespace-pre-line">
+                      {sanitizeText(faq.answer)}
                     </div>
                   )}
                 </div>
