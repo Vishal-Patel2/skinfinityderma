@@ -60,6 +60,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'skinfinityderma.onrender.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.onrender.com',
+        pathname: '/**',
+      },
       ...apiRemotePatterns(),
     ],
   },
