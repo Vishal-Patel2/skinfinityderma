@@ -950,63 +950,6 @@ export default function TreatmentDetailView({ treatment }: Props) {
           <AppointmentForm initialTreatment={treatment.name} />
         </div>
       </section>
-
-      {/* 9. STICKY MOBILE ACTION BAR (Fixed at bottom on phones) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-4 py-3 shadow-[0_-4px_25px_rgba(0,0,0,0.1)] flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block leading-tight">
-            Starts from
-          </span>
-          <div className="flex items-baseline gap-1.5 truncate">
-            <span className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
-              {treatment.priceFormatted}
-            </span>
-            <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-              {treatment.discountBadge}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          {qtyInCart === 0 ? (
-            <button
-              onClick={handleAddToCart}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-950 hover:bg-[#008081] text-white text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-sm"
-              aria-label="Add treatment to cart"
-            >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              <span>ADD</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-[#008081] text-white text-xs font-bold shadow-sm">
-              <button
-                onClick={() => updateQuantity(treatment.id, qtyInCart - 1)}
-                className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
-                aria-label="Decrease quantity"
-              >
-                -
-              </button>
-              <span className="px-1 min-w-[14px] text-center">{qtyInCart}</span>
-              <button
-                onClick={() => updateQuantity(treatment.id, qtyInCart + 1)}
-                className="w-5 h-5 rounded bg-white/20 flex items-center justify-center font-bold"
-                aria-label="Increase quantity"
-              >
-                +
-              </button>
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={openAppointmentModal}
-            className="px-4 py-2.5 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-xs font-extrabold uppercase tracking-wider shadow-md transition-all flex items-center gap-1.5"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Book</span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

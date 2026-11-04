@@ -610,35 +610,6 @@ function TreatmentsListingContent() {
           </div>
         </div>
       </div>
-
-      {/* Floating Cart Bar at Bottom if Cart has items */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-xl">
-          <div className="bg-slate-950 text-white rounded-2xl px-5 py-3.5 shadow-2xl border border-teal-500/40 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#008081] text-white flex items-center justify-center font-extrabold text-xs">
-                {cartCount}
-              </div>
-              <div>
-                <span className="text-xs font-bold block">
-                  {cartCount} {cartCount === 1 ? "Treatment" : "Treatments"} in Clinical Cart
-                </span>
-                <span className="text-[11px] text-teal-300">
-                  0% Interest EMI &amp; Package Discounts Available
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={openCart}
-              className="px-4 py-2 rounded-xl bg-[#008081] hover:bg-teal-500 text-white text-xs font-extrabold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              <span>View Cart</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
