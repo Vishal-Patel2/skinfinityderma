@@ -1,7 +1,7 @@
 /**
  * Skinfinity Derma Admin Dashboard
  * Dynamic Monthly Offers Controller (Best Offers this Month)
- * Full-featured: Table View, Live Card Simulation View, Image Lightbox, Real-Time Sync
+ * Simple Table Format: S.N., Image, Title, Status, Action
  */
 
 $(document).ready(function () {
@@ -10,7 +10,6 @@ $(document).ready(function () {
   let allOffers = [];
   let currentFilterCategory = 'All';
   let currentSearchQuery = '';
-  let currentViewMode = 'table'; // 'table' | 'cards'
   let dataTable = null;
 
   // Initialize
@@ -22,13 +21,13 @@ $(document).ready(function () {
     setupModalSimulation();
   }
 
-  // Smart image resolver to support all server setups (XAMPP /skinfinityderma, Express, Next, direct)
+  // Smart image resolver to support all server setups (XAMPP /skinfinityderma, Express, Render, Next, direct)
   function resolveImageUrl(url) {
     if (!url) return 'assets/img/placeholder.svg';
     if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
       return url;
     }
-    // If opened via XAMPP path like /skinfinityderma/admin/
+    // If opened via local XAMPP path like /skinfinityderma/admin/
     if (window.location.pathname.includes('/skinfinityderma/admin/')) {
       if (url.startsWith('/images/')) {
         return '../frontend/public' + url;
@@ -50,24 +49,6 @@ $(document).ready(function () {
       });
     });
 
-    // View Switcher (Table vs Cards)
-    $('#btn-view-table').on('click', function () {
-      $(this).addClass('active');
-      $('#btn-view-cards').removeClass('active');
-      currentViewMode = 'table';
-      $('#view-mode-table').removeClass('d-none');
-      $('#view-mode-cards').addClass('d-none');
-    });
-
-    $('#btn-view-cards').on('click', function () {
-      $(this).addClass('active');
-      $('#btn-view-table').removeClass('active');
-      currentViewMode = 'cards';
-      $('#view-mode-table').addClass('d-none');
-      $('#view-mode-cards').removeClass('d-none');
-      renderCardsGrid();
-    });
-
     // Add Offer button
     $('#btn-add-offer').on('click', function () {
       openOfferModal();
@@ -78,7 +59,7 @@ $(document).ready(function () {
       $('.filter-pill-btn').removeClass('active');
       $(this).addClass('active');
       currentFilterCategory = $(this).data('category');
-      renderCurrentView();
+      renderOffersTable();
     });
 
     // Quick Search Input
@@ -89,10 +70,8 @@ $(document).ready(function () {
       } else {
         $('#btn-clear-search').addClass('d-none');
       }
-      if (currentViewMode === 'table' && dataTable) {
+      if (dataTable) {
         dataTable.search(currentSearchQuery).draw();
-      } else {
-        renderCardsGrid();
       }
     });
 
@@ -100,10 +79,8 @@ $(document).ready(function () {
       $('#quick-search-input').val('');
       currentSearchQuery = '';
       $(this).addClass('d-none');
-      if (currentViewMode === 'table' && dataTable) {
+      if (dataTable) {
         dataTable.search('').draw();
-      } else {
-        renderCardsGrid();
       }
     });
 
@@ -163,7 +140,7 @@ $(document).ready(function () {
       saveOffer();
     });
 
-    // Table click delegation
+    // Table click delegation (Single action column buttons)
     $('#offers-table-body').on('click', '.btn-edit-offer', function () {
       const id = $(this).data('id');
       const offer = allOffers.find((o) => String(o.id) === String(id));
@@ -186,33 +163,6 @@ $(document).ready(function () {
       $('#zoom-image').attr('src', src);
       $('#zoom-title').text(title || '');
       $('#imagePreviewModal').modal('show');
-    });
-
-    $('#offers-table-body').on('click', '.order-arrow-btn.up', function () {
-      const id = $(this).data('id');
-      moveOfferOrder(id, -1);
-    });
-
-    $('#offers-table-body').on('click', '.order-arrow-btn.down', function () {
-      const id = $(this).data('id');
-      moveOfferOrder(id, 1);
-    });
-
-    // Cards Grid Click Delegation
-    $('#offers-cards-grid').on('click', '.btn-edit-card', function () {
-      const id = $(this).data('id');
-      const offer = allOffers.find((o) => String(o.id) === String(id));
-      if (offer) openOfferModal(offer);
-    });
-
-    $('#offers-cards-grid').on('click', '.btn-delete-card', function () {
-      const id = $(this).data('id');
-      deleteOffer(id);
-    });
-
-    $('#offers-cards-grid').on('change', '.card-status-toggle', function () {
-      const id = $(this).data('id');
-      toggleOfferStatus(id, this);
     });
   }
 
@@ -252,7 +202,7 @@ $(document).ready(function () {
     $cat.removeClass('bg-warning bg-primary bg-danger bg-success bg-purple text-dark text-white');
     switch (cat) {
       case 'Hair':
-        $cat.addClass('bg-purple text-white');
+        $cat.addClass('bg-primary text-white');
         break;
       case 'Laser':
         $cat.addClass('bg-danger text-white');
@@ -264,7 +214,7 @@ $(document).ready(function () {
         $cat.addClass('bg-warning text-dark');
         break;
       default:
-        $cat.addClass('bg-primary text-white');
+        $cat.addClass('bg-warning text-dark');
     }
   }
 
@@ -275,7 +225,7 @@ $(document).ready(function () {
       if (res && res.success && Array.isArray(res.data)) {
         allOffers = res.data;
         updateMetrics();
-        renderCurrentView();
+        renderOffersTable();
       } else {
         Swal.fire('Notice', 'Unable to retrieve offers from server.', 'info');
       }
@@ -285,7 +235,7 @@ $(document).ready(function () {
     }
   }
 
-  // Update Metric Counters & Badges
+  // Update Metric Counters & Category Badges
   function updateMetrics() {
     const total = allOffers.length;
     const active = allOffers.filter((o) => o.isActive).length;
@@ -310,7 +260,7 @@ $(document).ready(function () {
     $('#stat-active-offers').text(active);
     $('#stat-inactive-offers').text(inactive);
 
-    // Exact count with no awkward inner spaces
+    // Exact count with no awkward inner spaces: All 19, Skin 6, etc.
     $('#cat-count-all').text(total);
     $('#cat-count-skin').text(catCounts.Skin);
     $('#cat-count-hair').text(catCounts.Hair);
@@ -319,15 +269,7 @@ $(document).ready(function () {
     $('#cat-count-bridal').text(catCounts.Bridal);
   }
 
-  function renderCurrentView() {
-    if (currentViewMode === 'table') {
-      renderOffersTable();
-    } else {
-      renderCardsGrid();
-    }
-  }
-
-  // Get filtered items array based on current category and search query
+  // Filtered array based on current category and search
   function getFilteredOffers() {
     return allOffers.filter((o) => {
       const matchesCat = currentFilterCategory === 'All'
@@ -346,7 +288,7 @@ $(document).ready(function () {
     });
   }
 
-  // Render Table View
+  // Render Table: EXACT 5 COLUMNS (S.N., Image, Title, Status, Action)
   function renderOffersTable() {
     if (dataTable) {
       dataTable.destroy();
@@ -360,7 +302,7 @@ $(document).ready(function () {
     if (filtered.length === 0) {
       $tbody.html(`
         <tr>
-          <td colspan="8" class="text-center py-5 text-muted">
+          <td colspan="5" class="text-center py-5 text-muted">
             <i class="bi bi-tag fs-1 d-block mb-2 text-slate-300"></i>
             <div class="fw-semibold text-slate-600">No offers found</div>
             <div class="small">Try changing category or clearing your search.</div>
@@ -371,25 +313,12 @@ $(document).ready(function () {
     }
 
     filtered.forEach((offer, idx) => {
-      const orderNum = offer.displayOrder !== undefined ? offer.displayOrder : idx + 1;
       const resolvedImg = resolveImageUrl(offer.image);
       const catClass = getCategoryBadgeClass(offer.category);
 
       const html = `
         <tr data-id="${offer.id}">
-          <td>
-            <div class="order-handle">
-              <span class="order-badge">#${orderNum < 10 ? '0' + orderNum : orderNum}</span>
-              <div class="order-arrows">
-                <button type="button" class="order-arrow-btn up" data-id="${offer.id}" title="Move Up">
-                  <i class="bi bi-caret-up-fill"></i>
-                </button>
-                <button type="button" class="order-arrow-btn down" data-id="${offer.id}" title="Move Down">
-                  <i class="bi bi-caret-down-fill"></i>
-                </button>
-              </div>
-            </div>
-          </td>
+          <td class="text-center fw-bold text-slate-700">${idx + 1}</td>
           <td>
             <div class="offer-thumbnail-wrapper" data-title="${escapeHtml(offer.title)}">
               <img src="${resolvedImg}" alt="${escapeHtml(offer.title)}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
@@ -402,40 +331,25 @@ $(document).ready(function () {
             <div class="fw-bold text-slate-900 mb-1" style="font-size: 0.95rem;">
               ${escapeHtml(offer.title)}
             </div>
-            <span class="cat-badge ${catClass}">
-              <i class="bi bi-dot" style="font-size: 1.2rem; margin: -5px 0;"></i>
-              ${offer.category || 'Skin'}
-            </span>
-          </td>
-          <td>
-            <span class="sparkle-badge">
-              <i class="bi bi-stars text-warning"></i>
-              <span>${escapeHtml(offer.badge || 'Special Offer')}</span>
-            </span>
-          </td>
-          <td>
-            <div class="text-slate-600 small line-clamp-2" style="max-width: 280px;" title="${escapeHtml(offer.description || '')}">
-              ${escapeHtml(offer.description || '—')}
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <span class="cat-badge ${catClass}">
+                ${escapeHtml(offer.category || 'Skin')}
+              </span>
+              ${offer.badge ? `<span class="badge bg-light text-slate-700 border" style="font-size: 0.725rem; font-weight: 600;">${escapeHtml(offer.badge)}</span>` : ''}
             </div>
-          </td>
-          <td>
-            <a href="${escapeHtml(offer.slug || '/contact-us#appointment_form')}" target="_blank" class="cta-pill" title="Target: ${escapeHtml(offer.slug || '/contact-us#appointment_form')}">
-              <span>${escapeHtml(offer.linkText || 'Claim Offer')}</span>
-              <i class="bi bi-arrow-up-right" style="font-size: 10px;"></i>
-            </a>
           </td>
           <td class="text-center">
             <div class="form-check form-switch d-inline-block">
-              <input class="form-check-input offer-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''} title="Toggle active/inactive status">
+              <input class="form-check-input offer-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''} title="Toggle active status">
             </div>
           </td>
-          <td class="text-end">
-            <div class="d-flex align-items-center justify-content-end gap-1.5">
-              <button type="button" class="action-btn btn-edit-offer" data-id="${offer.id}" title="Edit Offer Details">
-                <i class="bi bi-pencil-fill text-primary"></i>
+          <td class="text-center">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-primary btn-edit-offer" data-id="${offer.id}" title="Edit Offer">
+                <i class="bi bi-pencil-square"></i>
               </button>
-              <button type="button" class="action-btn action-btn-danger btn-delete-offer" data-id="${offer.id}" title="Delete Offer">
-                <i class="bi bi-trash-fill text-danger"></i>
+              <button type="button" class="btn btn-outline-danger btn-delete-offer" data-id="${offer.id}" title="Delete Offer">
+                <i class="bi bi-trash"></i>
               </button>
             </div>
           </td>
@@ -444,9 +358,8 @@ $(document).ready(function () {
       $tbody.append(html);
     });
 
-    // Initialize DataTable
+    // Initialize DataTable on the 5 columns
     dataTable = $('#offers-table').DataTable({
-      order: [[0, 'asc']],
       pageLength: 25,
       dom: '<"d-none"f>rt<"d-flex justify-content-between align-items-center p-3"ip>',
       language: {
@@ -457,94 +370,9 @@ $(document).ready(function () {
         },
       },
       columnDefs: [
-        { orderable: false, targets: [1, 6, 7] },
+        { orderable: false, targets: [1, 3, 4] },
+        { className: 'text-center', targets: [0, 3, 4] }
       ],
-    });
-  }
-
-  // Render Visual Cards Grid Preview Mode (Exact frontend look)
-  function renderCardsGrid() {
-    const filtered = getFilteredOffers();
-    const $grid = $('#offers-cards-grid');
-    $grid.empty();
-
-    if (filtered.length === 0) {
-      $grid.html(`
-        <div class="col-12 text-center py-5">
-          <i class="bi bi-grid fs-1 text-slate-300 d-block mb-2"></i>
-          <h5 class="text-slate-600 fw-bold">No offers found</h5>
-          <p class="text-muted small">Try switching categories or clear search.</p>
-        </div>
-      `);
-      return;
-    }
-
-    filtered.forEach((offer) => {
-      const resolvedImg = resolveImageUrl(offer.image);
-      const catClass = getCategoryBadgeClass(offer.category);
-
-      const html = `
-        <div class="col-sm-6 col-lg-4 col-xl-3">
-          <div class="offer-preview-card h-100">
-            <div>
-              <!-- Banner Image with Floating Overlays -->
-              <div class="offer-preview-img-box">
-                <img src="${resolvedImg}" alt="${escapeHtml(offer.title)}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
-                <div class="offer-preview-overlay"></div>
-
-                <!-- Floating Badge -->
-                <div class="position-absolute bg-white rounded-pill px-2.5 py-1 shadow-sm border small fw-bold d-flex align-items-center gap-1.5" style="top: 12px; left: 12px; font-size: 11px;">
-                  <i class="bi bi-tag-fill text-amber-500"></i>
-                  <span>${escapeHtml(offer.badge || 'Special Offer')}</span>
-                </div>
-
-                <!-- Floating Category -->
-                <div class="position-absolute bg-amber-500 text-slate-950 font-black rounded-pill px-2.5 py-0.5 shadow-sm uppercase" style="top: 12px; right: 12px; font-size: 10px; letter-spacing: 0.05em;">
-                  ${offer.category || 'Skin'}
-                </div>
-              </div>
-
-              <!-- Content Body -->
-              <div class="p-3">
-                <h6 class="fw-bold text-slate-900 font-serif mb-1 line-clamp-1" title="${escapeHtml(offer.title)}">
-                  ${escapeHtml(offer.title)}
-                </h6>
-                <p class="text-muted small mb-0 line-clamp-2" style="font-size: 12px; min-height: 36px;">
-                  ${escapeHtml(offer.description || 'Clinical package with experienced dermatologists.')}
-                </p>
-              </div>
-            </div>
-
-            <!-- Footer & Admin Controls -->
-            <div class="p-3 pt-0">
-              <div class="pt-2 border-top">
-                <a href="${escapeHtml(offer.slug || '/contact-us#appointment_form')}" target="_blank" class="btn btn-teal btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2 mb-2">
-                  <i class="bi bi-tag-fill"></i>
-                  <span>${escapeHtml(offer.linkText || 'Claim Offer')}</span>
-                  <i class="bi bi-arrow-right ms-auto"></i>
-                </a>
-
-                <!-- Card Admin Actions Bar -->
-                <div class="d-flex align-items-center justify-content-between pt-1">
-                  <div class="d-flex align-items-center gap-1">
-                    <button type="button" class="btn btn-sm btn-light border py-0.5 px-2 btn-edit-card" data-id="${offer.id}" title="Edit Offer">
-                      <i class="bi bi-pencil-fill text-primary" style="font-size: 11px;"></i> Edit
-                    </button>
-                    <button type="button" class="btn btn-sm btn-light border py-0.5 px-2 btn-delete-card" data-id="${offer.id}" title="Delete Offer">
-                      <i class="bi bi-trash-fill text-danger" style="font-size: 11px;"></i>
-                    </button>
-                  </div>
-
-                  <div class="form-check form-switch m-0">
-                    <input class="form-check-input card-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''} title="Active Status">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      $grid.append(html);
     });
   }
 
@@ -558,18 +386,18 @@ $(document).ready(function () {
     }
   }
 
-  // Open Add/Edit Modal
+  // Open Add / Edit Modal (Order field removed from form)
   function openOfferModal(offer = null) {
     const $form = $('#offerForm');
     $form[0].reset();
 
     if (offer) {
-      $('#offerModalLabel').html('<i class="bi bi-pencil-square text-teal me-2"></i><span>Edit Offer Details</span>');
+      $('#modal-title-text').text('Edit Offer Details');
+      $('#offerModalLabel i').attr('class', 'bi bi-pencil-square text-teal');
       $('#offer-id').val(offer.id);
       $('#offer-title').val(offer.title || '').trigger('input');
       $('#offer-category').val(offer.category || 'Skin').trigger('change');
       $('#offer-badge').val(offer.badge || 'Special Offer').trigger('input');
-      $('#offer-order').val(offer.displayOrder || 1);
       $('#offer-status').prop('checked', Boolean(offer.isActive));
       $('#offer-image-url').val(offer.image || '').trigger('input');
       $('#offer-description').val(offer.description || '').trigger('input');
@@ -577,56 +405,61 @@ $(document).ready(function () {
       $('#offer-slug').val(offer.slug || '/contact-us#appointment_form');
       $('#preset-image-selector').val(offer.image || '');
     } else {
-      $('#offerModalLabel').html('<i class="bi bi-stars text-warning me-2"></i><span>Add New Monthly Offer</span>');
+      $('#modal-title-text').text('Add New Offer');
+      $('#offerModalLabel i').attr('class', 'bi bi-tag-fill text-teal');
       $('#offer-id').val('');
       const defaultCat = currentFilterCategory !== 'All' ? currentFilterCategory : 'Skin';
       $('#offer-category').val(defaultCat).trigger('change');
       $('#offer-badge').val('Limited Period').trigger('input');
-      $('#offer-order').val(allOffers.length + 1);
       $('#offer-status').prop('checked', true);
       $('#offer-title').val('').trigger('input');
       $('#offer-description').val('').trigger('input');
       $('#offer-link-text').val('Claim Offer').trigger('input');
       $('#offer-slug').val('/contact-us#appointment_form');
-      $('#offer-image-url').val('/images/offers/festive-package.png').trigger('input');
-      $('#preset-image-selector').val('/images/offers/festive-package.png');
+      $('#offer-image-url').val('/images/offers/skinfinity-offer-1.png').trigger('input');
+      $('#preset-image-selector').val('/images/offers/skinfinity-offer-1.png');
     }
 
     $('#offerModal').modal('show');
   }
 
-  // Handle image file upload
+  // Handle custom image file upload
   async function handleImageUpload(file) {
     if (!file.type.startsWith('image/')) {
-      Swal.fire('Invalid File', 'Please select a valid image file (PNG, JPG, WEBP).', 'warning');
+      Swal.fire('Invalid File', 'Please upload an image file (PNG, JPG, WEBP).', 'warning');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      Swal.fire('File Too Large', 'Maximum image size is 10MB.', 'warning');
       return;
     }
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('file', file);
+    formData.append('folder', 'offers');
 
     try {
-      Swal.fire({
-        title: 'Uploading Banner...',
-        text: 'Saving image to server media storage.',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+      const $dropzone = $('#offer-dropzone');
+      $dropzone.html('<div class="spinner-border spinner-border-sm text-teal me-2"></div> Uploading banner image...');
 
-      const res = await API.uploadImage(formData);
-      Swal.close();
+      const res = await API.uploadFile(formData);
+      $dropzone.html(`
+        <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
+        <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
+        <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
+        <input type="file" id="offer-image-file" class="d-none" accept="image/*">
+      `);
 
-      if (res && res.success && res.data && res.data.url) {
-        $('#offer-image-url').val(res.data.url).trigger('input');
+      if (res && (res.fileUrl || res.url)) {
+        const url = res.fileUrl || res.url;
+        $('#offer-image-url').val(url).trigger('input');
+        $('#preset-image-selector').val('');
         Swal.fire({
           icon: 'success',
-          title: 'Uploaded!',
-          text: 'Offer banner uploaded and preview updated.',
-          timer: 1500,
+          title: 'Image Uploaded!',
+          timer: 1200,
           showConfirmButton: false,
         });
-      } else {
-        throw new Error(res.message || 'Upload failed');
       }
     } catch (err) {
       console.error('Image upload error:', err);
@@ -634,14 +467,24 @@ $(document).ready(function () {
     }
   }
 
-  // Save Offer (Create / Update)
+  // Save Offer (Create / Update without Display Order input in form)
   async function saveOffer() {
     const id = $('#offer-id').val();
+    const existingOffer = id ? allOffers.find((o) => String(o.id) === String(id)) : null;
+
+    // Auto-calculate order if new
+    let finalOrder = undefined;
+    if (existingOffer) {
+      finalOrder = existingOffer.displayOrder;
+    } else {
+      finalOrder = allOffers.length > 0 ? Math.max(...allOffers.map((o) => o.displayOrder || 0)) + 1 : 1;
+    }
+
     const payload = {
       title: $('#offer-title').val().trim(),
       category: $('#offer-category').val(),
       badge: $('#offer-badge').val().trim() || 'Special Offer',
-      displayOrder: parseInt($('#offer-order').val(), 10) || 1,
+      displayOrder: finalOrder,
       isActive: $('#offer-status').is(':checked') ? 1 : 0,
       image: $('#offer-image-url').val().trim(),
       description: $('#offer-description').val().trim(),
@@ -720,50 +563,20 @@ $(document).ready(function () {
     }
   }
 
-  // Move Order Up or Down
-  async function moveOfferOrder(id, delta) {
-    const idx = allOffers.findIndex((o) => String(o.id) === String(id));
-    if (idx === -1) return;
-    const targetIdx = idx + delta;
-    if (targetIdx < 0 || targetIdx >= allOffers.length) return;
-
-    // Swap items in local array
-    const temp = allOffers[idx];
-    allOffers[idx] = allOffers[targetIdx];
-    allOffers[targetIdx] = temp;
-
-    // Recalculate display_order sequentially
-    allOffers.forEach((o, i) => {
-      o.displayOrder = i + 1;
-    });
-
-    const newOrder = allOffers.map((o) => o.id);
-
-    try {
-      renderCurrentView();
-      await API.reorderOffers(newOrder);
-      loadOffers();
-    } catch (err) {
-      console.error('Reorder error:', err);
-      Swal.fire('Error', 'Failed to save new order.', 'error');
-      loadOffers();
-    }
-  }
-
   // Delete Offer
   async function deleteOffer(id) {
-    const item = allOffers.find((o) => String(o.id) === String(id));
-    const title = item ? item.title : 'this offer';
+    const offer = allOffers.find((o) => String(o.id) === String(id));
+    const title = offer ? offer.title : 'this offer';
 
     const result = await Swal.fire({
-      title: 'Delete Monthly Offer?',
-      text: `Are you sure you want to permanently remove "${title}"?`,
+      title: 'Delete Offer?',
+      html: `Are you sure you want to remove <strong>${escapeHtml(title)}</strong> from the homepage carousel?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Yes, delete offer',
-      reverseButtons: true,
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, Delete',
+      cancelButtonText: 'Cancel',
     });
 
     if (result.isConfirmed) {
@@ -773,23 +586,25 @@ $(document).ready(function () {
           allowOutsideClick: false,
           didOpen: () => Swal.showLoading(),
         });
+
         const res = await API.deleteOffer(id);
         Swal.close();
+
         if (res && res.success) {
           Swal.fire({
             icon: 'success',
             title: 'Deleted!',
             text: 'Offer has been removed.',
-            timer: 1500,
+            timer: 1400,
             showConfirmButton: false,
           });
           loadOffers();
         } else {
-          throw new Error(res.message || 'Delete failed');
+          throw new Error(res.message || 'Failed to delete offer');
         }
       } catch (err) {
-        console.error('Delete error:', err);
-        Swal.fire('Error', err.message || 'Failed to delete offer.', 'error');
+        console.error('Delete offer error:', err);
+        Swal.fire('Error', err.message || 'Could not delete offer.', 'error');
       }
     }
   }

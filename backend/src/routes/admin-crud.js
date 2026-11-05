@@ -2497,6 +2497,12 @@ router.post(
     if (!title || !title.trim()) throw new HttpError(400, 'Offer title is required');
     if (!image || !image.trim()) throw new HttpError(400, 'Offer banner image is required');
 
+    let finalOrder = displayOrder;
+    if (finalOrder === undefined || finalOrder === null || finalOrder === '') {
+      const maxRow = await one('SELECT MAX(display_order) AS m FROM sid_offers');
+      finalOrder = (maxRow && maxRow.m != null ? Number(maxRow.m) : 0) + 1;
+    }
+
     const result = await query(
       `INSERT INTO sid_offers
         (title, badge, category, description, image, link_text, slug, coupon_id, valid_from, valid_to, display_order, is_active)
@@ -2512,7 +2518,7 @@ router.post(
         couponId || null,
         validFrom || null,
         validTo || null,
-        displayOrder !== undefined ? displayOrder : 1,
+        finalOrder,
         isActive !== undefined ? (isActive ? 1 : 0) : 1,
       ]
     );
@@ -2550,6 +2556,12 @@ router.put(
     if (!title || !title.trim()) throw new HttpError(400, 'Offer title is required');
     if (!image || !image.trim()) throw new HttpError(400, 'Offer banner image is required');
 
+    const existing = await one('SELECT display_order FROM sid_offers WHERE id = ?', [id]);
+    if (!existing) throw new HttpError(404, 'Offer not found');
+    const finalOrder = (displayOrder !== undefined && displayOrder !== null && displayOrder !== '')
+      ? displayOrder
+      : existing.display_order;
+
     await query(
       `UPDATE sid_offers
           SET title = ?, badge = ?, category = ?, description = ?, image = ?,
@@ -2567,7 +2579,7 @@ router.put(
         couponId || null,
         validFrom || null,
         validTo || null,
-        displayOrder !== undefined ? displayOrder : 1,
+        finalOrder,
         isActive !== undefined ? (isActive ? 1 : 0) : 1,
         id,
       ]
