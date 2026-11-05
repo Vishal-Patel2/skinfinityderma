@@ -1,6 +1,7 @@
 /**
  * Skinfinity Derma Admin Dashboard
  * Dynamic Monthly Offers Controller (Best Offers this Month)
+ * Full-featured: Table View, Live Card Simulation View, Image Lightbox, Real-Time Sync
  */
 
 $(document).ready(function () {
@@ -8,6 +9,8 @@ $(document).ready(function () {
 
   let allOffers = [];
   let currentFilterCategory = 'All';
+  let currentSearchQuery = '';
+  let currentViewMode = 'table'; // 'table' | 'cards'
   let dataTable = null;
 
   // Initialize
@@ -16,12 +19,53 @@ $(document).ready(function () {
   function init() {
     loadOffers();
     setupEventListeners();
+    setupModalSimulation();
+  }
+
+  // Smart image resolver to support all server setups (XAMPP /skinfinityderma, Express, Next, direct)
+  function resolveImageUrl(url) {
+    if (!url) return 'assets/img/placeholder.svg';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    // If opened via XAMPP path like /skinfinityderma/admin/
+    if (window.location.pathname.includes('/skinfinityderma/admin/')) {
+      if (url.startsWith('/images/')) {
+        return '../frontend/public' + url;
+      }
+      if (url.startsWith('/uploads/')) {
+        return '../backend' + url;
+      }
+    }
+    return url;
   }
 
   function setupEventListeners() {
     // Refresh button
     $('#btn-refresh-offers').on('click', function () {
-      loadOffers();
+      const $btn = $(this);
+      $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Refreshing...');
+      loadOffers().finally(() => {
+        $btn.prop('disabled', false).html('<i class="bi bi-arrow-clockwise me-1"></i> Refresh');
+      });
+    });
+
+    // View Switcher (Table vs Cards)
+    $('#btn-view-table').on('click', function () {
+      $(this).addClass('active');
+      $('#btn-view-cards').removeClass('active');
+      currentViewMode = 'table';
+      $('#view-mode-table').removeClass('d-none');
+      $('#view-mode-cards').addClass('d-none');
+    });
+
+    $('#btn-view-cards').on('click', function () {
+      $(this).addClass('active');
+      $('#btn-view-table').removeClass('active');
+      currentViewMode = 'cards';
+      $('#view-mode-table').addClass('d-none');
+      $('#view-mode-cards').removeClass('d-none');
+      renderCardsGrid();
     });
 
     // Add Offer button
@@ -30,14 +74,54 @@ $(document).ready(function () {
     });
 
     // Category filter pills
-    $('#category-filter-group').on('click', '.category-filter-btn', function () {
-      $('.category-filter-btn').removeClass('active');
+    $('#category-filter-group').on('click', '.filter-pill-btn', function () {
+      $('.filter-pill-btn').removeClass('active');
       $(this).addClass('active');
       currentFilterCategory = $(this).data('category');
-      renderOffersTable();
+      renderCurrentView();
     });
 
-    // Dropzone click & drag events
+    // Quick Search Input
+    $('#quick-search-input').on('input', function () {
+      currentSearchQuery = $(this).val().toLowerCase().trim();
+      if (currentSearchQuery) {
+        $('#btn-clear-search').removeClass('d-none');
+      } else {
+        $('#btn-clear-search').addClass('d-none');
+      }
+      if (currentViewMode === 'table' && dataTable) {
+        dataTable.search(currentSearchQuery).draw();
+      } else {
+        renderCardsGrid();
+      }
+    });
+
+    $('#btn-clear-search').on('click', function () {
+      $('#quick-search-input').val('');
+      currentSearchQuery = '';
+      $(this).addClass('d-none');
+      if (currentViewMode === 'table' && dataTable) {
+        dataTable.search('').draw();
+      } else {
+        renderCardsGrid();
+      }
+    });
+
+    // Preset Image Selector in Modal
+    $('#preset-image-selector').on('change', function () {
+      const val = $(this).val();
+      if (val) {
+        $('#offer-image-url').val(val).trigger('input');
+      }
+    });
+
+    // Preset Badge Chips in Modal
+    $('.chip-badge-preset').on('click', function () {
+      const text = $(this).data('preset');
+      $('#offer-badge').val(text).trigger('input');
+    });
+
+    // Dropzone upload events
     const $dropzone = $('#offer-dropzone');
     const $fileInput = $('#offer-image-file');
 
@@ -48,19 +132,19 @@ $(document).ready(function () {
     $dropzone.on('dragover dragenter', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.addClass('border-teal bg-light');
+      $dropzone.addClass('dragover');
     });
 
     $dropzone.on('dragleave dragend', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.removeClass('border-teal bg-light');
+      $dropzone.removeClass('dragover');
     });
 
     $dropzone.on('drop', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.removeClass('border-teal bg-light');
+      $dropzone.removeClass('dragover');
       const files = e.originalEvent.dataTransfer.files;
       if (files.length > 0) {
         handleImageUpload(files[0]);
@@ -73,18 +157,13 @@ $(document).ready(function () {
       }
     });
 
-    $('#offer-image-url').on('input', function () {
-      const url = $(this).val().trim();
-      updateImagePreview(url);
-    });
-
     // Form submission
     $('#offerForm').on('submit', function (e) {
       e.preventDefault();
       saveOffer();
     });
 
-    // Table click delegation for edit, delete, toggle, zoom, and reordering
+    // Table click delegation
     $('#offers-table-body').on('click', '.btn-edit-offer', function () {
       const id = $(this).data('id');
       const offer = allOffers.find((o) => String(o.id) === String(id));
@@ -101,23 +180,92 @@ $(document).ready(function () {
       toggleOfferStatus(id, this);
     });
 
-    $('#offers-table-body').on('click', '.offer-thumb-preview', function () {
-      const src = $(this).attr('src');
+    $('#offers-table-body').on('click', '.offer-thumbnail-wrapper', function () {
+      const src = $(this).find('img').attr('src');
       const title = $(this).data('title');
       $('#zoom-image').attr('src', src);
       $('#zoom-title').text(title || '');
       $('#imagePreviewModal').modal('show');
     });
 
-    $('#offers-table-body').on('click', '.btn-move-up', function () {
+    $('#offers-table-body').on('click', '.order-arrow-btn.up', function () {
       const id = $(this).data('id');
       moveOfferOrder(id, -1);
     });
 
-    $('#offers-table-body').on('click', '.btn-move-down', function () {
+    $('#offers-table-body').on('click', '.order-arrow-btn.down', function () {
       const id = $(this).data('id');
       moveOfferOrder(id, 1);
     });
+
+    // Cards Grid Click Delegation
+    $('#offers-cards-grid').on('click', '.btn-edit-card', function () {
+      const id = $(this).data('id');
+      const offer = allOffers.find((o) => String(o.id) === String(id));
+      if (offer) openOfferModal(offer);
+    });
+
+    $('#offers-cards-grid').on('click', '.btn-delete-card', function () {
+      const id = $(this).data('id');
+      deleteOffer(id);
+    });
+
+    $('#offers-cards-grid').on('change', '.card-status-toggle', function () {
+      const id = $(this).data('id');
+      toggleOfferStatus(id, this);
+    });
+  }
+
+  // Setup real-time card simulation inside the modal
+  function setupModalSimulation() {
+    $('#offer-title').on('input', function () {
+      $('#sim-title').text($(this).val().trim() || 'Offer Title');
+    });
+
+    $('#offer-category').on('change', function () {
+      const cat = $(this).val();
+      $('#sim-category').text(cat);
+      updateSimCategoryColor(cat);
+    });
+
+    $('#offer-badge').on('input', function () {
+      $('#sim-badge').text($(this).val().trim() || 'Special Offer');
+    });
+
+    $('#offer-description').on('input', function () {
+      $('#sim-description').text($(this).val().trim() || 'Description of treatment package and inclusions...');
+    });
+
+    $('#offer-link-text').on('input', function () {
+      $('#sim-btn-text').text($(this).val().trim() || 'Claim Offer');
+    });
+
+    $('#offer-image-url').on('input', function () {
+      const raw = $(this).val().trim();
+      const resolved = resolveImageUrl(raw);
+      $('#sim-image').attr('src', resolved);
+    });
+  }
+
+  function updateSimCategoryColor(cat) {
+    const $cat = $('#sim-category');
+    $cat.removeClass('bg-warning bg-primary bg-danger bg-success bg-purple text-dark text-white');
+    switch (cat) {
+      case 'Hair':
+        $cat.addClass('bg-purple text-white');
+        break;
+      case 'Laser':
+        $cat.addClass('bg-danger text-white');
+        break;
+      case 'Body':
+        $cat.addClass('bg-success text-white');
+        break;
+      case 'Bridal':
+        $cat.addClass('bg-warning text-dark');
+        break;
+      default:
+        $cat.addClass('bg-primary text-white');
+    }
   }
 
   // Load offers from API
@@ -127,7 +275,7 @@ $(document).ready(function () {
       if (res && res.success && Array.isArray(res.data)) {
         allOffers = res.data;
         updateMetrics();
-        renderOffersTable();
+        renderCurrentView();
       } else {
         Swal.fire('Notice', 'Unable to retrieve offers from server.', 'info');
       }
@@ -137,7 +285,7 @@ $(document).ready(function () {
     }
   }
 
-  // Update Stats & Category Counters
+  // Update Metric Counters & Badges
   function updateMetrics() {
     const total = allOffers.length;
     const active = allOffers.filter((o) => o.isActive).length;
@@ -162,6 +310,7 @@ $(document).ready(function () {
     $('#stat-active-offers').text(active);
     $('#stat-inactive-offers').text(inactive);
 
+    // Exact count with no awkward inner spaces
     $('#cat-count-all').text(total);
     $('#cat-count-skin').text(catCounts.Skin);
     $('#cat-count-hair').text(catCounts.Hair);
@@ -170,17 +319,41 @@ $(document).ready(function () {
     $('#cat-count-bridal').text(catCounts.Bridal);
   }
 
-  // Render Table
+  function renderCurrentView() {
+    if (currentViewMode === 'table') {
+      renderOffersTable();
+    } else {
+      renderCardsGrid();
+    }
+  }
+
+  // Get filtered items array based on current category and search query
+  function getFilteredOffers() {
+    return allOffers.filter((o) => {
+      const matchesCat = currentFilterCategory === 'All'
+        || (o.category || 'Skin').toLowerCase() === currentFilterCategory.toLowerCase();
+
+      if (!matchesCat) return false;
+
+      if (!currentSearchQuery) return true;
+
+      const titleMatch = (o.title || '').toLowerCase().includes(currentSearchQuery);
+      const descMatch = (o.description || '').toLowerCase().includes(currentSearchQuery);
+      const badgeMatch = (o.badge || '').toLowerCase().includes(currentSearchQuery);
+      const catMatch = (o.category || '').toLowerCase().includes(currentSearchQuery);
+
+      return titleMatch || descMatch || badgeMatch || catMatch;
+    });
+  }
+
+  // Render Table View
   function renderOffersTable() {
     if (dataTable) {
       dataTable.destroy();
       dataTable = null;
     }
 
-    const filtered = currentFilterCategory === 'All'
-      ? allOffers
-      : allOffers.filter((o) => (o.category || 'Skin').toLowerCase() === currentFilterCategory.toLowerCase());
-
+    const filtered = getFilteredOffers();
     const $tbody = $('#offers-table-body');
     $tbody.empty();
 
@@ -188,8 +361,9 @@ $(document).ready(function () {
       $tbody.html(`
         <tr>
           <td colspan="8" class="text-center py-5 text-muted">
-            <i class="bi bi-tag fs-2 d-block mb-2 text-secondary"></i>
-            No offers found for category: <strong>${currentFilterCategory}</strong>
+            <i class="bi bi-tag fs-1 d-block mb-2 text-slate-300"></i>
+            <div class="fw-semibold text-slate-600">No offers found</div>
+            <div class="small">Try changing category or clearing your search.</div>
           </td>
         </tr>
       `);
@@ -197,61 +371,73 @@ $(document).ready(function () {
     }
 
     filtered.forEach((offer, idx) => {
-      const rowNum = idx + 1;
-      const imageUrl = offer.image || '/images/offers/festive-package.png';
-      const badgeClass = getBadgeColor(offer.category);
+      const orderNum = offer.displayOrder !== undefined ? offer.displayOrder : idx + 1;
+      const resolvedImg = resolveImageUrl(offer.image);
+      const catClass = getCategoryBadgeClass(offer.category);
 
       const html = `
         <tr data-id="${offer.id}">
-          <td class="fw-bold text-slate-600">
-            <div class="d-flex align-items-center gap-1">
-              <span>#${offer.displayOrder || rowNum}</span>
-              <div class="btn-group-vertical btn-group-sm ms-1">
-                <button type="button" class="btn btn-link p-0 text-muted btn-move-up" data-id="${offer.id}" title="Move Up">
-                  <i class="bi bi-caret-up-fill" style="font-size: 11px;"></i>
+          <td>
+            <div class="order-handle">
+              <span class="order-badge">#${orderNum < 10 ? '0' + orderNum : orderNum}</span>
+              <div class="order-arrows">
+                <button type="button" class="order-arrow-btn up" data-id="${offer.id}" title="Move Up">
+                  <i class="bi bi-caret-up-fill"></i>
                 </button>
-                <button type="button" class="btn btn-link p-0 text-muted btn-move-down" data-id="${offer.id}" title="Move Down">
-                  <i class="bi bi-caret-down-fill" style="font-size: 11px;"></i>
+                <button type="button" class="order-arrow-btn down" data-id="${offer.id}" title="Move Down">
+                  <i class="bi bi-caret-down-fill"></i>
                 </button>
               </div>
             </div>
           </td>
           <td>
-            <img src="${imageUrl}" alt="${escapeHtml(offer.title)}" class="offer-thumb-preview" data-title="${escapeHtml(offer.title)}" onerror="this.src='/images/offers/festive-package.png'">
+            <div class="offer-thumbnail-wrapper" data-title="${escapeHtml(offer.title)}">
+              <img src="${resolvedImg}" alt="${escapeHtml(offer.title)}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
+              <div class="zoom-overlay">
+                <i class="bi bi-zoom-in"></i>
+              </div>
+            </div>
           </td>
           <td>
-            <div class="fw-bold text-slate-800">${escapeHtml(offer.title)}</div>
-            <span class="badge ${badgeClass} text-uppercase mt-1" style="font-size: 10px;">
+            <div class="fw-bold text-slate-900 mb-1" style="font-size: 0.95rem;">
+              ${escapeHtml(offer.title)}
+            </div>
+            <span class="cat-badge ${catClass}">
+              <i class="bi bi-dot" style="font-size: 1.2rem; margin: -5px 0;"></i>
               ${offer.category || 'Skin'}
             </span>
           </td>
           <td>
-            <span class="badge bg-light text-dark border px-2.5 py-1 fw-bold" style="font-size: 11px;">
-              <i class="bi bi-stars text-warning me-1"></i>${escapeHtml(offer.badge || 'Offer')}
+            <span class="sparkle-badge">
+              <i class="bi bi-stars text-warning"></i>
+              <span>${escapeHtml(offer.badge || 'Special Offer')}</span>
             </span>
           </td>
           <td>
-            <div class="text-muted small text-truncate" style="max-width: 250px;" title="${escapeHtml(offer.description || '')}">
+            <div class="text-slate-600 small line-clamp-2" style="max-width: 280px;" title="${escapeHtml(offer.description || '')}">
               ${escapeHtml(offer.description || '—')}
             </div>
           </td>
           <td>
-            <span class="badge bg-teal bg-opacity-10 text-teal border border-teal border-opacity-25 py-1 px-2 font-monospace" style="font-size: 11px;">
-              ${escapeHtml(offer.linkText || 'Claim Offer')}
-            </span>
+            <a href="${escapeHtml(offer.slug || '/contact-us#appointment_form')}" target="_blank" class="cta-pill" title="Target: ${escapeHtml(offer.slug || '/contact-us#appointment_form')}">
+              <span>${escapeHtml(offer.linkText || 'Claim Offer')}</span>
+              <i class="bi bi-arrow-up-right" style="font-size: 10px;"></i>
+            </a>
           </td>
           <td class="text-center">
             <div class="form-check form-switch d-inline-block">
-              <input class="form-check-input offer-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''}>
+              <input class="form-check-input offer-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''} title="Toggle active/inactive status">
             </div>
           </td>
           <td class="text-end">
-            <button type="button" class="btn btn-sm btn-light border btn-edit-offer me-1" data-id="${offer.id}" title="Edit Offer">
-              <i class="bi bi-pencil-square text-primary"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-light border btn-delete-offer" data-id="${offer.id}" title="Delete Offer">
-              <i class="bi bi-trash text-danger"></i>
-            </button>
+            <div class="d-flex align-items-center justify-content-end gap-1.5">
+              <button type="button" class="action-btn btn-edit-offer" data-id="${offer.id}" title="Edit Offer Details">
+                <i class="bi bi-pencil-fill text-primary"></i>
+              </button>
+              <button type="button" class="action-btn action-btn-danger btn-delete-offer" data-id="${offer.id}" title="Delete Offer">
+                <i class="bi bi-trash-fill text-danger"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `;
@@ -262,9 +448,13 @@ $(document).ready(function () {
     dataTable = $('#offers-table').DataTable({
       order: [[0, 'asc']],
       pageLength: 25,
+      dom: '<"d-none"f>rt<"d-flex justify-content-between align-items-center p-3"ip>',
       language: {
-        search: '_INPUT_',
-        searchPlaceholder: 'Search offers...',
+        info: 'Showing _START_ to _END_ of _TOTAL_ offers',
+        paginate: {
+          previous: '<i class="bi bi-chevron-left"></i>',
+          next: '<i class="bi bi-chevron-right"></i>',
+        },
       },
       columnDefs: [
         { orderable: false, targets: [1, 6, 7] },
@@ -272,13 +462,99 @@ $(document).ready(function () {
     });
   }
 
-  function getBadgeColor(cat) {
+  // Render Visual Cards Grid Preview Mode (Exact frontend look)
+  function renderCardsGrid() {
+    const filtered = getFilteredOffers();
+    const $grid = $('#offers-cards-grid');
+    $grid.empty();
+
+    if (filtered.length === 0) {
+      $grid.html(`
+        <div class="col-12 text-center py-5">
+          <i class="bi bi-grid fs-1 text-slate-300 d-block mb-2"></i>
+          <h5 class="text-slate-600 fw-bold">No offers found</h5>
+          <p class="text-muted small">Try switching categories or clear search.</p>
+        </div>
+      `);
+      return;
+    }
+
+    filtered.forEach((offer) => {
+      const resolvedImg = resolveImageUrl(offer.image);
+      const catClass = getCategoryBadgeClass(offer.category);
+
+      const html = `
+        <div class="col-sm-6 col-lg-4 col-xl-3">
+          <div class="offer-preview-card h-100">
+            <div>
+              <!-- Banner Image with Floating Overlays -->
+              <div class="offer-preview-img-box">
+                <img src="${resolvedImg}" alt="${escapeHtml(offer.title)}" onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
+                <div class="offer-preview-overlay"></div>
+
+                <!-- Floating Badge -->
+                <div class="position-absolute bg-white rounded-pill px-2.5 py-1 shadow-sm border small fw-bold d-flex align-items-center gap-1.5" style="top: 12px; left: 12px; font-size: 11px;">
+                  <i class="bi bi-tag-fill text-amber-500"></i>
+                  <span>${escapeHtml(offer.badge || 'Special Offer')}</span>
+                </div>
+
+                <!-- Floating Category -->
+                <div class="position-absolute bg-amber-500 text-slate-950 font-black rounded-pill px-2.5 py-0.5 shadow-sm uppercase" style="top: 12px; right: 12px; font-size: 10px; letter-spacing: 0.05em;">
+                  ${offer.category || 'Skin'}
+                </div>
+              </div>
+
+              <!-- Content Body -->
+              <div class="p-3">
+                <h6 class="fw-bold text-slate-900 font-serif mb-1 line-clamp-1" title="${escapeHtml(offer.title)}">
+                  ${escapeHtml(offer.title)}
+                </h6>
+                <p class="text-muted small mb-0 line-clamp-2" style="font-size: 12px; min-height: 36px;">
+                  ${escapeHtml(offer.description || 'Clinical package with experienced dermatologists.')}
+                </p>
+              </div>
+            </div>
+
+            <!-- Footer & Admin Controls -->
+            <div class="p-3 pt-0">
+              <div class="pt-2 border-top">
+                <a href="${escapeHtml(offer.slug || '/contact-us#appointment_form')}" target="_blank" class="btn btn-teal btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2 mb-2">
+                  <i class="bi bi-tag-fill"></i>
+                  <span>${escapeHtml(offer.linkText || 'Claim Offer')}</span>
+                  <i class="bi bi-arrow-right ms-auto"></i>
+                </a>
+
+                <!-- Card Admin Actions Bar -->
+                <div class="d-flex align-items-center justify-content-between pt-1">
+                  <div class="d-flex align-items-center gap-1">
+                    <button type="button" class="btn btn-sm btn-light border py-0.5 px-2 btn-edit-card" data-id="${offer.id}" title="Edit Offer">
+                      <i class="bi bi-pencil-fill text-primary" style="font-size: 11px;"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-sm btn-light border py-0.5 px-2 btn-delete-card" data-id="${offer.id}" title="Delete Offer">
+                      <i class="bi bi-trash-fill text-danger" style="font-size: 11px;"></i>
+                    </button>
+                  </div>
+
+                  <div class="form-check form-switch m-0">
+                    <input class="form-check-input card-status-toggle" type="checkbox" data-id="${offer.id}" ${offer.isActive ? 'checked' : ''} title="Active Status">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      $grid.append(html);
+    });
+  }
+
+  function getCategoryBadgeClass(cat) {
     switch (cat) {
-      case 'Hair': return 'bg-purple text-white';
-      case 'Laser': return 'bg-danger text-white';
-      case 'Body': return 'bg-success text-white';
-      case 'Bridal': return 'bg-pink text-white';
-      default: return 'bg-primary text-white';
+      case 'Hair': return 'cat-badge-hair';
+      case 'Laser': return 'cat-badge-laser';
+      case 'Body': return 'cat-badge-body';
+      case 'Bridal': return 'cat-badge-bridal';
+      default: return 'cat-badge-skin';
     }
   }
 
@@ -288,34 +564,38 @@ $(document).ready(function () {
     $form[0].reset();
 
     if (offer) {
-      $('#offerModalLabel').html('<i class="bi bi-pencil-square text-teal me-2"></i>Edit Offer');
+      $('#offerModalLabel').html('<i class="bi bi-pencil-square text-teal me-2"></i><span>Edit Offer Details</span>');
       $('#offer-id').val(offer.id);
-      $('#offer-title').val(offer.title || '');
-      $('#offer-category').val(offer.category || 'Skin');
-      $('#offer-badge').val(offer.badge || 'Special Offer');
+      $('#offer-title').val(offer.title || '').trigger('input');
+      $('#offer-category').val(offer.category || 'Skin').trigger('change');
+      $('#offer-badge').val(offer.badge || 'Special Offer').trigger('input');
       $('#offer-order').val(offer.displayOrder || 1);
       $('#offer-status').prop('checked', Boolean(offer.isActive));
-      $('#offer-image-url').val(offer.image || '');
-      $('#offer-description').val(offer.description || '');
-      $('#offer-link-text').val(offer.linkText || 'Claim Offer');
+      $('#offer-image-url').val(offer.image || '').trigger('input');
+      $('#offer-description').val(offer.description || '').trigger('input');
+      $('#offer-link-text').val(offer.linkText || 'Claim Offer').trigger('input');
       $('#offer-slug').val(offer.slug || '/contact-us#appointment_form');
-      updateImagePreview(offer.image);
+      $('#preset-image-selector').val(offer.image || '');
     } else {
-      $('#offerModalLabel').html('<i class="bi bi-stars text-warning me-2"></i>Add New Offer');
+      $('#offerModalLabel').html('<i class="bi bi-stars text-warning me-2"></i><span>Add New Monthly Offer</span>');
       $('#offer-id').val('');
-      $('#offer-category').val(currentFilterCategory !== 'All' ? currentFilterCategory : 'Skin');
-      $('#offer-badge').val('Special Offer');
+      const defaultCat = currentFilterCategory !== 'All' ? currentFilterCategory : 'Skin';
+      $('#offer-category').val(defaultCat).trigger('change');
+      $('#offer-badge').val('Limited Period').trigger('input');
       $('#offer-order').val(allOffers.length + 1);
       $('#offer-status').prop('checked', true);
-      $('#offer-link-text').val('Claim Offer');
+      $('#offer-title').val('').trigger('input');
+      $('#offer-description').val('').trigger('input');
+      $('#offer-link-text').val('Claim Offer').trigger('input');
       $('#offer-slug').val('/contact-us#appointment_form');
-      updateImagePreview('');
+      $('#offer-image-url').val('/images/offers/festive-package.png').trigger('input');
+      $('#preset-image-selector').val('/images/offers/festive-package.png');
     }
 
     $('#offerModal').modal('show');
   }
 
-  // Handle direct image file upload
+  // Handle image file upload
   async function handleImageUpload(file) {
     if (!file.type.startsWith('image/')) {
       Swal.fire('Invalid File', 'Please select a valid image file (PNG, JPG, WEBP).', 'warning');
@@ -327,8 +607,8 @@ $(document).ready(function () {
 
     try {
       Swal.fire({
-        title: 'Uploading...',
-        text: 'Please wait while the image is uploaded to server.',
+        title: 'Uploading Banner...',
+        text: 'Saving image to server media storage.',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
@@ -337,24 +617,20 @@ $(document).ready(function () {
       Swal.close();
 
       if (res && res.success && res.data && res.data.url) {
-        $('#offer-image-url').val(res.data.url);
-        updateImagePreview(res.data.url);
-        Swal.fire('Uploaded!', 'Offer image uploaded successfully.', 'success');
+        $('#offer-image-url').val(res.data.url).trigger('input');
+        Swal.fire({
+          icon: 'success',
+          title: 'Uploaded!',
+          text: 'Offer banner uploaded and preview updated.',
+          timer: 1500,
+          showConfirmButton: false,
+        });
       } else {
         throw new Error(res.message || 'Upload failed');
       }
     } catch (err) {
       console.error('Image upload error:', err);
-      Swal.fire('Upload Failed', err.message || 'Could not upload image.', 'error');
-    }
-  }
-
-  function updateImagePreview(url) {
-    if (url) {
-      $('#offer-image-preview').attr('src', url);
-      $('#offer-image-preview-container').removeClass('d-none');
-    } else {
-      $('#offer-image-preview-container').addClass('d-none');
+      Swal.fire('Upload Failed', err.message || 'Could not upload image to server.', 'error');
     }
   }
 
@@ -374,18 +650,18 @@ $(document).ready(function () {
     };
 
     if (!payload.title) {
-      Swal.fire('Required Field', 'Please enter an offer title.', 'warning');
+      Swal.fire('Required Field', 'Please provide an offer title.', 'warning');
       return;
     }
     if (!payload.image) {
-      Swal.fire('Required Field', 'Please provide or upload an offer banner image.', 'warning');
+      Swal.fire('Required Field', 'Please choose or upload a banner image.', 'warning');
       return;
     }
 
     try {
       Swal.fire({
         title: 'Saving...',
-        text: 'Saving offer details to database.',
+        text: 'Updating database in real time.',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading(),
       });
@@ -402,9 +678,9 @@ $(document).ready(function () {
         $('#offerModal').modal('hide');
         Swal.fire({
           icon: 'success',
-          title: 'Saved!',
-          text: id ? 'Offer updated successfully.' : 'New offer added successfully.',
-          timer: 1500,
+          title: 'Offer Saved!',
+          text: id ? 'Offer updated successfully.' : 'New offer added to live homepage carousel.',
+          timer: 1600,
           showConfirmButton: false,
         });
         loadOffers();
@@ -451,15 +727,20 @@ $(document).ready(function () {
     const targetIdx = idx + delta;
     if (targetIdx < 0 || targetIdx >= allOffers.length) return;
 
-    // Swap items in array
+    // Swap items in local array
     const temp = allOffers[idx];
     allOffers[idx] = allOffers[targetIdx];
     allOffers[targetIdx] = temp;
 
+    // Recalculate display_order sequentially
+    allOffers.forEach((o, i) => {
+      o.displayOrder = i + 1;
+    });
+
     const newOrder = allOffers.map((o) => o.id);
 
     try {
-      renderOffersTable();
+      renderCurrentView();
       await API.reorderOffers(newOrder);
       loadOffers();
     } catch (err) {
@@ -475,13 +756,14 @@ $(document).ready(function () {
     const title = item ? item.title : 'this offer';
 
     const result = await Swal.fire({
-      title: 'Delete Offer?',
-      text: `Are you sure you want to permanently delete "${title}"? This cannot be undone.`,
+      title: 'Delete Monthly Offer?',
+      text: `Are you sure you want to permanently remove "${title}"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Yes, delete it',
+      confirmButtonText: 'Yes, delete offer',
+      reverseButtons: true,
     });
 
     if (result.isConfirmed) {

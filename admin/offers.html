@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Best Offers Management | Skinfinity Derma Admin</title>
+  <title>Best Offers this Month | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -12,37 +12,335 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
   <style>
-    .offer-thumb-preview {
-      width: 110px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 8px;
+    :root {
+      --brand-teal-dark: #004D4D;
+      --brand-teal: #008081;
+      --brand-teal-light: #e8f6f3;
+      --brand-amber: #f59e0b;
+    }
+
+    /* Executive Metric Cards */
+    .metric-card {
+      background: #ffffff;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .offer-thumb-preview:hover {
-      transform: scale(1.05);
-      border-color: #008081;
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 77, 77, 0.08);
+      border-color: #cbd5e1;
     }
-    .category-filter-btn.active {
-      background: linear-gradient(135deg, #004D4D 0%, #008081 100%) !important;
-      color: #fff !important;
-      box-shadow: 0 2px 8px rgba(0,77,77,0.25);
-    }
-    .dropzone-box {
-      border: 2px dashed #cbd5e1;
+    .metric-icon-box {
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      padding: 24px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+    }
+
+    /* Filter Pills */
+    .filter-pill-btn {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.825rem;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .filter-pill-btn:hover {
+      background: #f8fafc;
+      color: var(--brand-teal);
+      border-color: #cbd5e1;
+    }
+    .filter-pill-btn.active {
+      background: linear-gradient(135deg, var(--brand-teal-dark) 0%, var(--brand-teal) 100%) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: 0 4px 12px rgba(0, 77, 77, 0.2);
+    }
+    .filter-pill-btn .pill-badge {
+      font-size: 0.725rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+    }
+    .filter-pill-btn.active .pill-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* Table Design */
+    .table-container {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .table > :not(caption) > * > * {
+      padding: 1rem 1.15rem;
+      vertical-align: middle;
+    }
+    .table thead th {
       background-color: #f8fafc;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .table tbody tr:hover {
+      background-color: #fbfdfd;
+    }
+
+    /* Image Preview in Table */
+    .offer-thumbnail-wrapper {
+      position: relative;
+      width: 120px;
+      height: 75px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      transition: all 0.25s ease;
+    }
+    .offer-thumbnail-wrapper:hover {
+      transform: scale(1.04);
+      border-color: var(--brand-teal);
+      box-shadow: 0 6px 14px rgba(0, 77, 77, 0.15);
+    }
+    .offer-thumbnail-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .offer-thumbnail-wrapper .zoom-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 77, 77, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 1.1rem;
+    }
+    .offer-thumbnail-wrapper:hover .zoom-overlay {
+      opacity: 1;
+    }
+
+    /* Category Badges */
+    .cat-badge {
+      font-size: 0.725rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .cat-badge-skin { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .cat-badge-hair { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .cat-badge-laser { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+    .cat-badge-body { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .cat-badge-bridal { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+    /* Badge Text Pill */
+    .sparkle-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #1e293b;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      white-space: nowrap;
+    }
+
+    /* CTA Link Pill */
+    .cta-pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--brand-teal-dark);
+      background: var(--brand-teal-light);
+      border: 1px solid #cce8e2;
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .cta-pill:hover {
+      background: var(--brand-teal);
+      color: #ffffff;
+      border-color: var(--brand-teal);
+    }
+
+    /* Order Handle */
+    .order-handle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .order-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+      font-size: 0.775rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+    }
+    .order-arrows {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .order-arrow-btn {
+      border: none;
+      background: transparent;
+      padding: 0;
+      font-size: 0.75rem;
+      line-height: 1;
+      color: #94a3b8;
+      transition: color 0.15s ease;
+      cursor: pointer;
+    }
+    .order-arrow-btn:hover {
+      color: var(--brand-teal);
+    }
+
+    /* Switch Style */
+    .form-switch .form-check-input {
+      width: 2.5em;
+      height: 1.35em;
+      cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+      background-color: var(--brand-teal);
+      border-color: var(--brand-teal);
+    }
+
+    /* Action Buttons Group */
+    .action-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #475569;
+      transition: all 0.2s ease;
+    }
+    .action-btn:hover {
+      background: #f8fafc;
+      color: var(--brand-teal);
+      border-color: var(--brand-teal);
+    }
+    .action-btn-danger:hover {
+      background: #fef2f2;
+      color: #ef4444;
+      border-color: #fecaca;
+    }
+
+    /* Live Card Grid Preview */
+    .offer-preview-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .offer-preview-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 28px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .offer-preview-img-box {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      width: 100%;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+    .offer-preview-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .offer-preview-card:hover .offer-preview-img-box img {
+      transform: scale(1.05);
+    }
+    .offer-preview-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, transparent 60%);
+    }
+
+    /* Drag & Drop Upload Zone */
+    .dropzone-upload-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 1.5rem;
+      text-align: center;
+      background: #f8fafc;
       transition: all 0.2s ease;
       cursor: pointer;
     }
-    .dropzone-box:hover {
-      border-color: #008081;
-      background-color: #f0fdfa;
+    .dropzone-upload-box:hover, .dropzone-upload-box.dragover {
+      border-color: var(--brand-teal);
+      background: var(--brand-teal-light);
+    }
+
+    /* Chip pills for modal badge presets */
+    .chip-badge-preset {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-badge-preset:hover {
+      background: var(--brand-teal-light);
+      border-color: var(--brand-teal);
+      color: var(--brand-teal-dark);
     }
   </style>
 </head>
@@ -121,12 +419,12 @@
           <div class="header-breadcrumb">
             <span class="text-muted">Marketing & Media</span>
             <span class="divider">/</span>
-            <span class="active">Best Offers this Month</span>
+            <span class="active fw-semibold">Best Offers this Month</span>
           </div>
         </div>
-        <div class="header-right">
-          <a href="http://localhost:3000" target="_blank" class="btn btn-outline-teal btn-sm me-2">
-            <i class="bi bi-box-arrow-up-right me-1"></i> View Live Site
+        <div class="header-right d-flex align-items-center gap-2">
+          <a href="http://localhost:3000#offers" target="_blank" class="btn btn-outline-teal btn-sm fw-semibold">
+            <i class="bi bi-box-arrow-up-right me-1.5"></i> View on Live Site
           </a>
           <button class="btn btn-sm btn-light action-logout" title="Logout">
             <i class="bi bi-box-arrow-right"></i>
@@ -136,139 +434,181 @@
 
       <!-- Content Container -->
       <main class="admin-content p-4">
-        <!-- Page Title & Actions -->
+        <!-- Page Title & Top Actions -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
           <div>
-            <h1 class="h3 fw-bold text-slate-800 mb-1">
-              <i class="bi bi-stars text-warning me-2"></i>Best Offers this Month
-            </h1>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h1 class="h3 fw-bold text-slate-800 mb-0 font-serif">
+                Best Offers this Month
+              </h1>
+              <span class="badge bg-amber-50 border border-amber-200 text-amber-800 font-semibold px-2.5 py-1 rounded-pill small">
+                <i class="bi bi-stars text-warning me-1"></i> Live Homepage Carousel
+              </span>
+            </div>
             <p class="text-muted small mb-0">
-              Manage live homepage monthly packages, discounts, and promotional banners dynamically.
+              Manage monthly seasonal packages, treatment discounts, and visual offer cards in real-time.
             </p>
           </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-light border btn-sm" id="btn-refresh-offers">
+          <div class="d-flex align-items-center gap-2">
+            <!-- View Mode Switcher -->
+            <div class="btn-group btn-group-sm p-0.5 bg-slate-100 rounded-pill border" role="group">
+              <button type="button" class="btn btn-sm rounded-pill active px-3" id="btn-view-table" title="Table View">
+                <i class="bi bi-table me-1"></i> Table
+              </button>
+              <button type="button" class="btn btn-sm rounded-pill px-3" id="btn-view-cards" title="Cards Grid Preview">
+                <i class="bi bi-grid-fill me-1"></i> Cards Preview
+              </button>
+            </div>
+
+            <button class="btn btn-light border btn-sm fw-semibold" id="btn-refresh-offers" title="Reload from Database">
               <i class="bi bi-arrow-clockwise me-1"></i> Refresh
             </button>
-            <button class="btn btn-teal btn-sm fw-semibold" id="btn-add-offer">
-              <i class="bi bi-plus-circle me-1"></i> Add New Offer
+            <button class="btn btn-teal btn-sm fw-bold px-3 shadow-sm" id="btn-add-offer">
+              <i class="bi bi-plus-circle-fill me-1.5"></i> Add New Offer
             </button>
           </div>
         </div>
 
-        <!-- Metric Cards -->
+        <!-- Metric Summary Cards -->
         <div class="row g-3 mb-4">
           <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="metric-card">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-muted small fw-semibold text-uppercase">Total Offers</div>
-                  <div class="fs-3 fw-bold text-slate-800" id="stat-total-offers">0</div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Total Monthly Offers</div>
+                  <div class="fs-2 fw-black text-slate-900 mt-1" id="stat-total-offers">0</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Curated Seasonal Packages</div>
                 </div>
-                <div class="rounded-3 p-2.5 bg-primary bg-opacity-10 text-primary fs-4">
+                <div class="metric-icon-box bg-teal bg-opacity-10 text-teal">
                   <i class="bi bi-tag-fill"></i>
                 </div>
               </div>
             </div>
           </div>
           <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="metric-card">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-muted small fw-semibold text-uppercase">Active on Site</div>
-                  <div class="fs-3 fw-bold text-success" id="stat-active-offers">0</div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Active on Homepage</div>
+                  <div class="fs-2 fw-black text-success mt-1" id="stat-active-offers">0</div>
+                  <div class="text-success small mt-0.5" style="font-size: 11px;"><i class="bi bi-check-circle me-0.5"></i> Live & Visible to Patients</div>
                 </div>
-                <div class="rounded-3 p-2.5 bg-success bg-opacity-10 text-success fs-4">
-                  <i class="bi bi-check-circle-fill"></i>
+                <div class="metric-icon-box bg-success bg-opacity-10 text-success">
+                  <i class="bi bi-broadcast"></i>
                 </div>
               </div>
             </div>
           </div>
           <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="metric-card">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-muted small fw-semibold text-uppercase">Inactive</div>
-                  <div class="fs-3 fw-bold text-secondary" id="stat-inactive-offers">0</div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Inactive / Drafts</div>
+                  <div class="fs-2 fw-black text-secondary mt-1" id="stat-inactive-offers">0</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Temporarily Hidden</div>
                 </div>
-                <div class="rounded-3 p-2.5 bg-secondary bg-opacity-10 text-secondary fs-4">
+                <div class="metric-icon-box bg-secondary bg-opacity-10 text-secondary">
                   <i class="bi bi-pause-circle-fill"></i>
                 </div>
               </div>
             </div>
           </div>
           <div class="col-6 col-lg-3">
-            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="metric-card">
               <div class="d-flex align-items-center justify-content-between">
                 <div>
-                  <div class="text-muted small fw-semibold text-uppercase">Categories</div>
-                  <div class="fs-3 fw-bold text-teal" id="stat-categories-count">5</div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Active Categories</div>
+                  <div class="fs-2 fw-black text-primary mt-1" id="stat-categories-count">5</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Skin, Hair, Laser, Body, Bridal</div>
                 </div>
-                <div class="rounded-3 p-2.5 bg-info bg-opacity-10 text-info fs-4">
-                  <i class="bi bi-grid-fill"></i>
+                <div class="metric-icon-box bg-primary bg-opacity-10 text-primary">
+                  <i class="bi bi-grid-3x3-gap-fill"></i>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Offers Table Card -->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
-          <div class="card-header bg-white border-bottom py-3 px-4">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-              <!-- Category Filter Buttons -->
+        <!-- Filter & Search Bar Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+          <div class="card-body p-3">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+              <!-- Category Filter Pills -->
               <div class="d-flex flex-wrap gap-2" id="category-filter-group">
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn active rounded-pill px-3" data-category="All">
-                  All (<span id="cat-count-all">0</span>)
+                <button type="button" class="filter-pill-btn active" data-category="All">
+                  <span>All Packages</span>
+                  <span class="pill-badge" id="cat-count-all">0</span>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn rounded-pill px-3" data-category="Skin">
-                  Skin (<span id="cat-count-skin">0</span>)
+                <button type="button" class="filter-pill-btn" data-category="Skin">
+                  <span>Skin</span>
+                  <span class="pill-badge" id="cat-count-skin">0</span>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn rounded-pill px-3" data-category="Hair">
-                  Hair (<span id="cat-count-hair">0</span>)
+                <button type="button" class="filter-pill-btn" data-category="Hair">
+                  <span>Hair</span>
+                  <span class="pill-badge" id="cat-count-hair">0</span>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn rounded-pill px-3" data-category="Laser">
-                  Laser (<span id="cat-count-laser">0</span>)
+                <button type="button" class="filter-pill-btn" data-category="Laser">
+                  <span>Laser</span>
+                  <span class="pill-badge" id="cat-count-laser">0</span>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn rounded-pill px-3" data-category="Body">
-                  Body (<span id="cat-count-body">0</span>)
+                <button type="button" class="filter-pill-btn" data-category="Body">
+                  <span>Body</span>
+                  <span class="pill-badge" id="cat-count-body">0</span>
                 </button>
-                <button class="btn btn-sm btn-outline-secondary category-filter-btn rounded-pill px-3" data-category="Bridal">
-                  Bridal (<span id="cat-count-bridal">0</span>)
+                <button type="button" class="filter-pill-btn" data-category="Bridal">
+                  <span>Bridal</span>
+                  <span class="pill-badge" id="cat-count-bridal">0</span>
                 </button>
               </div>
 
-              <div class="text-muted small">
-                <i class="bi bi-info-circle me-1"></i> Changes reflect dynamically on homepage in real-time.
+              <!-- Quick Search Input -->
+              <div class="d-flex align-items-center gap-2" style="min-width: 280px;">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0" id="quick-search-input" placeholder="Search offers, badges...">
+                  <button class="btn btn-outline-secondary d-none" type="button" id="btn-clear-search">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="card-body p-4">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0" id="offers-table">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width: 50px;">Order</th>
-                    <th style="width: 130px;">Image</th>
-                    <th>Offer Title & Category</th>
-                    <th style="width: 140px;">Badge</th>
-                    <th>Description</th>
-                    <th style="width: 140px;">CTA Button</th>
-                    <th style="width: 90px;" class="text-center">Status</th>
-                    <th style="width: 140px;" class="text-end">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="offers-table-body">
-                  <tr>
-                    <td colspan="8" class="text-center py-5 text-muted">
-                      <div class="spinner-border spinner-border-sm text-teal me-2" role="status"></div>
-                      Loading monthly offers from database...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- VIEW 1: DATA TABLE VIEW -->
+        <div id="view-mode-table" class="table-container">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0" id="offers-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Order</th>
+                  <th style="width: 140px;">Banner</th>
+                  <th>Offer Title &amp; Category</th>
+                  <th style="width: 160px;">Badge</th>
+                  <th>Clinical Highlights / Desc</th>
+                  <th style="width: 150px;">CTA Button</th>
+                  <th style="width: 100px;" class="text-center">Live Status</th>
+                  <th style="width: 140px;" class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="offers-table-body">
+                <tr>
+                  <td colspan="8" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-teal me-2" role="status"></div>
+                    Loading offers from database...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW 2: CARDS GRID PREVIEW (Direct Homepage Simulation) -->
+        <div id="view-mode-cards" class="d-none">
+          <div class="row g-4" id="offers-cards-grid">
+            <!-- Rendered dynamically -->
           </div>
         </div>
       </main>
@@ -277,100 +617,203 @@
 
   <!-- Create / Edit Offer Modal -->
   <div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg rounded-4">
-        <div class="modal-header border-bottom py-3 px-4">
-          <h5 class="modal-title fw-bold text-slate-800" id="offerModalLabel">
-            <i class="bi bi-stars text-warning me-2"></i>Add New Offer
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content border-0 shadow-2xl rounded-4 overflow-hidden">
+        <div class="modal-header bg-slate-900 text-white py-3 px-4">
+          <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="offerModalLabel">
+            <i class="bi bi-stars text-warning"></i>
+            <span>Add New Offer</span>
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
+
         <form id="offerForm">
           <input type="hidden" id="offer-id" value="">
-          <div class="modal-body p-4">
-            <div class="row g-3">
-              <!-- Title -->
-              <div class="col-md-8">
-                <label class="form-label small fw-bold text-slate-700">Offer Title <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="offer-title" placeholder="e.g. Bridal Skin Preparation Package" required>
-              </div>
+          <div class="modal-body p-4 bg-slate-50/60">
+            <div class="row g-4">
+              <!-- Left Form Column -->
+              <div class="col-lg-7 space-y-3">
+                <div class="bg-white p-4 rounded-3 border">
+                  <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
+                    <i class="bi bi-card-heading text-teal me-1.5"></i> Offer Information
+                  </h6>
 
-              <!-- Category -->
-              <div class="col-md-4">
-                <label class="form-label small fw-bold text-slate-700">Category <span class="text-danger">*</span></label>
-                <select class="form-select" id="offer-category" required>
-                  <option value="Skin">Skin</option>
-                  <option value="Hair">Hair</option>
-                  <option value="Laser">Laser</option>
-                  <option value="Body">Body</option>
-                  <option value="Bridal">Bridal</option>
-                </select>
-              </div>
+                  <div class="row g-3">
+                    <!-- Title -->
+                    <div class="col-md-8">
+                      <label class="form-label small fw-bold text-slate-700">Offer Title <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control form-control-sm" id="offer-title" placeholder="e.g. Bridal Skin Preparation Luxury Package" required>
+                    </div>
 
-              <!-- Badge -->
-              <div class="col-md-6">
-                <label class="form-label small fw-bold text-slate-700">Badge Text</label>
-                <input type="text" class="form-control" id="offer-badge" placeholder="e.g. Limited Period, Bridal Glow, 50% OFF" value="Special Offer">
-              </div>
+                    <!-- Category -->
+                    <div class="col-md-4">
+                      <label class="form-label small fw-bold text-slate-700">Category <span class="text-danger">*</span></label>
+                      <select class="form-select form-select-sm" id="offer-category" required>
+                        <option value="Skin">Skin</option>
+                        <option value="Hair">Hair</option>
+                        <option value="Laser">Laser</option>
+                        <option value="Body">Body</option>
+                        <option value="Bridal">Bridal</option>
+                      </select>
+                    </div>
 
-              <!-- Display Order -->
-              <div class="col-md-3">
-                <label class="form-label small fw-bold text-slate-700">Display Order</label>
-                <input type="number" class="form-control" id="offer-order" value="1" min="1">
-              </div>
+                    <!-- Badge Text with Presets -->
+                    <div class="col-12">
+                      <label class="form-label small fw-bold text-slate-700">Badge Text</label>
+                      <input type="text" class="form-control form-control-sm mb-2" id="offer-badge" placeholder="e.g. Limited Period, Bridal Special, Instant Glow" value="Special Offer">
+                      <div class="d-flex flex-wrap gap-1.5">
+                        <span class="small text-muted me-1" style="font-size: 11px;">Suggestions:</span>
+                        <span class="chip-badge-preset" data-preset="Limited Period">✨ Limited Period</span>
+                        <span class="chip-badge-preset" data-preset="Bridal Special">👰 Bridal Special</span>
+                        <span class="chip-badge-preset" data-preset="Instant Glow">🌟 Instant Glow</span>
+                        <span class="chip-badge-preset" data-preset="Painless ICE">❄️ Painless ICE</span>
+                        <span class="chip-badge-preset" data-preset="Root Defense">🌿 Root Defense</span>
+                        <span class="chip-badge-preset" data-preset="Cellular Boost">🔬 Cellular Boost</span>
+                      </div>
+                    </div>
 
-              <!-- Active Status -->
-              <div class="col-md-3 d-flex align-items-end pb-1">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="offer-status" checked>
-                  <label class="form-check-label small fw-semibold" for="offer-status">Active on Site</label>
-                </div>
-              </div>
+                    <!-- Description -->
+                    <div class="col-12">
+                      <label class="form-label small fw-bold text-slate-700">Description / Highlights</label>
+                      <textarea class="form-control form-control-sm" id="offer-description" rows="3" placeholder="Brief summary of treatments, technologies and benefits included..."></textarea>
+                    </div>
 
-              <!-- Image Upload & Preview -->
-              <div class="col-12">
-                <label class="form-label small fw-bold text-slate-700">Offer Banner Image <span class="text-danger">*</span></label>
-                <div class="dropzone-box" id="offer-dropzone">
-                  <i class="bi bi-cloud-arrow-up text-teal fs-1 d-block mb-2"></i>
-                  <div class="fw-semibold text-slate-700 mb-1">Click to browse or drag & drop image here</div>
-                  <div class="text-muted small">Supports PNG, JPG, WEBP (Recommended: 800x500 or similar 16:10 aspect ratio)</div>
-                  <input type="file" id="offer-image-file" class="d-none" accept="image/*">
-                </div>
-                <div class="mt-2">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-light text-muted">Or Image Path:</span>
-                    <input type="text" class="form-control font-monospace" id="offer-image-url" placeholder="/images/offers/example.png" required>
+                    <!-- Link Text & Target URL -->
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold text-slate-700">CTA Button Text</label>
+                      <input type="text" class="form-control form-control-sm" id="offer-link-text" placeholder="e.g. Claim Offer, Book Consultation" value="Claim Offer">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold text-slate-700">Target URL / Anchor</label>
+                      <input type="text" class="form-control form-control-sm" id="offer-slug" placeholder="/contact-us#appointment_form" value="/contact-us#appointment_form">
+                    </div>
+
+                    <!-- Order and Status -->
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold text-slate-700">Display Order</label>
+                      <input type="number" class="form-control form-control-sm" id="offer-order" value="1" min="1">
+                    </div>
+
+                    <div class="col-md-6 d-flex align-items-end pb-1">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="offer-status" checked>
+                        <label class="form-check-label small fw-bold text-slate-700" for="offer-status">Active on Homepage</label>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <!-- Image Preview Area -->
-                <div id="offer-image-preview-container" class="mt-2 d-none">
-                  <span class="small text-muted d-block mb-1">Preview:</span>
-                  <img id="offer-image-preview" src="" alt="Offer Preview" style="max-height: 140px; border-radius: 8px; border: 1px solid #cbd5e1;">
+
+                <!-- Banner Media Selector -->
+                <div class="bg-white p-4 rounded-3 border">
+                  <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
+                    <i class="bi bi-image text-teal me-1.5"></i> Banner Image Asset
+                  </h6>
+
+                  <!-- Choose from Pre-downloaded 19 Assets -->
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">Select from Curated Monthly Assets (19 Preloaded):</label>
+                    <select class="form-select form-select-sm" id="preset-image-selector">
+                      <option value="">-- Choose preloaded offer asset --</option>
+                      <option value="/images/offers/body-wellness-packages.png">Body Wellness Packages</option>
+                      <option value="/images/offers/bridal-skin-preparation-package.png">Bridal Skin Preparation Package</option>
+                      <option value="/images/offers/special-bridal-packages.png">Special Bridal Luxury Packages</option>
+                      <option value="/images/offers/facial-offers.png">Medical Facial Offers</option>
+                      <option value="/images/offers/facial-packages.png">Signature Facial Packages</option>
+                      <option value="/images/offers/fat-loss-and-skin-tightening-treatment-plan.png">Fat Loss & Skin Tightening Plan</option>
+                      <option value="/images/offers/festive-hair-packages.png">Festive Hair Care Packages</option>
+                      <option value="/images/offers/festive-package.png">Skinfinity All-In-One Festive Package</option>
+                      <option value="/images/offers/fillers-festive-packages.png">Dermal Fillers Festive Packages</option>
+                      <option value="/images/offers/fillers-offers.png">Dermal Fillers Special Offers</option>
+                      <option value="/images/offers/fillers-packages.png">Premium Dermal Fillers Packages</option>
+                      <option value="/images/offers/gfc-festive-offer.png">GFC Therapy Festive Offer</option>
+                      <option value="/images/offers/hair-fall-festive-packages.png">Hair Fall Control Festive Packages</option>
+                      <option value="/images/offers/hair-regain-booster-festival-offer.png">Hair Regain Booster Festival Offer</option>
+                      <option value="/images/offers/hair-regain-booster-offers.png">Hair Regain Booster Exclusive Offers</option>
+                      <option value="/images/offers/hair-regain-booster-packages.png">Hair Regain Booster Multi-Session Packages</option>
+                      <option value="/images/offers/laser-festive-offer.png">US-FDA Laser Festive Offer</option>
+                      <option value="/images/offers/laser-festive-packages.png">Laser Hair Reduction Festive Packages</option>
+                      <option value="/images/offers/laser-hair-reduction-festival-offer.png">Laser Hair Reduction Festival Offer</option>
+                    </select>
+                  </div>
+
+                  <!-- Drag & Drop Zone -->
+                  <div class="dropzone-upload-box mb-2" id="offer-dropzone">
+                    <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
+                    <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
+                    <div class="text-muted" style="font-size: 11px;">Drag & drop file here or click to browse (PNG, JPG, WEBP)</div>
+                    <input type="file" id="offer-image-file" class="d-none" accept="image/*">
+                  </div>
+
+                  <!-- Manual Image URL Input -->
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted small">Image Path:</span>
+                    <input type="text" class="form-control font-monospace" id="offer-image-url" placeholder="/images/offers/..." required>
+                  </div>
                 </div>
               </div>
 
-              <!-- Description -->
-              <div class="col-12">
-                <label class="form-label small fw-bold text-slate-700">Description / Highlights</label>
-                <textarea class="form-control" id="offer-description" rows="3" placeholder="Brief summary of what this offer or package includes..."></textarea>
-              </div>
+              <!-- Right Preview Column: LIVE HOMEPAGE CARD PREVIEW -->
+              <div class="col-lg-5">
+                <div class="bg-white p-4 rounded-3 border sticky-top" style="top: 1rem;">
+                  <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold text-slate-800 mb-0">
+                      <i class="bi bi-eye text-primary me-1.5"></i> Real-Time Card Simulation
+                    </h6>
+                    <span class="badge bg-slate-100 text-slate-600 font-monospace small">Live Preview</span>
+                  </div>
 
-              <!-- Link Text & Target URL -->
-              <div class="col-md-6">
-                <label class="form-label small fw-bold text-slate-700">Button CTA Text</label>
-                <input type="text" class="form-control" id="offer-link-text" placeholder="e.g. Claim Offer, Book Consultation" value="Claim Offer">
-              </div>
+                  <p class="text-muted small mb-3">
+                    This is how the card dynamically appears on the visitor homepage carousel:
+                  </p>
 
-              <div class="col-md-6">
-                <label class="form-label small fw-bold text-slate-700">Button Target URL</label>
-                <input type="text" class="form-control" id="offer-slug" placeholder="/contact-us#appointment_form" value="/contact-us#appointment_form">
+                  <!-- Simulated Website Card -->
+                  <div class="offer-preview-card border shadow-sm mx-auto" style="max-width: 340px;">
+                    <div>
+                      <div class="offer-preview-img-box">
+                        <img id="sim-image" src="/images/offers/bridal-skin-preparation-package.png" alt="Card Preview" onerror="this.src='assets/img/placeholder.svg';">
+                        <div class="offer-preview-overlay"></div>
+                        <!-- Badge Top-Left -->
+                        <div class="position-absolute top-2 start-2 bg-white rounded-pill px-2.5 py-0.5 shadow-sm border small fw-bold d-flex align-items-center gap-1" style="font-size: 10px; top: 10px; left: 10px;">
+                          <i class="bi bi-tag-fill text-warning"></i>
+                          <span id="sim-badge">Special Offer</span>
+                        </div>
+                        <!-- Category Tag Top-Right -->
+                        <div class="position-absolute top-2 end-2 bg-warning text-dark rounded-pill px-2.5 py-0.5 shadow-sm fw-black text-uppercase small" style="font-size: 10px; top: 10px; right: 10px;" id="sim-category">
+                          Skin
+                        </div>
+                      </div>
+
+                      <div class="p-3">
+                        <h6 class="fw-bold text-slate-900 font-serif mb-1 text-truncate" id="sim-title">
+                          Offer Title
+                        </h6>
+                        <p class="text-muted small mb-0 line-clamp-2" style="font-size: 12px; min-height: 36px;" id="sim-description">
+                          Description of treatment package and inclusions...
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="p-3 pt-0">
+                      <div class="pt-2 border-top">
+                        <button type="button" class="btn btn-teal btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2" id="sim-btn">
+                          <i class="bi bi-tag-fill"></i>
+                          <span id="sim-btn-text">Claim Offer</span>
+                          <i class="bi bi-arrow-right ms-auto"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
               </div>
             </div>
           </div>
-          <div class="modal-footer border-top py-3 px-4">
+
+          <div class="modal-footer bg-white border-top py-3 px-4">
             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-teal px-4" id="btn-save-offer">
-              <i class="bi bi-check-circle me-1"></i> Save Offer
+            <button type="submit" class="btn btn-teal px-4 fw-bold" id="btn-save-offer">
+              <i class="bi bi-check-circle-fill me-1.5"></i> Save Offer to Database
             </button>
           </div>
         </form>
@@ -378,14 +821,14 @@
     </div>
   </div>
 
-  <!-- Image Zoom Modal -->
+  <!-- Fullscreen Image Zoom Lightbox Modal -->
   <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content bg-transparent border-0 text-center">
-        <div class="modal-body p-0">
-          <img id="zoom-image" src="" alt="Offer Banner" class="img-fluid rounded-4 shadow-lg" style="max-height: 80vh;">
-          <div class="mt-2 text-white fw-bold" id="zoom-title"></div>
-          <button type="button" class="btn btn-light btn-sm rounded-pill mt-3 px-4" data-bs-dismiss="modal">Close</button>
+        <div class="modal-body p-0 position-relative">
+          <img id="zoom-image" src="" alt="Offer Banner" class="img-fluid rounded-4 shadow-2xl border border-white border-opacity-25" style="max-height: 82vh;">
+          <div class="mt-2 text-white fw-bold fs-5" id="zoom-title"></div>
+          <button type="button" class="btn btn-light btn-sm rounded-pill mt-3 px-4 fw-bold shadow" data-bs-dismiss="modal">Close Preview</button>
         </div>
       </div>
     </div>
