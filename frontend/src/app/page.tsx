@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { getBanners, getTrustBadges } from "@/lib/api";
+import { getBanners, getTrustBadges, getOffers } from "@/lib/api";
 import HeroBannerCarousel from "@/components/home/HeroBannerCarousel";
 import SkuCarouselSection from "@/components/tools/SkuCarouselSection";
 import InteractiveToolsShowcase from "@/components/tools/InteractiveToolsShowcase";
@@ -31,9 +31,10 @@ function SectionDivider() {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [banners, trustBadges] = await Promise.all([
+  const [banners, trustBadges, offers] = await Promise.all([
     getBanners(),
-    getTrustBadges()
+    getTrustBadges(),
+    getOffers(),
   ]);
 
   return (
@@ -72,7 +73,7 @@ export default async function HomePage() {
       <SectionDivider />
 
       {/* 8. Exclusive Monthly Packages & Offers */}
-      <OffersSection />
+      <OffersSection initialOffers={offers || undefined} />
 
       <SectionDivider />
 

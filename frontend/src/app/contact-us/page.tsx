@@ -61,7 +61,15 @@ export default function ContactUsPage() {
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-600">
                   <p className="flex items-start gap-2.5">
                     <MapPin className="w-4 h-4 text-brand-700 shrink-0 mt-0.5" />
-                    <span>Basement Floor, House B1, Sector 36, Near Logix City Centre Mall, Noida - 201303, Uttar Pradesh</span>
+                    <a
+                      href="https://share.google/hUEpkQ6r4yLzV4KAA"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-brand-700 hover:underline transition-colors"
+                      title="View Skinfinity Derma Noida on Google Maps"
+                    >
+                      Basement Floor, House B1, Sector 36, Near Logix City Centre Mall, Noida - 201303, Uttar Pradesh
+                    </a>
                   </p>
                   <p className="flex items-center gap-2.5">
                     <Phone className="w-4 h-4 text-brand-700 shrink-0" />
@@ -132,7 +140,15 @@ export default function ContactUsPage() {
                 <div className="space-y-2.5 text-xs sm:text-sm text-slate-600">
                   <p className="flex items-start gap-2.5">
                     <MapPin className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>2nd Floor, SP1, Sector 28, Golf Course Road, Gurugram - 122002 (Near DLF Phase 1 & 2), Haryana</span>
+                    <a
+                      href="https://share.google/lcTdjEdMmaSLRKDeF"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-amber-700 hover:underline transition-colors"
+                      title="View Skinfinity Derma Gurugram on Google Maps"
+                    >
+                      2nd Floor, SP1, Sector 28, Golf Course Road, Gurugram - 122002 (Near DLF Phase 1 &amp; 2), Haryana
+                    </a>
                   </p>
                   <p className="flex items-center gap-2.5">
                     <Phone className="w-4 h-4 text-amber-600 shrink-0" />

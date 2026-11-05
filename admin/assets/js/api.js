@@ -539,6 +539,29 @@
     deleteCoupon: function (id) {
       return this.delete('/coupons/' + id);
     },
+
+    // Seasonal / Monthly Offers (Best Offers this Month)
+    getOffers: function () {
+      return this.get('/offers');
+    },
+    getOffer: function (id) {
+      return this.get('/offers/' + id);
+    },
+    createOffer: function (data) {
+      return this.post('/offers', data);
+    },
+    updateOffer: function (id, data) {
+      return this.put('/offers/' + id, data);
+    },
+    toggleOfferStatus: function (id) {
+      return this.patch('/offers/' + id + '/toggle-status');
+    },
+    reorderOffers: function (order) {
+      return this.post('/offers/reorder', { order: order });
+    },
+    deleteOffer: function (id) {
+      return this.delete('/offers/' + id);
+    },
     validateCoupon: function (data) {
       return this.post('/public/coupons/validate', data);
     },

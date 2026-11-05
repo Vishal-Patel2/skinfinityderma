@@ -147,7 +147,7 @@ export default function OffersSection({ initialOffers }: { initialOffers?: any[]
 
                   {/* Category tag top-right */}
                   <div className="absolute top-3 right-3 bg-amber-500 text-slate-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-md">
-                    {OFFER_CATEGORY[offer.id] ?? "Offer"}
+                    {offer.category || OFFER_CATEGORY[offer.id] || "Offer"}
                   </div>
                 </div>
 
@@ -157,7 +157,7 @@ export default function OffersSection({ initialOffers }: { initialOffers?: any[]
                     {offer.title}
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                    {offer.desc}
+                    {offer.desc || offer.description}
                   </p>
                 </div>
               </div>
@@ -166,11 +166,11 @@ export default function OffersSection({ initialOffers }: { initialOffers?: any[]
               <div className="p-5 pt-0">
                 <div className="pt-3 border-t border-slate-100">
                   <Link
-                    href="/contact-us#appointment_form"
+                    href={offer.slug ? (offer.slug.startsWith('/') ? offer.slug : `/${offer.slug}`) : "/contact-us#appointment_form"}
                     className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-brand-700 hover:bg-brand-800 flex items-center justify-center gap-2 shadow-sm transition-all"
                   >
                     <Tag className="w-3.5 h-3.5" />
-                    <span>{offer.linkText}</span>
+                    <span>{offer.linkText || "Claim Offer"}</span>
                     <ArrowRight className="w-3.5 h-3.5 ml-auto" />
                   </Link>
                 </div>

@@ -43,7 +43,15 @@ export default function ServingIn() {
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  <strong className="text-slate-800 font-semibold">{loc.address}</strong>, {loc.landmark}, {loc.city} - {loc.pincode}
+                  <a
+                    href={loc.mapLink || (loc.city === "Noida" ? "https://share.google/hUEpkQ6r4yLzV4KAA" : "https://share.google/lcTdjEdMmaSLRKDeF")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-brand-700 hover:underline transition-colors block"
+                    title={`View Skinfinity Derma ${loc.city} on Google Maps`}
+                  >
+                    <strong className="text-slate-800 font-semibold">{loc.address}</strong>, {loc.landmark}, {loc.city} - {loc.pincode}
+                  </a>
                 </p>
 
                 <div className="space-y-2 pt-1 border-t border-slate-200/60 text-xs text-slate-600">

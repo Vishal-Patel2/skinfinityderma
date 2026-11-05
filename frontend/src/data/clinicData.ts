@@ -40,6 +40,7 @@ export interface ClinicLocation {
   email: string;
   hours: string;
   mapEmbedUrl: string;
+  mapLink?: string;
   highlights: string[];
 }
 
@@ -100,9 +101,9 @@ export interface MembershipPlan {
 }
 
 export const CLINIC_STATS = {
-  reviewsCount: "4,500+",
-  rating: "4.5",
-  yearsOfExcellence: "10+",
+  reviewsCount: "3,500+",
+  rating: "4.8",
+  yearsOfExcellence: "14+",
   totalPatients: "1,00,000+",
   expertDermatologists: "6+",
   successfulProcedures: "50,000+",
@@ -113,6 +114,7 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     city: "Noida",
     title: "Skinfinity Derma — Noida Clinic (HQ)",
+    mapLink: "https://share.google/hUEpkQ6r4yLzV4KAA",
     address: "Basement Floor, House B1, Sector 36",
     landmark: "Near Logix City Centre Mall",
     pincode: "201303",
@@ -125,6 +127,7 @@ export const CLINIC_LOCATIONS: ClinicLocation[] = [
   {
     city: "Gurgaon",
     title: "Skinfinity Derma — Gurgaon Clinic",
+    mapLink: "https://share.google/lcTdjEdMmaSLRKDeF",
     address: "2nd Floor, SP1, Sector 28, Golf Course Road",
     landmark: "5 Min Drive from DLF Phase 1 & Phase 2",
     pincode: "122002",

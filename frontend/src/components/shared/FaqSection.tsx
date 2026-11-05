@@ -10,32 +10,44 @@ export default function FaqSection() {
 
   const defaultFaqs = [
     {
-      q: "What makes Skinfinity Derma distinct from commercial skin salons and cosmetic clinics?",
-      a: "Skinfinity Derma is a medical dermatology practice founded and directed by certified MD dermatologists (led by Dr. Ipshita Johri, Cardiff UK trained). We focus on accurate diagnosis and treating root-cause medical issues (hormonal, microbial, dietary) rather than temporary cosmetic cover-ups. Every laser and light device is 100% US-FDA approved."
+      q: "How do I choose the right dermatologist clinic in India for my skin and hair concerns?",
+      a: "Choosing the right dermatologist clinic in India starts with checking the qualifications and experience of its dermatologists. Look for a clinic that offers proper skin and hair diagnosis, personalised treatment plans, advanced technology, and good hygiene standards. Skinfinity Derma focuses on expert-led dermatology care and individual treatment needs."
     },
     {
-      q: "Are procedures executed directly by MD Dermatologists?",
-      a: "Yes. All doctor consultations, skin analyses, laser parameter calibrations, injectable procedures (Botox, Dermal Fillers, HIFU), and surgical interventions are conducted directly by our senior MD dermatologists (including Dr. Ipshita Johri, Dr. Sukriti, Dr. Aanchal Bansal, Dr. Neha Dhankar, and Dr. Shradha)."
+      q: "How can I find the best dermatologist for my skin concerns?",
+      a: "The best dermatologist in India for your needs should have relevant medical qualifications, clinical experience, and expertise in treating your specific condition. Consider their approach to diagnosis, treatment options, patient safety, and follow-up care before making your decision."
     },
     {
-      q: "Is US-FDA Laser Hair Removal safe and pain-free for Indian skin tones?",
-      a: "Yes. We utilize advanced triple-wavelength (Diode, Alexandrite, and Nd:YAG) lasers with integrated sapphire contact cooling that chills the epidermis down to -4°C during energy delivery. This guarantees a practically painless experience while preventing burns or post-inflammatory hyperpigmentation on Fitzpatrick skin types III to V."
+      q: "What treatments are available at a skin and hair clinic in India?",
+      a: "A professional skin and hair clinic in India may offer treatments for acne, acne scars, pigmentation, hair fall, dandruff, ageing concerns, and unwanted hair. Depending on individual needs, treatment options may include medical skincare, chemical peels, laser procedures, PRP, GFC, and hair restoration."
     },
     {
-      q: "How does the Sugarcane HydraFacial differ from standard salon facials?",
-      a: "Unlike salon facials using superficial creams, our signature Sugarcane HydraFacial combines pure sugarcane-derived glycolic alpha-hydroxy acids with vortex vacuum pore extraction and medical-grade peptide/antioxidant infusions. It purifies pores at the dermal level without social downtime."
+      q: "Which skin treatments are suitable for acne, pigmentation, and acne scars?",
+      a: "Popular skin treatments in India include chemical peels, medical facials, laser toning, microneedling, and other dermatologist-recommended procedures. The right treatment depends on your skin type, underlying concern, medical history, and severity of the condition. A dermatologist consultation helps determine the safest approach."
     },
     {
-      q: "How does the in-house diagnostic lab partnership with Orange Health Labs benefit patients?",
-      a: "Conditions like stubborn acne, hair thinning, and melasma often stem from underlying thyroid dysfunction, PCOS, ferritin deficiencies, or vitamin imbalances. Our partnership with Orange Health Labs allows seamless on-site diagnostic sample collection with results reviewed directly by our dermatologists within hours."
+      q: "When should I consult a skin specialist instead of trying home remedies?",
+      a: "You should consult a skin specialist in India when acne keeps returning, pigmentation becomes persistent, hair fall increases, or skin irritation does not improve. A dermatologist can identify the underlying cause and recommend evidence-based treatments instead of relying on temporary home remedies."
     },
     {
-      q: "Do you offer zero-interest (0% EMI) medical payment plans?",
-      a: "Yes! We partner with leading financial institutions including HDFC Bank Health EMI, ICICI Health Care, and Bajaj Finserv Health to offer transparent, paperless, and 0% interest monthly installment plans for extensive laser and aesthetic treatments."
+      q: "Are advanced laser skin treatments safe for Indian skin tones?",
+      a: "Many modern laser technologies can be used safely on Indian skin tones when selected according to skin type and condition. However, darker skin tones may have a higher risk of post-inflammatory pigmentation with certain procedures. A qualified dermatologist should assess your skin and select suitable settings before treatment."
     },
     {
-      q: "What are the consulting hours for Noida and Gurgaon clinics?",
-      a: "Both clinics in Noida (Sector 36, Near Logix Mall) and Gurgaon (Sector 28, Golf Course Road) are open 7 days a week, Monday through Sunday, from 10:00 AM to 08:00 PM."
+      q: "How do dermatologists decide which skin treatment is right for each patient?",
+      a: "Dermatologists consider several factors, including skin type, medical history, lifestyle, current concerns, and treatment goals. At Skinfinity Derma, personalised assessment helps determine suitable skin treatments, whether for acne, pigmentation, scars, ageing, or overall skin health."
+    },
+    {
+      q: "Can one dermatologist clinic provide solutions for both skin and hair problems?",
+      a: "Yes. A comprehensive dermatologist clinic in India can address concerns involving both skin and hair. Services may include acne management, pigmentation treatments, hair fall evaluation, PRP and GFC procedures, laser hair removal, and hair restoration, depending on the clinic's expertise and facilities."
+    },
+    {
+      q: "How many sessions are usually needed for skin and hair treatments in India?",
+      a: "The number of sessions varies according to the treatment, individual condition, skin or hair type, and desired results. Laser hair removal, chemical peels, pigmentation procedures, and hair restoration treatments may all require different treatment schedules. Your dermatologist can suggest a personalized plan after assessment."
+    },
+    {
+      q: "Why choose Skinfinity Derma for dermatologist-led skin and hair treatments in India?",
+      a: "Skinfinity Derma offers dermatologist-led skin and hair care under the leadership of Dr. Ipshita Johri, with over 14 years of aesthetic experience. The clinic focuses on personalised diagnosis, advanced treatment technologies, hygiene standards, and customised care for acne, pigmentation, hair loss, laser treatments, and aesthetic concerns."
     }
   ];
 
@@ -102,7 +114,9 @@ export default function FaqSection() {
                             isOpen ? "text-brand-700" : "text-slate-400"
                           }`}
                         />
-                        <span>{faq.q}</span>
+                        <h2 className="text-sm sm:text-base font-serif font-bold text-slate-900 inline m-0 p-0 text-left">
+                          {faq.q}
+                        </h2>
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${

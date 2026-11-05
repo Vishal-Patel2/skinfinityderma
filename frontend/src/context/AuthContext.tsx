@@ -166,8 +166,8 @@ const defaultAdminSettings: ClinicAdminSettings = {
     "Dr. Shradha": 1000,
   },
   prepaymentDiscount: 100,
-  googleRating: "4.5",
-  googleReviewsCount: "4,500+",
+  googleRating: "4.8",
+  googleReviewsCount: "3,500+",
   investmentRange: "₹1.5 crore – ₹2 crore",
 };
 

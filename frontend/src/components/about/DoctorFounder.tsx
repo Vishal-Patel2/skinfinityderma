@@ -28,28 +28,28 @@ export default function DoctorFounder() {
   const [teamDoctors, setTeamDoctors] = useState(defaultTeamDoctors);
   const [isSectionActive, setIsSectionActive] = useState(true);
   const [founderSection, setFounderSection] = useState({
-    title: "Dr. Ipshita Johri",
-    subtitle: "Founder, Celebrity Dermatologist & Anti-Ageing Expert",
-    badgeText: "Medical Expertise & Leadership",
-    description: "Dr. Ipshita Johri is the visionary founder and medical director of Skinfinity Derma clinics in Noida and Gurgaon. Widely recognized as one of Delhi NCR’s premier dermatologists, she combines rigorous clinical training from Cardiff University, UK with an artistic eye for natural facial aesthetics.",
-    subDescription: "Her signature medical philosophy rests on four core pillars: Accurate Diagnosis, Root-Cause Eradication, Prevention of Recurrence, and Empowered Patient Education. Under her leadership, Skinfinity Derma has treated over 1,00,000 satisfied patients across India and internationally.",
+    title: "Meet Dr. Ipshita Johri - Best Dermatologist & Skin Expert",
+    subtitle: "Founder, Prominent Medical Cosmetologist & Laser Specialist",
+    badgeText: "Best Dermatologist in India",
+    description: "Dr. Ipshita Johri is a prominent medical cosmetologist and laser specialist with over 14 years of experience in advanced skin care, hair treatments, and aesthetic medicine. Recognised for her expertise in dermatology and medical aesthetics, she has served as the official dermatologist partner for Miss Curvy Queen India and has been featured in leading publications, including Vogue, Elle, and Grazia.",
+    subDescription: "Her approach to patient care is built on four core pillars: Accurate Diagnosis, Root-Cause Treatment, Prevention of Recurrence, and Empowered Patient Education. Under her leadership, Skinfinity Derma has helped over 1,00,000 patients across India and internationally with personalised skin and hair care solutions, advanced dermatology treatments, and aesthetic procedures.\n\nAt Skinfinity Derma, our commitment is to provide expert dermatologist-led care, making us a trusted destination for people seeking the best dermatologist in India and advanced skin and hair treatments.",
     qualifications: "MBBS, DDV | PG Dip. Clinical Dermatology (Cardiff University, U.K.)",
-    experience: "Over 12 years of specialized aesthetic clinical experience in Delhi NCR",
+    experience: "Over 14 years of specialized aesthetic clinical experience in India & internationally",
     mediaUrl: "/images/doctors/dr-ipshita-johri.webp",
     buttonText: "Read Full Biography & Philosophy",
     buttonUrl: "/about-clinic",
     secondaryButtonText: "Consult with Dr. Ipshita",
     secondaryButtonUrl: "#consultation",
     missCurvy: {
-      title: "Ms. India Curvy 2020",
-      subtitle: "Runner Up & Pageant Icon",
-      tagline: "Empowering Body Positivity",
+      title: "Miss Curvy Queen India",
+      subtitle: "Official Dermatologist Partner",
+      tagline: "Featured in Vogue, Elle, and Grazia",
       image: "/images/doctors/dr-ipshita-miss-curvy.jpg",
     },
     highlights: [
-      "Pioneer of Sugarcane HydraFacial",
-      "Advanced Laser Hair Reduction Specialist",
-      "Non-Surgical Facial Contouring & Botox",
+      "Over 14 Years Aesthetic Medicine Experience",
+      "Official Partner: Miss Curvy Queen India",
+      "Featured in Vogue, Elle & Grazia",
       "Evidence-Based Acne & Scar Protocols",
     ],
   });
@@ -297,10 +297,10 @@ export default function DoctorFounder() {
                 Expertise You Can Trust
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2 font-serif">
-                Senior Consultant Dermatologists &amp; Specialists
+                Experienced Dermatologists &amp; Senior Skin and Hair Specialists
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-2xl">
-                Every procedure at Skinfinity Derma is performed or supervised directly by certified MD dermatologists.
+                At Skinfinity Derma, a trusted dermatologist-led skin and hair clinic in India, every procedure is performed or supervised by qualified MD dermatologists and experienced skin specialists.
               </p>
             </div>
 

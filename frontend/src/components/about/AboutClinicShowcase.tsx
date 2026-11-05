@@ -21,7 +21,7 @@ import {
 const DEFAULT_STATS = [
   { value: "1,00,000+", label: "Patients Treated" },
   { value: "15+", label: "US-FDA Lasers" },
-  { value: "4.5★", label: "4,500+ Reviews" },
+  { value: "4.8★", label: "3,500+ Reviews" },
   { value: "CMO", label: "Govt. Licensed" },
 ];
 
@@ -55,10 +55,10 @@ export default function AboutClinicShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const [sectionData, setSectionData] = useState({
-    title: "About Skinfinity Derma Aesthetic Clinics",
-    subtitle: "Where Clinical Expertise Meets Patient Luxury",
+    title: "Skinfinity Derma - Expert Dermatologist, Skin & Hair Clinic in India",
+    subtitle: "Where Medical Integrity Meets Exceptional Patient Transformations",
     badgeText: "Complete Medical Infrastructure",
-    description: "At Skinfinity Derma, we believe patient outcomes begin with medical integrity and immaculate hygiene. From individual diagnosis chambers to sterile procedure operatories, every aspect of our clinic is engineered to deliver safe, predictable, and life-changing skin and hair transformations.",
+    description: "At Skinfinity Derma, a leading dermatologist-led skin and hair clinic in India, we believe exceptional patient outcomes begin with medical integrity, expert diagnosis, and the highest standards of hygiene. Our experienced dermatologists provide personalised skin and hair treatments in advanced consultation chambers and sterile procedure rooms. As a trusted dermatology clinic in India, we focus on safe, effective, and evidence-based solutions for diverse skin and hair concerns, delivering natural-looking and long-lasting transformations.",
     mediaUrl: "/images/custom/clinic-reception.jpg",
     mediaAlt: "Skinfinity Derma Luxury Clinic Reception — Noida & Gurgaon",
     buttonText: "Book Clinic Consultation",
@@ -177,8 +177,13 @@ export default function AboutClinicShowcase() {
             <Building className="w-3.5 h-3.5" />
             <span>{sectionData.badgeText || "Complete Medical Infrastructure"}</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-slate-900 font-serif lg:whitespace-nowrap">
-            {sectionData.title.includes("Aesthetic Clinics") ? (
+          <h1 className="text-2xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-slate-900 font-serif leading-tight max-w-4xl mx-auto">
+            {sectionData.title.includes("in India") ? (
+              <>
+                {sectionData.title.replace("in India", "").trim()}{" "}
+                <span className="text-brand-700">in India</span>
+              </>
+            ) : sectionData.title.includes("Aesthetic Clinics") ? (
               <>
                 {sectionData.title.replace("Aesthetic Clinics", "").trim()}{" "}
                 <span className="text-brand-700">Aesthetic Clinics</span>
@@ -186,7 +191,7 @@ export default function AboutClinicShowcase() {
             ) : (
               sectionData.title
             )}
-          </h2>
+          </h1>
         </div>
 
         {/* ── Main Grid ── */}

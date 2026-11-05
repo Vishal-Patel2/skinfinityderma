@@ -122,7 +122,15 @@ export default function Footer() {
             <div className="space-y-2 text-xs text-slate-300">
               <p className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-brand-400 shrink-0 mt-0.5" />
-                <span>Basement Floor, House B1, Sector 36, Near Logix City Centre Mall, Noida - 201303</span>
+                <a
+                  href="https://share.google/hUEpkQ6r4yLzV4KAA"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white hover:underline transition-colors"
+                  title="View Skinfinity Derma Noida on Google Maps"
+                >
+                  Basement Floor, House B1, Sector 36, Near Logix City Centre Mall, Noida - 201303
+                </a>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-brand-400 shrink-0" />
@@ -151,7 +159,15 @@ export default function Footer() {
             <div className="space-y-2 text-xs text-slate-300">
               <p className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <span>2nd Floor, SP1, Sector 28, Golf Course Road, Gurugram - 122002 (Near DLF Phase 1 &amp; 2)</span>
+                <a
+                  href="https://share.google/lcTdjEdMmaSLRKDeF"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white hover:underline transition-colors"
+                  title="View Skinfinity Derma Gurugram on Google Maps"
+                >
+                  2nd Floor, SP1, Sector 28, Golf Course Road, Gurugram - 122002 (Near DLF Phase 1 &amp; 2)
+                </a>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />

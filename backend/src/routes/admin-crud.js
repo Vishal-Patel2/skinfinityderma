@@ -31,6 +31,7 @@ router.get(
       reviews,
       memberships,
       coupons,
+      offers,
     ] = await Promise.all([
       one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending FROM sid_appointments'),
       one('SELECT COUNT(*) AS todayCount FROM sid_appointments WHERE appointment_date = ?', [today]),
@@ -44,6 +45,7 @@ router.get(
       one('SELECT COUNT(*) AS total FROM sid_reviews'),
       one('SELECT COUNT(*) AS total, SUM(subscribers_count) AS subscribers FROM sid_membership_plans'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(used_count) AS total_uses FROM sid_coupons'),
+      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_offers'),
     ]);
 
     // Monthly appointment trends (last 6 months)
@@ -102,6 +104,8 @@ router.get(
         conversionRate: convRate,
         totalBanners: banners.total || 0,
         activeBanners: banners.active || 0,
+        totalOffers: offers ? offers.total || 0 : 0,
+        activeOffers: offers ? offers.active || 0 : 0,
         totalDoctors: doctors.total || 0,
         activeDoctors: doctors.active || 0,
         totalTreatments: treatments.total || 0,
@@ -2427,6 +2431,203 @@ router.delete(
     const { id } = req.params;
     await query('DELETE FROM sid_pages WHERE id = ?', [id]);
     res.json({ success: true, message: 'Page deleted successfully' });
+  })
+);
+
+/* ========================================================================== */
+/* SEASONAL OFFERS MANAGEMENT                                                 */
+/* ========================================================================== */
+
+router.get(
+  '/offers',
+  requirePermission('offers.view'),
+  asyncHandler(async (req, res) => {
+    const rows = await query(`
+      SELECT o.*, c.code AS coupon_code, c.discount_type, c.discount_value
+        FROM sid_offers o
+        LEFT JOIN sid_coupons c ON c.id = o.coupon_id
+       ORDER BY o.display_order ASC, o.id DESC
+    `);
+    res.json({
+      success: true,
+      data: rows.map((r) => ({
+        id: String(r.id),
+        legacyId: r.legacy_id,
+        title: r.title,
+        badge: r.badge,
+        category: r.category || 'Skin',
+        description: r.description,
+        image: r.image,
+        linkText: r.link_text,
+        slug: r.slug,
+        couponId: r.coupon_id,
+        couponCode: r.coupon_code,
+        discountType: r.discount_type,
+        discountValue: r.discount_value,
+        validFrom: r.valid_from,
+        validTo: r.valid_to,
+        displayOrder: r.display_order,
+        isActive: Boolean(r.is_active),
+        createdAt: r.created_at,
+        updatedAt: r.updated_at,
+      })),
+    });
+  })
+);
+
+router.post(
+  '/offers',
+  requirePermission('offers.create'),
+  asyncHandler(async (req, res) => {
+    const {
+      title,
+      badge = 'Special Offer',
+      category = 'Skin',
+      description = '',
+      image,
+      linkText = 'Claim Offer',
+      slug = '/contact-us#appointment_form',
+      couponId = null,
+      validFrom = null,
+      validTo = null,
+      displayOrder = 1,
+      isActive = 1,
+    } = req.body;
+
+    if (!title || !title.trim()) throw new HttpError(400, 'Offer title is required');
+    if (!image || !image.trim()) throw new HttpError(400, 'Offer banner image is required');
+
+    const result = await query(
+      `INSERT INTO sid_offers
+        (title, badge, category, description, image, link_text, slug, coupon_id, valid_from, valid_to, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        title.trim(),
+        badge.trim(),
+        category.trim(),
+        description ? description.trim() : null,
+        image.trim(),
+        linkText ? linkText.trim() : 'Claim Offer',
+        slug ? slug.trim() : '/contact-us#appointment_form',
+        couponId || null,
+        validFrom || null,
+        validTo || null,
+        displayOrder !== undefined ? displayOrder : 1,
+        isActive !== undefined ? (isActive ? 1 : 0) : 1,
+      ]
+    );
+
+    await audit(req, { action: 'create', entity: 'offers', entityId: result.insertId, summary: `Added offer "${title}"` });
+
+    res.status(201).json({
+      success: true,
+      message: 'Offer created successfully',
+      data: { id: String(result.insertId) },
+    });
+  })
+);
+
+router.put(
+  '/offers/:id',
+  requirePermission('offers.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const {
+      title,
+      badge,
+      category,
+      description,
+      image,
+      linkText,
+      slug,
+      couponId,
+      validFrom,
+      validTo,
+      displayOrder,
+      isActive,
+    } = req.body;
+
+    if (!title || !title.trim()) throw new HttpError(400, 'Offer title is required');
+    if (!image || !image.trim()) throw new HttpError(400, 'Offer banner image is required');
+
+    await query(
+      `UPDATE sid_offers
+          SET title = ?, badge = ?, category = ?, description = ?, image = ?,
+              link_text = ?, slug = ?, coupon_id = ?, valid_from = ?, valid_to = ?,
+              display_order = ?, is_active = ?
+        WHERE id = ?`,
+      [
+        title.trim(),
+        badge !== undefined ? badge.trim() : 'Special Offer',
+        category !== undefined ? category.trim() : 'Skin',
+        description !== undefined ? description.trim() : null,
+        image.trim(),
+        linkText !== undefined ? linkText.trim() : 'Claim Offer',
+        slug !== undefined ? slug.trim() : '/contact-us#appointment_form',
+        couponId || null,
+        validFrom || null,
+        validTo || null,
+        displayOrder !== undefined ? displayOrder : 1,
+        isActive !== undefined ? (isActive ? 1 : 0) : 1,
+        id,
+      ]
+    );
+
+    await audit(req, { action: 'update', entity: 'offers', entityId: id, summary: `Updated offer "${title}"` });
+
+    res.json({ success: true, message: 'Offer updated successfully' });
+  })
+);
+
+router.patch(
+  '/offers/:id/toggle-status',
+  requirePermission('offers.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const offer = await one('SELECT id, title, is_active FROM sid_offers WHERE id = ?', [id]);
+    if (!offer) throw new HttpError(404, 'Offer not found');
+
+    const next = offer.is_active ? 0 : 1;
+    await query('UPDATE sid_offers SET is_active = ? WHERE id = ?', [next, id]);
+
+    await audit(req, { action: 'update', entity: 'offers', entityId: id, summary: `Toggled offer "${offer.title}" to ${next ? 'active' : 'inactive'}` });
+
+    res.json({ success: true, message: `Offer ${next ? 'activated' : 'deactivated'} successfully`, isActive: Boolean(next) });
+  })
+);
+
+router.post(
+  '/offers/reorder',
+  requirePermission('offers.edit'),
+  asyncHandler(async (req, res) => {
+    const { order } = req.body;
+    if (!Array.isArray(order)) throw new HttpError(400, 'Order array required');
+
+    await tx(async (conn) => {
+      for (let i = 0; i < order.length; i++) {
+        await conn.query('UPDATE sid_offers SET display_order = ? WHERE id = ?', [i + 1, order[i]]);
+      }
+    });
+
+    await audit(req, { action: 'update', entity: 'offers', summary: 'Reordered seasonal offers' });
+
+    res.json({ success: true, message: 'Offers reordered successfully' });
+  })
+);
+
+router.delete(
+  '/offers/:id',
+  requirePermission('offers.delete'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const offer = await one('SELECT id, title FROM sid_offers WHERE id = ?', [id]);
+    await query('DELETE FROM sid_offers WHERE id = ?', [id]);
+
+    if (offer) {
+      await audit(req, { action: 'delete', entity: 'offers', entityId: id, summary: `Deleted offer "${offer.title}"` });
+    }
+
+    res.json({ success: true, message: 'Offer deleted successfully' });
   })
 );
 

@@ -22,10 +22,31 @@ import {
   Lock
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { getHomepageData } from "@/lib/api";
 
 export default function InteractiveToolsShowcase() {
   const [activeModal, setActiveModal] = useState<"skin" | "hair" | "laser" | null>(null);
   const toolsScrollRef = useRef<HTMLDivElement>(null);
+  const [headerData, setHeaderData] = useState({
+    title: "Interactive Skin, Hair & Laser Assessment",
+    description: "Explore your skin and hair health through our interactive clinical self-assessment tool. Preview real-time insights or select an assessment to receive personalized guidance from the expert dermatologists at Skinfinity Derma, a trusted skin and hair clinic in India. Understand your concerns and explore suitable dermatology treatments and advanced skin and hair care solutions.",
+  });
+
+  useEffect(() => {
+    let active = true;
+    getHomepageData().then((hp) => {
+      if (active && hp && hp.diagnosticTools) {
+        const dt = hp.diagnosticTools;
+        setHeaderData((prev) => ({
+          title: dt.title || prev.title,
+          description: dt.description || prev.description,
+        }));
+      }
+    }).catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const scrollTools = (dir: "left" | "right") => {
     if (!toolsScrollRef.current) return;
@@ -98,10 +119,10 @@ export default function InteractiveToolsShowcase() {
             <span>Smart Aesthetic Diagnostic Tools</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-serif">
-            Interactive Clinical Self-Assessment
+            {headerData.title}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-            Preview simulated metrics in real-time below, or click any card to launch your comprehensive individual assessment model with personalized guidance By Our Team of Dermatologists.
+            {headerData.description}
           </p>
         </div>
 

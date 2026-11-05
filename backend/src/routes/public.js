@@ -460,6 +460,7 @@ router.get(
         id: o.legacy_id || String(o.id),
         title: o.title,
         badge: o.badge || 'Special Offer',
+        category: o.category || 'Skin',
         desc: o.description,
         image: o.image,
         linkText: o.link_text || 'Claim Offer',

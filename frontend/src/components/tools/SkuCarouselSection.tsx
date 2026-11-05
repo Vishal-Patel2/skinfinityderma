@@ -293,10 +293,10 @@ export default function SkuCarouselSection() {
               <span>Evidence-Based Clinical Procedures</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-serif">
-              Popular Clinical Procedures &amp; Packages
+              Popular Dermatology Treatments, Skin &amp; Hair Procedures
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-2xl leading-relaxed">
-              Transparent clinical packages, US-FDA approved technologies, and customized protocols By Our Team of Dermatologists.
+              Explore transparent treatment packages, advanced US FDA-approved technologies, and personalised skin and hair care solutions delivered by our experienced dermatologists at Skinfinity Derma, a trusted skin and hair clinic in India.
             </p>
           </div>
 
