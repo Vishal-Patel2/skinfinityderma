@@ -20,7 +20,8 @@ import {
   Stethoscope,
   MessageCircle,
   Quote,
-  MapPin
+  MapPin,
+  Play
 } from "lucide-react";
 import { RichTreatment, RICH_TREATMENTS } from "@/data/treatmentsCatalog";
 import { TESTIMONIALS } from "@/data/clinicData";
@@ -75,22 +76,31 @@ export default function TreatmentDetailView({ treatment }: Props) {
   );
   const whatsappUrl = `https://wa.me/919871941444?text=${whatsappMessage}`;
 
-  // Ensure pure clinical images for the hero gallery strip below the main image (excluding YouTube video thumbnails)
-  const galleryList = React.useMemo(() => {
-    const raw = Array.isArray(treatment.galleryImages) ? treatment.galleryImages : [];
-    // Filter out YouTube thumbnails or external video links
-    const base = raw
-      .filter((img) => img && img.src && !img.src.includes("img.youtube.com") && !img.src.includes("youtube") && !img.src.includes("youtu.be"))
-      .map((img) => ({ src: img.src, caption: img.caption || treatment.name }));
+  // Extract YouTube video ID if available
+  const youtubeVideoId = React.useMemo(() => {
+    if (treatment.youtubeVideoId) return treatment.youtubeVideoId;
+    if (treatment.videoUrl) {
+      const m = treatment.videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/);
+      return m ? m[1] : null;
+    }
+    return null;
+  }, [treatment]);
 
-    // Ensure bannerImage is first as the Cover Media
+  // Combined Hero Media Gallery: Clinical Images first, then YouTube Video
+  const mediaList = React.useMemo(() => {
+    const raw = Array.isArray(treatment.galleryImages) ? treatment.galleryImages : [];
+    const base: Array<{ type: "image" | "youtube"; src: string; caption: string; videoId?: string }> = raw
+      .filter((img) => img && img.src && !img.src.includes("img.youtube.com") && !img.src.includes("youtube") && !img.src.includes("youtu.be"))
+      .map((img) => ({ type: "image", src: img.src, caption: img.caption || treatment.name }));
+
+    // Ensure bannerImage is first as Cover Media
     if (treatment.bannerImage) {
       const bannerIdx = base.findIndex((b) => b.src === treatment.bannerImage);
       if (bannerIdx > 0) {
         const [bannerItem] = base.splice(bannerIdx, 1);
         base.unshift(bannerItem);
       } else if (bannerIdx === -1) {
-        base.unshift({ src: treatment.bannerImage, caption: treatment.name });
+        base.unshift({ type: "image", src: treatment.bannerImage, caption: treatment.name });
       }
     }
 
@@ -102,27 +112,37 @@ export default function TreatmentDetailView({ treatment }: Props) {
     ].filter(Boolean);
     for (const sub of extraSubs) {
       if (!base.some((b) => b.src === sub)) {
-        base.push({ src: sub, caption: `${treatment.name} Clinical View` });
+        base.push({ type: "image", src: sub, caption: `${treatment.name} Clinical View` });
       }
     }
 
     // If still less than 4, include step images
     if (base.length < 4 && Array.isArray(treatment.howItWorksSteps)) {
       for (const step of treatment.howItWorksSteps) {
-        if (base.length >= 5) break;
+        if (base.length >= 4) break;
         if (step.image && !base.some((img) => img.src === step.image)) {
-          base.push({ src: step.image, caption: `${step.stepNumber}: ${step.title}` });
+          base.push({ type: "image", src: step.image, caption: `${step.stepNumber}: ${step.title}` });
         }
       }
     }
 
     // Fallback if empty
     if (base.length === 0) {
-      base.push({ src: treatment.bannerImage || "/images/default-treatment.jpg", caption: treatment.name });
+      base.push({ type: "image", src: treatment.bannerImage || "/images/default-treatment.jpg", caption: treatment.name });
+    }
+
+    // Append YouTube Video at the end of sub-images strip
+    if (youtubeVideoId) {
+      base.push({
+        type: "youtube",
+        src: `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`,
+        caption: `Watch ${treatment.name} Video Demonstration`,
+        videoId: youtubeVideoId,
+      });
     }
 
     return base;
-  }, [treatment]);
+  }, [treatment, youtubeVideoId]);
 
   const cartItem = items.find((i) => i.id === treatment.id);
   const qtyInCart = cartItem ? cartItem.quantity : 0;
@@ -141,12 +161,12 @@ export default function TreatmentDetailView({ treatment }: Props) {
   };
 
   const nextGallerySlide = () => {
-    setActiveSlide((prev) => (prev + 1) % galleryList.length);
+    setActiveSlide((prev) => (prev + 1) % mediaList.length);
   };
 
   const prevGallerySlide = () => {
     setActiveSlide(
-      (prev) => (prev - 1 + galleryList.length) % galleryList.length
+      (prev) => (prev - 1 + mediaList.length) % mediaList.length
     );
   };
 
@@ -194,38 +214,64 @@ export default function TreatmentDetailView({ treatment }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Split Top Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-            {/* LEFT: Main Image + Sub-Images Thumbnail Row */}
+            {/* LEFT: Main Image / Video Player + Sub-Images Thumbnail Row */}
             <div className="lg:col-span-6 space-y-3">
-              <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-md group select-none">
-                {galleryList.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      activeSlide === idx ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                    }`}
-                  >
-                    <Image
-                      src={img.src}
-                      alt={img.caption || treatment.name}
-                      fill
-                      priority={idx === 0}
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="relative aspect-[16/10] sm:aspect-[4/3] w-full max-h-[380px] sm:max-h-[420px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-md group select-none">
+                {mediaList.map((item, idx) => {
+                  const isActive = activeSlide === idx;
+                  if (item.type === "youtube") {
+                    return (
+                      <div
+                        key={idx}
+                        className={`absolute inset-0 transition-opacity duration-300 ${
+                          isActive ? "opacity-100 z-10 pointer-events-auto" : "opacity-0 z-0 pointer-events-none"
+                        }`}
+                      >
+                        {isActive && (
+                          <iframe
+                            src={`https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&rel=0&modestbranding=1`}
+                            title={`${treatment.name} Clinical Demonstration`}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                          />
+                        )}
+                      </div>
+                    );
+                  }
 
-                {galleryList.length > 1 && (
+                  return (
+                    <div
+                      key={idx}
+                      className={`absolute inset-0 transition-opacity duration-500 ${
+                        isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                      }`}
+                    >
+                      <Image
+                        src={item.src}
+                        alt={item.caption || treatment.name}
+                        fill
+                        priority={idx === 0}
+                        className="object-cover"
+                      />
+                    </div>
+                  );
+                })}
+
+                {mediaList.length > 1 && (
                   <>
                     <button
+                      type="button"
                       onClick={prevGallerySlide}
-                      aria-label="Previous image"
+                      aria-label="Previous media"
                       className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-slate-900 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
                     <button
+                      type="button"
                       onClick={nextGallerySlide}
-                      aria-label="Next image"
+                      aria-label="Next media"
                       className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/85 hover:bg-white text-slate-900 shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <ChevronRight className="w-5 h-5" />
@@ -233,44 +279,56 @@ export default function TreatmentDetailView({ treatment }: Props) {
                   </>
                 )}
 
-                <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm">
-                  {galleryList.map((_, i) => (
-                    <button
+                <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/50 backdrop-blur-sm pointer-events-none">
+                  {mediaList.map((_, i) => (
+                    <span
                       key={i}
-                      onClick={() => setActiveSlide(i)}
-                      aria-label={`Slide ${i + 1}`}
                       className={`rounded-full transition-all ${
                         activeSlide === i
                           ? "w-5 h-2 bg-white"
-                          : "w-2 h-2 bg-white/55 hover:bg-white/80"
+                          : "w-2 h-2 bg-white/55"
                       }`}
                     />
                   ))}
                 </div>
               </div>
 
-              {/* Sub-Images Row Directly Below Main Image (Responsive touch-scroll on mobile, grid on desktop) */}
-              {galleryList.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1.5 no-scrollbar sm:grid sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4">
-                  {galleryList.map((img, idx) => {
+              {/* Sub-Images Row Directly Below Main Image (Images first, then YouTube video thumbnail) */}
+              {mediaList.length > 1 && (
+                <div className="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar sm:grid sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5">
+                  {mediaList.map((item, idx) => {
                     const isSelected = activeSlide === idx;
+                    const isVideo = item.type === "youtube";
                     return (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => setActiveSlide(idx)}
-                        className={`relative w-20 sm:w-auto aspect-[4/3] shrink-0 sm:shrink rounded-xl overflow-hidden border-2 transition-all ${
+                        className={`relative w-20 sm:w-auto aspect-[4/3] shrink-0 sm:shrink rounded-xl overflow-hidden border-2 transition-all group/thumb ${
                           isSelected
-                            ? "border-[#008081] ring-2 ring-[#008081]/20 opacity-100 shadow-sm"
-                            : "border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-300"
+                            ? isVideo
+                              ? "border-red-600 ring-2 ring-red-500/30 opacity-100 shadow-sm"
+                              : "border-[#008081] ring-2 ring-[#008081]/25 opacity-100 shadow-sm"
+                            : "border-slate-200 opacity-75 hover:opacity-100 hover:border-slate-300"
                         }`}
+                        title={item.caption || (isVideo ? "Watch Video" : `View image ${idx + 1}`)}
                       >
                         <Image
-                          src={img.src}
-                          alt={img.caption || `${treatment.name} view ${idx + 1}`}
+                          src={item.src}
+                          alt={item.caption || `${treatment.name} media ${idx + 1}`}
                           fill
                           className="object-cover"
                         />
+                        {isVideo && (
+                          <div className="absolute inset-0 bg-black/35 flex flex-col items-center justify-center transition-colors group-hover/thumb:bg-black/20">
+                            <div className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md">
+                              <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
+                            </div>
+                            <span className="mt-1 text-[9px] font-extrabold uppercase tracking-wider text-white drop-shadow">
+                              Video
+                            </span>
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -567,39 +625,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
-      {/* 2.5 Clinical Video Demonstration & Protocol Overview */}
-      {(treatment.youtubeVideoId || treatment.videoUrl) && (
-        <section className="py-6 sm:py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-[#f8fafc] rounded-3xl p-5 sm:p-8 border border-slate-200/80">
-              <div className="flex flex-col md:flex-row md:items-end justify-between mb-5 gap-3">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold uppercase tracking-wider border border-emerald-200/60 mb-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Doctor Procedure Video
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 font-serif">
-                    Watch {treatment.name} in Action
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                    Authentic clinical procedure demonstration & expert guidance by Senior Dermatologists
-                  </p>
-                </div>
-              </div>
 
-              <div className="relative rounded-2xl overflow-hidden shadow-lg border border-slate-200 bg-slate-950 aspect-video max-w-4xl mx-auto">
-                <iframe
-                  src={`https://www.youtube-nocookie.com/embed/${treatment.youtubeVideoId || (treatment.videoUrl?.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([a-zA-Z0-9_-]{11})/)?.[1])}?rel=0&modestbranding=1`}
-                  title={`${treatment.name} Clinical Demonstration`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="absolute inset-0 w-full h-full border-0"
-                />
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* 3. IDEAL FREQUENCY, IDEAL FOR / NOT IDEAL FOR & DOCTOR CONSULTATION CARD */}
       <section className="py-4 sm:py-6">
