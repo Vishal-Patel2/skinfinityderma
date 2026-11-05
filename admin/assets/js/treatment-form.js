@@ -178,31 +178,47 @@ $(document).ready(function () {
       return;
     }
 
+    // Ensure coverImageSrc is strictly a valid image (never YouTube, never null if an image exists)
+    const imagesOnly = mediaGallery.filter(function (m) { return m.type === 'image'; });
+    const hasValidCover = imagesOnly.some(function (m) { return m.src === coverImageSrc; });
+    if (!hasValidCover) {
+      coverImageSrc = imagesOnly.length > 0 ? imagesOnly[0].src : '';
+    }
+
     mediaGallery.forEach(function (item, idx) {
-      const isCover = item.src === coverImageSrc || (!coverImageSrc && idx === 0);
-      if (isCover) coverImageSrc = item.src;
+      const isCover = item.type === 'image' && item.src === coverImageSrc;
 
       const badge = item.type === 'youtube' ?
         '<span class="media-card-badge bg-danger text-white"><i class="bi bi-youtube me-1"></i>YOUTUBE</span>' :
         '<span class="media-card-badge bg-primary text-white"><i class="bi bi-image me-1"></i>IMAGE</span>';
 
-      const coverBtn = isCover ?
-        '<button type="button" class="btn btn-xs btn-success w-100 py-1 fw-bold" style="font-size: 0.7rem;"><i class="bi bi-star-fill me-1"></i>Cover Media</button>' :
-        `<button type="button" class="btn btn-xs btn-outline-secondary w-100 py-1 btn-set-cover" data-index="${idx}" style="font-size: 0.7rem;">Set as Cover</button>`;
+      let coverBtn = '';
+      if (item.type === 'youtube') {
+        coverBtn = '<span class="badge bg-light text-muted w-100 py-1 border d-inline-block text-center" style="font-size: 0.65rem;"><i class="bi bi-play-circle me-1"></i>Video Link</span>';
+      } else if (isCover) {
+        coverBtn = '<button type="button" class="btn btn-xs btn-success w-100 py-1 fw-bold" style="font-size: 0.7rem;"><i class="bi bi-star-fill me-1"></i>Cover Media</button>';
+      } else {
+        coverBtn = `<button type="button" class="btn btn-xs btn-outline-secondary w-100 py-1 btn-set-cover" data-index="${idx}" style="font-size: 0.7rem;">Set as Cover</button>`;
+      }
 
       const cardHtml = `
-        <div class="col-6 col-md-4 col-xl-2-4" style="flex: 0 0 20%; max-width: 20%;">
+        <div class="col-6 col-md-4 col-xl-2-4 gallery-card-col" style="flex: 0 0 20%; max-width: 20%; cursor: grab;" draggable="true" data-index="${idx}">
           <div class="media-card-item">
             ${badge}
             <button type="button" class="media-card-remove btn-remove-media" data-index="${idx}" title="Remove media">
               <i class="bi bi-x"></i>
             </button>
-            <img src="${item.src}" alt="${item.caption || 'Media'}" class="media-card-thumb" onerror="this.src='assets/img/avatar-default.svg'">
+            <img src="${item.src}" alt="${item.caption || 'Media'}" class="media-card-thumb" onerror="this.src='assets/img/avatar-default.svg'" draggable="false">
             <div class="p-2 bg-white">
               <input type="text" class="form-control form-control-sm mb-1 media-caption-input" data-index="${idx}" value="${item.caption || ''}" placeholder="Alt text / Caption" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
               <div class="d-flex justify-content-between align-items-center">
-                ${coverBtn}
-                <span class="text-muted small fw-bold ms-1" style="font-size: 0.65rem;">#${idx + 1}</span>
+                <div class="flex-grow-1 me-1">
+                  ${coverBtn}
+                </div>
+                <div class="d-flex align-items-center text-muted" title="Drag to reorder" style="cursor: grab;">
+                  <i class="bi bi-grip-vertical me-0.5" style="font-size: 0.85rem;"></i>
+                  <span class="small fw-bold" style="font-size: 0.65rem;">#${idx + 1}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -384,16 +400,17 @@ $(document).ready(function () {
     }
 
     const removed = mediaGallery.splice(idx, 1)[0];
+    const remainingImages = mediaGallery.filter(function (m) { return m.type === 'image'; });
     if (removed && removed.src === coverImageSrc) {
-      coverImageSrc = mediaGallery.length > 0 ? mediaGallery[0].src : '';
+      coverImageSrc = remainingImages.length > 0 ? remainingImages[0].src : '';
     }
     renderMediaGallery();
   });
 
-  // Set as Cover
+  // Set as Cover (Strictly allowed for images only, never videos)
   $(document).on('click', '.btn-set-cover', function () {
     const idx = parseInt($(this).data('index'), 10);
-    if (mediaGallery[idx]) {
+    if (mediaGallery[idx] && mediaGallery[idx].type === 'image') {
       coverImageSrc = mediaGallery[idx].src;
       renderMediaGallery();
     }
@@ -405,6 +422,62 @@ $(document).ready(function () {
     if (mediaGallery[idx]) {
       mediaGallery[idx].caption = $(this).val();
     }
+  });
+
+  // HTML5 Drag and Drop Gallery Reordering
+  let dragSrcIndex = null;
+
+  $(document).on('dragstart', '.gallery-card-col', function (e) {
+    if ($(e.target).closest('input, button, .media-card-remove, .btn').length) {
+      e.preventDefault();
+      return false;
+    }
+    dragSrcIndex = parseInt($(this).data('index'), 10);
+    $(this).addClass('dragging');
+    if (e.originalEvent && e.originalEvent.dataTransfer) {
+      e.originalEvent.dataTransfer.effectAllowed = 'move';
+      e.originalEvent.dataTransfer.setData('text/plain', String(dragSrcIndex));
+    }
+  });
+
+  $(document).on('dragend', '.gallery-card-col', function () {
+    $('.gallery-card-col').removeClass('dragging drag-over');
+    dragSrcIndex = null;
+  });
+
+  $(document).on('dragover', '.gallery-card-col', function (e) {
+    e.preventDefault();
+    if (e.originalEvent && e.originalEvent.dataTransfer) {
+      e.originalEvent.dataTransfer.dropEffect = 'move';
+    }
+    $(this).addClass('drag-over');
+  });
+
+  $(document).on('dragleave', '.gallery-card-col', function () {
+    $(this).removeClass('drag-over');
+  });
+
+  $(document).on('drop', '.gallery-card-col', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $(this).removeClass('drag-over');
+    const targetIndex = parseInt($(this).data('index'), 10);
+    if (dragSrcIndex !== null && !isNaN(targetIndex) && dragSrcIndex !== targetIndex) {
+      // Sync any uncommitted caption inputs from DOM
+      $('.media-caption-input').each(function () {
+        const cIdx = parseInt($(this).data('index'), 10);
+        if (mediaGallery[cIdx]) {
+          mediaGallery[cIdx].caption = $(this).val();
+        }
+      });
+      const movedItem = mediaGallery.splice(dragSrcIndex, 1)[0];
+      mediaGallery.splice(targetIndex, 0, movedItem);
+      renderMediaGallery();
+      if (window.App && window.App.toast) {
+        window.App.toast('info', 'Media order updated');
+      }
+    }
+    dragSrcIndex = null;
   });
 
   /* ========================================================================== */
@@ -620,20 +693,28 @@ $(document).ready(function () {
 
           // Media Gallery
           mediaGallery = [];
-          if (t.bannerImage) {
-            coverImageSrc = t.bannerImage;
-            mediaGallery.push({ type: 'image', src: t.bannerImage, caption: t.imageAltText || 'Cover Media' });
-          }
-          if (t.subImage1) mediaGallery.push({ type: 'image', src: t.subImage1, caption: 'Clinical angle 1' });
-          if (t.subImage2) mediaGallery.push({ type: 'image', src: t.subImage2, caption: 'Clinical angle 2' });
-          if (t.subImage3) mediaGallery.push({ type: 'image', src: t.subImage3, caption: 'Clinical angle 3' });
-          if (Array.isArray(t.galleryImages)) {
+          coverImageSrc = t.bannerImage || '';
+
+          if (Array.isArray(t.galleryImages) && t.galleryImages.length > 0) {
             t.galleryImages.forEach(function (g) {
-              const src = typeof g === 'string' ? g : g.src;
+              const src = typeof g === 'string' ? g : (g && g.src);
+              const caption = typeof g === 'object' && g ? (g.caption || '') : '';
               if (src && !mediaGallery.some(function (m) { return m.src === src; })) {
-                mediaGallery.push({ type: 'image', src: src, caption: g.caption || '' });
+                mediaGallery.push({ type: 'image', src: src, caption: caption });
               }
             });
+            [t.bannerImage, t.subImage1, t.subImage2, t.subImage3].forEach(function (s) {
+              if (s && !mediaGallery.some(function (m) { return m.src === s; })) {
+                mediaGallery.push({ type: 'image', src: s, caption: '' });
+              }
+            });
+          } else {
+            if (t.bannerImage) {
+              mediaGallery.push({ type: 'image', src: t.bannerImage, caption: t.imageAltText || 'Cover Media' });
+            }
+            if (t.subImage1) mediaGallery.push({ type: 'image', src: t.subImage1, caption: 'Clinical angle 1' });
+            if (t.subImage2) mediaGallery.push({ type: 'image', src: t.subImage2, caption: 'Clinical angle 2' });
+            if (t.subImage3) mediaGallery.push({ type: 'image', src: t.subImage3, caption: 'Clinical angle 3' });
           }
           if (t.videoUrl || t.youtubeVideoId) {
             const ytId = t.youtubeVideoId || '';
@@ -750,10 +831,15 @@ $(document).ready(function () {
     const imagesOnly = mediaGallery.filter(function (m) { return m.type === 'image'; });
     const videoItem = mediaGallery.find(function (m) { return m.type === 'youtube'; });
 
-    const bannerImage = coverImageSrc || (imagesOnly.length ? imagesOnly[0].src : null);
-    const subImage1 = imagesOnly.length > 1 ? imagesOnly[1].src : null;
-    const subImage2 = imagesOnly.length > 2 ? imagesOnly[2].src : null;
-    const subImage3 = imagesOnly.length > 3 ? imagesOnly[3].src : null;
+    // Ensure cover image is strictly an image, never a video
+    const coverItem = imagesOnly.find(function (m) { return m.src === coverImageSrc; }) || (imagesOnly.length ? imagesOnly[0] : null);
+    const bannerImage = coverItem ? coverItem.src : null;
+
+    // Sub-images for legacy columns (remaining images in gallery order, excluding bannerImage)
+    const otherImages = imagesOnly.filter(function (m) { return m.src !== bannerImage; });
+    const subImage1 = otherImages.length > 0 ? otherImages[0].src : null;
+    const subImage2 = otherImages.length > 1 ? otherImages[1].src : null;
+    const subImage3 = otherImages.length > 2 ? otherImages[2].src : null;
 
     // Highlights
     const tagsVal = $('#treatmentHighlightTags').val().trim();

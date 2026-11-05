@@ -83,9 +83,15 @@ export default function TreatmentDetailView({ treatment }: Props) {
       .filter((img) => img && img.src && !img.src.includes("img.youtube.com") && !img.src.includes("youtube") && !img.src.includes("youtu.be"))
       .map((img) => ({ src: img.src, caption: img.caption || treatment.name }));
 
-    // Ensure bannerImage is first if not already present
-    if (treatment.bannerImage && !base.some((b) => b.src === treatment.bannerImage)) {
-      base.unshift({ src: treatment.bannerImage, caption: treatment.name });
+    // Ensure bannerImage is first as the Cover Media
+    if (treatment.bannerImage) {
+      const bannerIdx = base.findIndex((b) => b.src === treatment.bannerImage);
+      if (bannerIdx > 0) {
+        const [bannerItem] = base.splice(bannerIdx, 1);
+        base.unshift(bannerItem);
+      } else if (bannerIdx === -1) {
+        base.unshift({ src: treatment.bannerImage, caption: treatment.name });
+      }
     }
 
     // Add sub-images from DB columns (subImage1, subImage2, subImage3)
@@ -205,13 +211,6 @@ export default function TreatmentDetailView({ treatment }: Props) {
                       priority={idx === 0}
                       className="object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
-
-                    <div className="absolute top-4 left-4 right-4 z-20">
-                      <span className="inline-block bg-black/55 backdrop-blur-md text-white text-xs sm:text-sm font-extrabold uppercase tracking-wider px-3.5 py-1.5 rounded-lg border border-white/15">
-                        {img.caption}
-                      </span>
-                    </div>
                   </div>
                 ))}
 

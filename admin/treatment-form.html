@@ -140,6 +140,28 @@
       transform: scale(1.1);
     }
 
+    /* Drag & Drop Hero Media Reordering */
+    .gallery-card-col {
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s ease;
+    }
+    .gallery-card-col:active {
+      cursor: grabbing;
+    }
+    .gallery-card-col.dragging {
+      opacity: 0.4;
+    }
+    .gallery-card-col.dragging .media-card-item {
+      border: 2px dashed #008081 !important;
+      transform: scale(0.96);
+    }
+    .gallery-card-col.drag-over .media-card-item {
+      border: 2px dashed #008081 !important;
+      box-shadow: 0 0 0 3px rgba(0, 128, 129, 0.25) !important;
+      transform: scale(1.03);
+    }
+
     /* Step Item Card in Clinical Sections */
     .procedure-step-card {
       background: #F8FAFC;
