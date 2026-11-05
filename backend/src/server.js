@@ -20,6 +20,7 @@ const mediaRoutes = require('./routes/media');
 const notificationsRoutes = require('./routes/notifications');
 const couponsRoutes = require('./routes/coupons');
 const uploadRoutes = require('./routes/upload');
+const cartRoutes = require('./routes/cart');
 const adminCrudRoutes = require('./routes/admin-crud');
 
 const app = express();
@@ -98,6 +99,7 @@ app.use('/api/media', mediaRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/coupons', couponsRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/api', adminCrudRoutes);
 
 // Fallback for Admin SPA or HTML pages
@@ -117,7 +119,8 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start Server
-app.listen(config.port, () => {
+if (require.main === module) {
+  app.listen(config.port, () => {
   console.log('================================================================');
   console.log(` 🩺 Skinfinity Derma Backend & Admin API Server Active!`);
   console.log(` 🌐 Server URL:        http://localhost:${config.port}`);
@@ -126,3 +129,6 @@ app.listen(config.port, () => {
   console.log(` 📁 Uploads Directory: ${config.uploadsDir}`);
   console.log('================================================================');
 });
+}
+
+module.exports = app;

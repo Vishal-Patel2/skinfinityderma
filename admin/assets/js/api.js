@@ -434,7 +434,7 @@
       return this.delete('/appointments/' + id);
     },
 
-    // Patients
+    // Patients & Comprehensive Clinical CRM
     getPatients: function (params) {
       return this.get('/patients', params);
     },
@@ -449,6 +449,36 @@
     },
     deletePatient: function (id) {
       return this.delete('/patients/' + id);
+    },
+    addPatientConsultation: function (id, data) {
+      return this.post('/patients/' + id + '/consultations', data);
+    },
+    addPatientSkinAssessment: function (id, data) {
+      return this.post('/patients/' + id + '/skin-assessments', data);
+    },
+    addPatientPrescription: function (id, data) {
+      return this.post('/patients/' + id + '/prescriptions', data);
+    },
+    getPrescriptionPrintData: function (rxId) {
+      return this.get('/patients/prescription/' + rxId + '/print');
+    },
+    addPatientDocument: function (id, data) {
+      return this.post('/patients/' + id + '/documents', data);
+    },
+    addPatientGallery: function (id, data) {
+      return this.post('/patients/' + id + '/gallery', data);
+    },
+    addPatientPackage: function (id, data) {
+      return this.post('/patients/' + id + '/packages', data);
+    },
+    usePackageSession: function (patientId, pkgId) {
+      return this.post('/patients/' + patientId + '/packages/' + pkgId + '/use-session');
+    },
+    addPatientPayment: function (id, data) {
+      return this.post('/patients/' + id + '/payments', data);
+    },
+    addPatientNote: function (id, note) {
+      return this.post('/patients/' + id + '/notes', { note: note });
     },
 
     // Enquiries & CRM

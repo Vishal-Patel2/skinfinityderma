@@ -21,7 +21,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 
 export default function AuthModal() {
-  const { isAuthModalOpen, closeAuthModal, authModalTab, openAuthModal, login, signup } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, authModalTab, openAuthModal, login, signup, authModalNotice } = useAuth();
   
   const [activeTab, setActiveTab] = useState<"signin" | "signup">(authModalTab);
   const [showPassword, setShowPassword] = useState(false);
@@ -232,6 +232,13 @@ export default function AuthModal() {
           </div>
 
           {/* Status Alerts */}
+          {authModalNotice && (
+            <div className="mb-4 p-3.5 rounded-2xl bg-teal-50 border border-teal-200 text-[#006d6e] text-xs font-semibold flex items-center gap-2.5 shadow-sm">
+              <AlertCircle className="w-4 h-4 text-[#008081] shrink-0" />
+              <span>{authModalNotice}</span>
+            </div>
+          )}
+
           {errorMsg && (
             <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
@@ -251,18 +258,18 @@ export default function AuthModal() {
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                  Email Address
+                  Email or 10-Digit Mobile Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder="Enter email or 10-digit mobile"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/15 outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
                   />
                 </div>
@@ -364,18 +371,18 @@ export default function AuthModal() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">
-                  Email Address
+                  Email or 10-Digit Mobile Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
+                    placeholder="Enter email or 10-digit mobile"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-[#008081] focus:ring-2 focus:ring-[#008081]/15 outline-none text-sm text-slate-800 placeholder:text-slate-400 transition-all"
                   />
                 </div>

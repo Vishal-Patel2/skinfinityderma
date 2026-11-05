@@ -31,7 +31,8 @@ export default function CartDrawer() {
     removeItem, 
     updateQuantity, 
     applyPromoCode,
-    clearCart
+    clearCart,
+    checkout
   } = useCart();
 
   const [promoInput, setPromoInput] = useState("");
@@ -48,12 +49,15 @@ export default function CartDrawer() {
     setPromoMsg({ success: res.success, text: res.message });
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     setIsCheckingOut(true);
-    setTimeout(() => {
-      setIsCheckingOut(false);
+    const res = await checkout("UPI");
+    setIsCheckingOut(false);
+    if (res.success) {
       setCheckoutSuccess(true);
-    }, 1000);
+    } else {
+      alert(res.error || "Unable to complete checkout. Please sign in or contact clinic support.");
+    }
   };
 
   return (

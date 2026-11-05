@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { validateCoupon } from "@/lib/api";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export interface CartItem {
   id: string;
@@ -23,150 +23,365 @@ interface CartContextType {
   discountCode: string | null;
   total: number;
   isCartOpen: boolean;
+  isLoading: boolean;
   openCart: () => void;
   closeCart: () => void;
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, qty: number) => void;
+  addItem: (item: Omit<CartItem, "quantity">) => Promise<boolean>;
+  removeItem: (id: string) => Promise<void>;
+  updateQuantity: (id: string, qty: number) => Promise<void>;
   applyPromoCode: (code: string) => Promise<{ success: boolean; message: string }>;
-  clearCart: () => void;
+  removePromoCode: () => Promise<void>;
+  clearCart: () => Promise<void>;
+  checkout: (paymentMethod?: string, clinicId?: number, notes?: string) => Promise<{ success: boolean; order?: any; error?: string }>;
 }
-
-const initialCartItems: CartItem[] = [
-  {
-    id: "cart-lhr-package",
-    name: "Full Body Laser Hair Reduction (Soprano Titanium US-FDA)",
-    slug: "laser-hair-reduction-noida",
-    price: 39999,
-    priceFormatted: "₹39,999",
-    sessions: "6 Full Body Sessions",
-    category: "Laser Treatments",
-    image: "/images/treatments/banner-laser.webp",
-    quantity: 1,
-  },
-  {
-    id: "cart-hydrafacial",
-    name: "Signature Sugarcane HydraFacial MD Glass Glow",
-    slug: "sugarcane-hydrafacial-noida",
-    price: 3499,
-    priceFormatted: "₹3,499",
-    sessions: "1 Clinical Session",
-    category: "Medi-Facials",
-    image: "/images/treatments/banner-hydrafacial.webp",
-    quantity: 1,
-  },
-];
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(initialCartItems);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [discountCode, setDiscountCode] = useState<string | null>("DERMA10");
-  const [discountPercent, setDiscountPercent] = useState<number>(10);
+  const { isLoggedIn, token, openAuthModal } = useAuth();
 
-  // Load from localStorage if present
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("skinfinity_cart");
-      if (saved) {
-        setItems(JSON.parse(saved));
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [backendDiscount, setBackendDiscount] = useState<number>(0);
+
+  const getBackendUrl = () => {
+    if (typeof window !== "undefined") {
+      if (window.location.port === "3000") return "http://localhost:4000";
+      const envUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      if (envUrl) {
+        return envUrl.replace(/\/api\/public\/?$/, "").replace(/\/api\/?$/, "");
       }
-    } catch (e) {
-      console.error("Failed to load cart", e);
+      return window.location.origin;
+    }
+    return "http://localhost:4000";
+  };
+
+  // Helper to map backend items to frontend CartItem interface
+  const mapBackendItems = (rawItems: any[]): CartItem[] => {
+    if (!Array.isArray(rawItems)) return [];
+    return rawItems.map((it: any) => ({
+      id: String(it.id || it.itemId || it.treatment_id),
+      name: it.name || it.itemName || it.item_name || "Clinical Treatment",
+      slug: it.slug || it.itemSlug || it.item_slug || "treatment",
+      price: Number(it.price || 0),
+      priceFormatted: `₹${Number(it.price || 0).toLocaleString("en-IN")}`,
+      sessions: it.sessionInfo || it.session_info || "1 Clinical Session",
+      category: it.category || "Dermatology",
+      image: it.image || it.imageUrl || it.image_url || "/images/treatments/banner-laser.webp",
+      quantity: Number(it.quantity || 1),
+    }));
+  };
+
+  // Fetch cart directly from backend API for logged-in user
+  const fetchCartFromBackend = useCallback(async (authToken: string) => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${getBackendUrl()}/api/cart`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (data && data.success && data.data) {
+        const mapped = mapBackendItems(data.data.items);
+        setItems(mapped);
+        setDiscountCode(data.data.discountCode || null);
+        setBackendDiscount(Number(data.data.discount || 0));
+        try {
+          localStorage.setItem("skinfinity_cart", JSON.stringify(mapped));
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn("Failed to fetch cart from backend:", err);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const saveCart = (newItems: CartItem[]) => {
-    setItems(newItems);
-    try {
-      localStorage.setItem("skinfinity_cart", JSON.stringify(newItems));
-    } catch (e) {
-      console.error("Failed to save cart", e);
+  // When auth state changes, synchronize cart with backend or clear for guests
+  useEffect(() => {
+    if (isLoggedIn && token) {
+      fetchCartFromBackend(token);
+
+      // Check if a pending item was queued by a guest before sign-in
+      try {
+        const pendingRaw = localStorage.getItem("skinfinity_pending_cart_item");
+        if (pendingRaw) {
+          localStorage.removeItem("skinfinity_pending_cart_item");
+          const pendingItem = JSON.parse(pendingRaw);
+          if (pendingItem && (pendingItem.id || pendingItem.slug)) {
+            // Auto add to cart now that user is authenticated
+            fetch(`${getBackendUrl()}/api/cart/add`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                treatmentId: pendingItem.id || pendingItem.slug,
+                quantity: 1,
+              }),
+            })
+              .then((res) => res.json())
+              .then((resData) => {
+                if (resData && resData.success && resData.data) {
+                  setItems(mapBackendItems(resData.data.items));
+                  setDiscountCode(resData.data.discountCode || null);
+                  setBackendDiscount(Number(resData.data.discount || 0));
+                  setIsCartOpen(true);
+                }
+              })
+              .catch(() => {});
+          }
+        }
+      } catch (e) {}
+    } else {
+      // Guest: strictly clear active cart so guest users cannot browse or see another's items
+      setItems([]);
+      setDiscountCode(null);
+      setBackendDiscount(0);
+      try {
+        localStorage.removeItem("skinfinity_cart");
+      } catch (e) {}
     }
-  };
+  }, [isLoggedIn, token, fetchCartFromBackend]);
 
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  const addItem = (item: Omit<CartItem, "quantity">) => {
-    const existing = items.find((i) => i.id === item.id);
-    let updated: CartItem[];
-    if (existing) {
-      updated = items.map((i) =>
-        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-      );
-    } else {
-      updated = [...items, { ...item, quantity: 1 }];
+  /**
+   * BUSINESS RULE: NO GUEST CAN ADD TO CART.
+   * If not logged in: store pending item, open auth modal, return false.
+   */
+  const addItem = async (item: Omit<CartItem, "quantity">): Promise<boolean> => {
+    if (!isLoggedIn || !token) {
+      try {
+        localStorage.setItem("skinfinity_pending_cart_item", JSON.stringify(item));
+      } catch (e) {}
+      openAuthModal("signin", "Please sign in or create an account to add treatments to your cart.");
+      return false;
     }
-    saveCart(updated);
-    setIsCartOpen(true);
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${getBackendUrl()}/api/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          treatmentId: item.id || item.slug,
+          quantity: 1,
+        }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        // Fallback for offline demo tokens
+        const existing = items.find((i) => i.id === item.id || i.slug === item.slug);
+        let updated: CartItem[];
+        if (existing) {
+          updated = items.map((i) =>
+            i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+          );
+        } else {
+          updated = [...items, { ...item, quantity: 1 }];
+        }
+        setItems(updated);
+        try {
+          localStorage.setItem("skinfinity_cart", JSON.stringify(updated));
+        } catch (e) {}
+        setIsCartOpen(true);
+        return true;
+      }
+
+      setItems(mapBackendItems(resData.data.items));
+      setDiscountCode(resData.data.discountCode || null);
+      setBackendDiscount(Number(resData.data.discount || 0));
+      setIsCartOpen(true);
+      return true;
+    } catch (err) {
+      console.error("Cart add error", err);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeItem = (id: string) => {
+  const removeItem = async (id: string) => {
     const updated = items.filter((i) => i.id !== id);
-    saveCart(updated);
+    setItems(updated);
+    try {
+      localStorage.setItem("skinfinity_cart", JSON.stringify(updated));
+    } catch (e) {}
+
+    if (token && !token.startsWith("demo-")) {
+      try {
+        const res = await fetch(`${getBackendUrl()}/api/cart/item/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const resData = await res.json();
+        if (resData && resData.success && resData.data) {
+          setItems(mapBackendItems(resData.data.items));
+          setDiscountCode(resData.data.discountCode || null);
+          setBackendDiscount(Number(resData.data.discount || 0));
+        }
+      } catch (e) {}
+    }
   };
 
-  const updateQuantity = (id: string, qty: number) => {
+  const updateQuantity = async (id: string, qty: number) => {
     if (qty <= 0) {
-      removeItem(id);
+      await removeItem(id);
       return;
     }
+
     const updated = items.map((i) => (i.id === id ? { ...i, quantity: qty } : i));
-    saveCart(updated);
+    setItems(updated);
+    try {
+      localStorage.setItem("skinfinity_cart", JSON.stringify(updated));
+    } catch (e) {}
+
+    if (token && !token.startsWith("demo-")) {
+      try {
+        const res = await fetch(`${getBackendUrl()}/api/cart/item/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ quantity: qty }),
+        });
+        const resData = await res.json();
+        if (resData && resData.success && resData.data) {
+          setItems(mapBackendItems(resData.data.items));
+          setDiscountCode(resData.data.discountCode || null);
+          setBackendDiscount(Number(resData.data.discount || 0));
+        }
+      } catch (e) {}
+    }
   };
 
   const applyPromoCode = async (code: string): Promise<{ success: boolean; message: string }> => {
     const clean = code.trim().toUpperCase();
     if (!clean) return { success: false, message: "Please enter a coupon code." };
 
-    try {
-      const res = await validateCoupon({
-        code: clean,
-        treatmentSlugs: items.map((i) => i.slug),
-        subtotal,
-      });
-
-      if (res && res.valid) {
-        setDiscountCode(res.code || clean);
-        const percent = res.discountPercent || (res.discountType === "percent" ? res.discountValue : undefined);
-        if (typeof percent === "number" && percent > 0) {
-          setDiscountPercent(percent);
-        } else if (typeof res.discountAmount === "number" && subtotal > 0) {
-          setDiscountPercent(Math.min(100, Math.round((res.discountAmount / subtotal) * 100)));
+    if (token && !token.startsWith("demo-")) {
+      try {
+        const res = await fetch(`${getBackendUrl()}/api/cart/apply-coupon`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ code: clean }),
+        });
+        const resData = await res.json();
+        if (res.ok && resData.success && resData.data) {
+          setDiscountCode(clean);
+          setBackendDiscount(Number(resData.data.discount || 0));
+          return { success: true, message: resData.message || `Coupon ${clean} applied!` };
         } else {
-          setDiscountPercent(10);
+          return { success: false, message: resData.message || "Invalid coupon code." };
         }
-        return { success: true, message: res.message || `${percent || 10}% Clinical Discount Applied!` };
-      } else if (res && !res.valid && res.message) {
-        return { success: false, message: res.message };
-      }
-    } catch {
-      // fallback
+      } catch (e) {}
     }
 
-    // Static fallback for offline / standard test codes
+    // Offline demo fallback
     if (clean === "DERMA10" || clean === "SKIN10") {
       setDiscountCode(clean);
-      setDiscountPercent(10);
+      setBackendDiscount(Math.round(subtotal * 0.1));
       return { success: true, message: "10% Clinical Discount Applied!" };
     }
     if (clean === "VIP20") {
       setDiscountCode(clean);
-      setDiscountPercent(20);
+      setBackendDiscount(Math.round(subtotal * 0.2));
       return { success: true, message: "20% VIP Club Discount Applied!" };
     }
     return { success: false, message: "Invalid promo code. Try 'DERMA10'." };
   };
 
-  const clearCart = () => {
-    saveCart([]);
+  const removePromoCode = async () => {
+    setDiscountCode(null);
+    setBackendDiscount(0);
+    if (token && !token.startsWith("demo-")) {
+      try {
+        await fetch(`${getBackendUrl()}/api/cart/remove-coupon`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (e) {}
+    }
+  };
+
+  const clearCart = async () => {
+    setItems([]);
+    setDiscountCode(null);
+    setBackendDiscount(0);
+    try {
+      localStorage.removeItem("skinfinity_cart");
+    } catch (e) {}
+
+    if (token && !token.startsWith("demo-")) {
+      try {
+        await fetch(`${getBackendUrl()}/api/cart/clear`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (e) {}
+    }
+  };
+
+  const checkout = async (
+    paymentMethod: string = "UPI",
+    clinicId?: number,
+    notes?: string
+  ): Promise<{ success: boolean; order?: any; error?: string }> => {
+    if (!isLoggedIn || !token) {
+      openAuthModal("signin", "Please sign in to confirm and checkout your treatment package.");
+      return { success: false, error: "Authentication required" };
+    }
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${getBackendUrl()}/api/cart/checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          paymentMethod,
+          clinicId: clinicId || 1,
+          notes: notes || "Online treatment booking",
+        }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        return { success: false, error: resData.message || "Failed to process checkout" };
+      }
+
+      setItems([]);
+      setDiscountCode(null);
+      setBackendDiscount(0);
+      try {
+        localStorage.removeItem("skinfinity_cart");
+      } catch (e) {}
+
+      return { success: true, order: resData.data };
+    } catch (err: any) {
+      return { success: false, error: "Network error during checkout" };
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const cartCount = items.reduce((acc, curr) => acc + curr.quantity, 0);
   const subtotal = items.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
-  const discount = Math.round((subtotal * discountPercent) / 100);
+  const discount = backendDiscount > 0 ? backendDiscount : (discountCode ? Math.round(subtotal * 0.1) : 0);
   const total = Math.max(0, subtotal - discount);
 
   return (
@@ -179,13 +394,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         discountCode,
         total,
         isCartOpen,
+        isLoading,
         openCart,
         closeCart,
         addItem,
         removeItem,
         updateQuantity,
         applyPromoCode,
+        removePromoCode,
         clearCart,
+        checkout,
       }}
     >
       {children}

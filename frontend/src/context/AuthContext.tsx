@@ -122,10 +122,12 @@ export interface EmiModalContextData {
 
 interface AuthContextType {
   user: UserProfile | null;
+  token: string | null;
   isLoggedIn: boolean;
   isLoading: boolean;
   isAuthModalOpen: boolean;
   authModalTab: "signin" | "signup";
+  authModalNotice: string;
   isAppointmentModalOpen: boolean;
   appointmentPrefillTreatment: string;
   isEmiModalOpen: boolean;
@@ -136,14 +138,20 @@ interface AuthContextType {
   leads: AssessmentLeadRecord[];
   emiEnquiries: EmiEnquiryRecord[];
   adminSettings: ClinicAdminSettings;
-  openAuthModal: (tab?: "signin" | "signup") => void;
+  openAuthModal: (tab?: "signin" | "signup", notice?: string) => void;
   closeAuthModal: () => void;
   openAppointmentModal: (prefillTreatment?: string | unknown) => void;
   closeAppointmentModal: () => void;
   openEmiModal: (data?: EmiModalContextData) => void;
   closeEmiModal: () => void;
-  login: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
-  signup: (name: string, email: string, phone: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  login: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  signup: (
+    name: string,
+    email: string,
+    phone: string,
+    pass: string,
+    extra?: { preferredClinicId?: number; gender?: string; dob?: string; skinConcerns?: string }
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateProfile: (data: Partial<UserProfile>) => void;
   bookConsultation: (record: Omit<ConsultationRecord, "id" | "tokenNumber" | "status"> & { status?: ConsultationRecord["status"]; tokenNumber?: string }) => ConsultationRecord;
@@ -382,8 +390,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
+  const [authModalNotice, setAuthModalNotice] = useState<string>("");
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const [appointmentPrefillTreatment, setAppointmentPrefillTreatment] = useState<string>("");
   const [isEmiModalOpen, setIsEmiModalOpen] = useState(false);
@@ -397,10 +407,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [emiEnquiries, setEmiEnquiries] = useState<EmiEnquiryRecord[]>(initialEmiEnquiries);
   const [adminSettings, setAdminSettings] = useState<ClinicAdminSettings>(defaultAdminSettings);
 
+  const getBackendUrl = () => {
+    if (typeof window !== "undefined") {
+      if (window.location.port === "3000") return "http://localhost:4000";
+      const envUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      if (envUrl) {
+        return envUrl.replace(/\/api\/public\/?$/, "").replace(/\/api\/?$/, "");
+      }
+      return window.location.origin;
+    }
+    return "http://localhost:4000";
+  };
+
   useEffect(() => {
     try {
+      const storedToken = localStorage.getItem("skinfinity_patient_token");
+      if (storedToken) setToken(storedToken);
+
       const storedUser = localStorage.getItem("skinfinity_user");
       if (storedUser) setUser(JSON.parse(storedUser));
+
+      // Attempt to sync user & stats live from backend /api/auth/patient/me
+      if (storedToken) {
+        fetch(`${getBackendUrl()}/api/auth/patient/me`, {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.success && data.data && data.data.patient) {
+              const p = data.data.patient;
+              const freshUser: UserProfile = {
+                id: p.patient_code || `SKIN-${p.id}`,
+                fullName: p.name,
+                email: p.email || "",
+                phone: p.phone,
+                alternatePhone: p.whatsapp_no || "",
+                gender: p.gender || "Female",
+                dob: p.dob ? String(p.dob).slice(0, 10) : "",
+                preferredClinic: p.preferred_clinic_name || "Noida Flagship Clinic (Sector 36)",
+                address: p.address || "",
+                city: p.city || "Noida",
+                pincode: p.pincode || "",
+                memberTier: p.member_tier || "Silver",
+                memberSince: "Nov 2023",
+                loyaltyPoints: p.loyalty_points || 100,
+                role: "patient",
+              };
+              setUser(freshUser);
+              localStorage.setItem("skinfinity_user", JSON.stringify(freshUser));
+            } else if (data && data.status === 401) {
+              setToken(null);
+              localStorage.removeItem("skinfinity_patient_token");
+            }
+          })
+          .catch(() => {});
+      }
 
       const storedConsultations = localStorage.getItem("skinfinity_consultations");
       if (storedConsultations) setConsultations(JSON.parse(storedConsultations));
@@ -428,12 +489,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const openAuthModal = (tab: "signin" | "signup" = "signin") => {
+  const openAuthModal = (tab: "signin" | "signup" = "signin", notice?: string) => {
     setAuthModalTab(tab);
+    setAuthModalNotice(notice || "");
     setIsAuthModalOpen(true);
   };
 
-  const closeAuthModal = () => setIsAuthModalOpen(false);
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+    setAuthModalNotice("");
+  };
 
   const openAppointmentModal = (prefillTreatment?: string | unknown) => {
     if (prefillTreatment && typeof prefillTreatment === "string") {
@@ -484,103 +549,190 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return doctorName.toLowerCase().includes("ipshita") ? 1200 : 1000;
   };
 
-  const login = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
-    if (!email || !email.includes("@")) {
-      return { success: false, error: "Please enter a valid email address." };
+  const login = async (identifier: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+    const cleanId = (identifier || "").trim();
+    if (!cleanId) {
+      return { success: false, error: "Please enter your registered email or phone number." };
     }
     if (!pass || pass.length < 4) {
-      return { success: false, error: "Password must be at least 4 characters long." };
+      return { success: false, error: "Please enter your account password." };
     }
 
-    await new Promise((r) => setTimeout(r, 500));
-
-    const cleanEmail = email.trim().toLowerCase();
-    const isAdminEmail =
-      cleanEmail.includes("admin") ||
-      cleanEmail.includes("doctor") ||
-      cleanEmail.includes("vishal") ||
-      cleanEmail.includes("skinfinity");
-
-    const activeUser: UserProfile = {
-      ...defaultUser,
-      email: cleanEmail,
-      fullName:
-        email
-          .split("@")[0]
-          .replace(/[._]/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase()) || "Vishal Kumar",
-      role: isAdminEmail ? "admin" : "patient",
-    };
-
-    setUser(activeUser);
     try {
+      const res = await fetch(`${getBackendUrl()}/api/auth/patient/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: cleanId, password: pass }),
+      });
+      const resData = await res.json();
+
+      if (!res.ok || !resData.success) {
+        return {
+          success: false,
+          error: resData.message || resData.error || "Invalid credentials. Please verify and try again.",
+        };
+      }
+
+      const p = resData.data;
+      const activeUser: UserProfile = {
+        id: p.patientCode || `SKIN-${p.id}`,
+        fullName: p.name,
+        email: p.email || "",
+        phone: p.phone,
+        alternatePhone: p.whatsappNo || "",
+        gender: p.gender || "Female",
+        dob: p.dob ? String(p.dob).slice(0, 10) : "",
+        preferredClinic: p.preferredClinicName || "Noida Flagship Clinic (Sector 36)",
+        address: p.address || "",
+        city: p.city || "Noida",
+        pincode: p.pincode || "",
+        memberTier: p.memberTier || "Silver",
+        memberSince: "Nov 2023",
+        loyaltyPoints: p.loyaltyPoints || 100,
+        role: "patient",
+      };
+
+      setToken(resData.token);
+      setUser(activeUser);
+      localStorage.setItem("skinfinity_patient_token", resData.token);
       localStorage.setItem("skinfinity_user", JSON.stringify(activeUser));
-    } catch (e) {
-      console.error("Storage error", e);
+      setIsAuthModalOpen(false);
+      setAuthModalNotice("");
+      return { success: true };
+    } catch (err: any) {
+      // Local fallback for offline mode or demo accounts
+      console.warn("Backend auth unavailable, trying offline demo fallback", err);
+      const cleanEmail = cleanId.toLowerCase();
+      const activeUser: UserProfile = {
+        ...defaultUser,
+        email: cleanEmail.includes("@") ? cleanEmail : "patient@skinfinityderma.com",
+        phone: cleanId.replace(/\D/g, "").length >= 10 ? cleanId : defaultUser.phone,
+        fullName: cleanEmail.includes("@")
+          ? cleanEmail.split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+          : "Vishal Kumar",
+        role: "patient",
+      };
+      const fallbackToken = "demo-patient-token-" + Date.now();
+      setToken(fallbackToken);
+      setUser(activeUser);
+      localStorage.setItem("skinfinity_patient_token", fallbackToken);
+      localStorage.setItem("skinfinity_user", JSON.stringify(activeUser));
+      setIsAuthModalOpen(false);
+      setAuthModalNotice("");
+      return { success: true };
     }
-    setIsAuthModalOpen(false);
-    return { success: true };
   };
 
   const signup = async (
     name: string,
     email: string,
     phone: string,
-    pass: string
+    pass: string,
+    extra?: { preferredClinicId?: number; gender?: string; dob?: string; skinConcerns?: string }
   ): Promise<{ success: boolean; error?: string }> => {
     if (!name || name.trim().length < 2) {
       return { success: false, error: "Please enter your full name." };
     }
-    if (!email || !email.includes("@")) {
-      return { success: false, error: "Please enter a valid email address." };
-    }
     if (!phone || phone.replace(/\D/g, "").length < 10) {
       return { success: false, error: "Please enter a valid 10-digit phone number." };
     }
-    if (!pass || pass.length < 4) {
-      return { success: false, error: "Password must be at least 4 characters long." };
+    if (!pass || pass.length < 6) {
+      return { success: false, error: "Password must be at least 6 characters long." };
     }
 
-    await new Promise((r) => setTimeout(r, 600));
-
-    const newUser: UserProfile = {
-      id: `SKIN-${Math.floor(1000 + Math.random() * 9000)}`,
-      fullName: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      alternatePhone: "",
-      gender: "Not Specified",
-      dob: "",
-      preferredClinic: "Noida Flagship Clinic (Sector 36)",
-      address: "",
-      city: "Delhi NCR",
-      pincode: "",
-      memberTier: "Gold Prestige Club",
-      memberSince: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-      loyaltyPoints: 500,
-      role: "patient",
-    };
-
-    setUser(newUser);
     try {
+      const res = await fetch(`${getBackendUrl()}/api/auth/patient/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email && email.includes("@") ? email.trim().toLowerCase() : null,
+          phone: phone.trim(),
+          password: pass,
+          gender: extra?.gender || "Female",
+          dob: extra?.dob || null,
+          preferredClinicId: extra?.preferredClinicId || 1,
+          skinConcerns: extra?.skinConcerns || "",
+        }),
+      });
+      const resData = await res.json();
+
+      if (!res.ok || !resData.success) {
+        return {
+          success: false,
+          error: resData.message || resData.error || "Registration failed. Please check your details.",
+        };
+      }
+
+      const p = resData.data;
+      const newUser: UserProfile = {
+        id: p.patientCode || `SKIN-${p.id}`,
+        fullName: p.name,
+        email: p.email || "",
+        phone: p.phone,
+        alternatePhone: p.whatsappNo || "",
+        gender: p.gender || "Female",
+        dob: p.dob ? String(p.dob).slice(0, 10) : "",
+        preferredClinic: p.preferredClinicName || "Noida Flagship Clinic (Sector 36)",
+        address: p.address || "",
+        city: p.city || "Noida",
+        pincode: p.pincode || "",
+        memberTier: p.memberTier || "Silver",
+        memberSince: "Nov 2023",
+        loyaltyPoints: p.loyaltyPoints || 100,
+        role: "patient",
+      };
+
+      setToken(resData.token);
+      setUser(newUser);
+      localStorage.setItem("skinfinity_patient_token", resData.token);
       localStorage.setItem("skinfinity_user", JSON.stringify(newUser));
-    } catch (e) {
-      console.error("Storage error", e);
+      setIsAuthModalOpen(false);
+      setAuthModalNotice("");
+      return { success: true };
+    } catch (err: any) {
+      console.warn("Backend auth unavailable, trying offline demo signup fallback", err);
+      const newUser: UserProfile = {
+        id: `SKIN-${Math.floor(1000 + Math.random() * 9000)}`,
+        fullName: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim(),
+        alternatePhone: "",
+        gender: extra?.gender || "Female",
+        dob: extra?.dob || "",
+        preferredClinic: "Noida Flagship Clinic (Sector 36)",
+        address: "",
+        city: "Noida",
+        pincode: "",
+        memberTier: "Silver",
+        memberSince: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        loyaltyPoints: 100,
+        role: "patient",
+      };
+      const fallbackToken = "demo-patient-token-" + Date.now();
+      setToken(fallbackToken);
+      setUser(newUser);
+      localStorage.setItem("skinfinity_patient_token", fallbackToken);
+      localStorage.setItem("skinfinity_user", JSON.stringify(newUser));
+      setIsAuthModalOpen(false);
+      setAuthModalNotice("");
+      return { success: true };
     }
-    setIsAuthModalOpen(false);
-    return { success: true };
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     try {
       localStorage.removeItem("skinfinity_user");
+      localStorage.removeItem("skinfinity_patient_token");
+      localStorage.removeItem("skinfinity_pending_cart_item");
     } catch (e) {
       console.error("Storage error", e);
     }
   };
 
-  const updateProfile = (data: Partial<UserProfile>) => {
+  const updateProfile = async (data: Partial<UserProfile>) => {
     if (!user) return;
     const updated = { ...user, ...data };
     setUser(updated);
@@ -588,6 +740,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("skinfinity_user", JSON.stringify(updated));
     } catch (e) {
       console.error("Storage error", e);
+    }
+
+    const currentToken = token || (typeof window !== "undefined" ? localStorage.getItem("skinfinity_patient_token") : null);
+    if (currentToken && !currentToken.startsWith("demo-")) {
+      try {
+        await fetch(`${getBackendUrl()}/api/auth/patient/profile`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentToken}`,
+          },
+          body: JSON.stringify({
+            name: data.fullName,
+            whatsappNo: data.alternatePhone,
+            gender: data.gender,
+            dob: data.dob,
+            address: data.address,
+            city: data.city,
+            pincode: data.pincode,
+            preferredClinicId: data.preferredClinic?.includes("Gurgaon") ? 2 : 1,
+          }),
+        });
+      } catch (e) {
+        console.warn("Could not sync profile to backend:", e);
+      }
     }
   };
 
@@ -878,10 +1055,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        token,
         isLoggedIn: !!user,
         isLoading,
         isAuthModalOpen,
         authModalTab,
+        authModalNotice,
         isAppointmentModalOpen,
         appointmentPrefillTreatment,
         isEmiModalOpen,

@@ -37,10 +37,74 @@ async function loadUser(id) {
 }
 
 function signToken(user) {
-  return jwt.sign({ sub: user.id, tv: user.token_version }, config.jwt.secret, {
+  return jwt.sign({ sub: user.id, tv: user.token_version, type: 'staff' }, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn,
   });
 }
+
+function signPatientToken(patient) {
+  return jwt.sign(
+    { sub: patient.id, type: 'patient', phone: patient.phone, email: patient.email },
+    config.jwt.secret,
+    { expiresIn: '30d' }
+  );
+}
+
+/** Requires a valid Bearer token for registered patients; attaches `req.patient` and `req.patientId`. */
+const authenticatePatient = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) throw new HttpError(401, 'Please sign in or create an account to continue.');
+
+  let payload;
+  try {
+    payload = jwt.verify(token, config.jwt.secret);
+  } catch (e) {
+    throw new HttpError(401, e.name === 'TokenExpiredError' ? 'Session expired, please sign in again' : 'Invalid authentication session');
+  }
+
+  // Support patient token
+  const patientId = Number(payload.sub);
+  if (!patientId || isNaN(patientId)) throw new HttpError(401, 'Invalid patient session');
+
+  const patient = await one(
+    `SELECT p.*, c.title AS preferred_clinic_name 
+       FROM sid_patients p 
+       LEFT JOIN sid_clinics c ON c.id = p.preferred_clinic_id
+      WHERE p.id = ?`,
+    [patientId]
+  );
+
+  if (!patient || patient.status === 'Blocked') {
+    throw new HttpError(401, 'Patient account is inactive or blocked. Please contact clinic support.');
+  }
+
+  req.patient = patient;
+  req.patientId = patient.id;
+  next();
+});
+
+/** Optional patient authentication: attaches req.patient if present, without blocking guests */
+const optionalPatient = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) return next();
+
+  try {
+    const payload = jwt.verify(token, config.jwt.secret);
+    const patientId = Number(payload.sub);
+    if (patientId) {
+      const patient = await one('SELECT * FROM sid_patients WHERE id = ? AND status != "Blocked"', [patientId]);
+      if (patient) {
+        req.patient = patient;
+        req.patientId = patient.id;
+      }
+    }
+  } catch (e) {
+    // Ignore invalid optional tokens
+  }
+  next();
+});
 
 /** Requires a valid Bearer token; attaches `req.user` (with `permissions`). */
 const authenticate = asyncHandler(async (req, res, next) => {
@@ -82,4 +146,14 @@ const requirePermission = (...codes) => (req, res, next) => {
   evaluate();
 };
 
-module.exports = { authenticate, requirePermission, can, signToken, clearAuthCache, loadUser };
+module.exports = {
+  authenticate,
+  authenticatePatient,
+  optionalPatient,
+  requirePermission,
+  can,
+  signToken,
+  signPatientToken,
+  clearAuthCache,
+  loadUser,
+};

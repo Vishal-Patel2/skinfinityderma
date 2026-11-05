@@ -24,8 +24,13 @@ router.get(
       todayAppts,
       completedAppts,
       patients,
+      newPatientsMonth,
+      activePackages,
+      revenueStats,
+      pendingPayStats,
       enqs,
       convertedEnqs,
+      vipMembers,
       banners,
       doctors,
       treatments,
@@ -34,12 +39,23 @@ router.get(
       coupons,
       offers,
     ] = await Promise.all([
-      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending FROM sid_appointments'),
+      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN status="confirmed" THEN 1 ELSE 0 END) AS confirmed, SUM(CASE WHEN status="cancelled" THEN 1 ELSE 0 END) AS cancelled, SUM(CASE WHEN status="no_show" THEN 1 ELSE 0 END) AS no_show FROM sid_appointments'),
       one('SELECT COUNT(*) AS todayCount FROM sid_appointments WHERE appointment_date = ?', [today]),
       one('SELECT COUNT(*) AS completedCount FROM sid_appointments WHERE status="completed"'),
       one('SELECT COUNT(*) AS totalPatients FROM sid_patients'),
+      one('SELECT COUNT(*) AS newThisMonth FROM sid_patients WHERE created_at >= DATE_FORMAT(NOW(), "%Y-%m-01")'),
+      one('SELECT COUNT(*) AS activeCount, COALESCE(SUM(total_sessions - used_sessions), 0) AS remainingSessions FROM sid_patient_packages WHERE status="Active"'),
+      one(`SELECT 
+            COALESCE(SUM(CASE WHEN status='successful' THEN amount ELSE 0 END), 0) AS totalRevenue,
+            COALESCE(SUM(CASE WHEN status='successful' AND payment_type='consultation' THEN amount ELSE 0 END), 0) AS consultationRevenue,
+            COALESCE(SUM(CASE WHEN status='successful' AND payment_type='treatment' THEN amount ELSE 0 END), 0) AS treatmentRevenue,
+            COALESCE(SUM(CASE WHEN status='successful' AND payment_type='package' THEN amount ELSE 0 END), 0) AS packageRevenue,
+            COALESCE(SUM(CASE WHEN status='refunded' THEN amount ELSE 0 END), 0) AS refundedRevenue
+           FROM sid_payments`),
+      one('SELECT COALESCE(SUM(CASE WHEN final_amount > 0 THEN final_amount ELSE amount_estimate END), 0) AS pendingTotal FROM sid_appointments WHERE payment_status="pending" AND status != "cancelled"'),
       one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="new" THEN 1 ELSE 0 END) AS newCount FROM sid_enquiries'),
       one('SELECT COUNT(*) AS converted FROM sid_enquiries WHERE status="converted"'),
+      one('SELECT COUNT(*) AS totalVip FROM sid_patients WHERE member_tier != "Silver" AND status = "Active"'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_banners'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_doctors'),
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(is_featured) AS featured FROM sid_treatments'),
@@ -49,7 +65,7 @@ router.get(
       one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_offers'),
     ]);
 
-    // Monthly appointment trends (last 6 months)
+    // Monthly appointment & consultation trends (last 6 months)
     const monthlyTrends = await query(`
       SELECT DATE_FORMAT(appointment_date, '%b %Y') AS month_label,
              COUNT(*) AS count
@@ -59,7 +75,7 @@ router.get(
        ORDER BY DATE_FORMAT(appointment_date, '%Y-%m') ASC
     `);
 
-    // Popular treatments based on bookings
+    // Popular treatments based on bookings & revenue
     const popularTreatments = await query(`
       SELECT t.id, t.name, t.price, COUNT(a.id) AS booking_count
         FROM sid_treatments t
@@ -69,25 +85,68 @@ router.get(
        LIMIT 5
     `);
 
-    // Recent Bookings
+    // Patient demographics breakdown
+    const [patientGender, patientBranches, patientAgeGroups] = await Promise.all([
+      query('SELECT gender, COUNT(*) AS count FROM sid_patients GROUP BY gender'),
+      query(`
+        SELECT COALESCE(c.title, 'Noida HQ') AS branch_name, COUNT(p.id) AS count
+          FROM sid_patients p
+          LEFT JOIN sid_clinics c ON c.id = p.preferred_clinic_id
+         GROUP BY c.id, c.title
+      `),
+      query(`
+        SELECT 
+          SUM(CASE WHEN age < 25 THEN 1 ELSE 0 END) AS under_25,
+          SUM(CASE WHEN age >= 25 AND age <= 35 THEN 1 ELSE 0 END) AS age_25_35,
+          SUM(CASE WHEN age >= 36 AND age <= 50 THEN 1 ELSE 0 END) AS age_36_50,
+          SUM(CASE WHEN age > 50 THEN 1 ELSE 0 END) AS over_50
+         FROM sid_patients
+      `),
+    ]);
+
+    // Branch Performance (Noida vs Gurgaon)
+    const branchPerformance = await query(`
+      SELECT c.id, c.title, c.city,
+             (SELECT COUNT(*) FROM sid_patients WHERE preferred_clinic_id = c.id) AS total_patients,
+             (SELECT COUNT(*) FROM sid_appointments WHERE clinic_id = c.id) AS total_appointments,
+             (SELECT COUNT(*) FROM sid_appointments WHERE clinic_id = c.id AND status = 'completed') AS completed_treatments,
+             (SELECT COALESCE(SUM(amount), 0) FROM sid_payments pay JOIN sid_appointments a ON a.id = pay.appointment_id WHERE a.clinic_id = c.id AND pay.status = 'successful') AS branch_revenue
+        FROM sid_clinics c
+       WHERE c.is_active = 1
+       ORDER BY c.id ASC
+    `);
+
+    // Recent Bookings with Doctor & Clinic
     const recentAppts = await query(`
-      SELECT a.id, a.appointment_no, a.patient_name, a.phone, a.service_name, a.appointment_date, a.appointment_time, a.status
+      SELECT a.id, a.appointment_no, a.patient_name, a.phone, a.service_name,
+             a.appointment_date, a.appointment_time, a.status, a.payment_status,
+             c.title AS clinic_name, d.name AS doctor_name
         FROM sid_appointments a
+        LEFT JOIN sid_clinics c ON c.id = a.clinic_id
+        LEFT JOIN sid_doctors d ON d.id = a.doctor_id
        ORDER BY a.created_at DESC LIMIT 5
     `);
 
-    // Recent Enquiries
+    // Recent Inbound Enquiries
     const recentEnqs = await query(`
       SELECT e.id, e.enquiry_no, e.name, e.phone, e.type, e.status, e.created_at
         FROM sid_enquiries e
        ORDER BY e.created_at DESC LIMIT 5
     `);
 
-    // Recent Activities (Audit Log)
-    const recentActivities = await query(`
-      SELECT id, user_name, action, entity, summary, created_at
-        FROM sid_audit_logs
-       ORDER BY created_at DESC LIMIT 6
+    // Recent Live Payments
+    const recentPayments = await query(`
+      SELECT pay.*, p.name AS patient_name, p.patient_code
+        FROM sid_payments pay
+        JOIN sid_patients p ON p.id = pay.patient_id
+       ORDER BY pay.payment_date DESC LIMIT 5
+    `);
+
+    // Recent Patient Registrations
+    const recentPatients = await query(`
+      SELECT id, patient_code, name, phone, email, gender, age, city, member_tier, created_at
+        FROM sid_patients
+       ORDER BY id DESC LIMIT 5
     `);
 
     const convRate = enqs.total > 0 ? ((convertedEnqs.converted / enqs.total) * 100).toFixed(1) : 0;
@@ -95,41 +154,85 @@ router.get(
     res.json({
       success: true,
       data: {
-        totalAppointments: appts.total || 0,
-        pendingAppointments: appts.pending || 0,
-        todayAppointments: todayAppts ? todayAppts.todayCount || 0 : 0,
-        completedAppointments: completedAppts ? completedAppts.completedCount || 0 : 0,
-        totalPatients: patients ? patients.totalPatients || 0 : 0,
-        totalEnquiries: enqs.total || 0,
-        newEnquiries: enqs.newCount || 0,
-        conversionRate: convRate,
-        totalBanners: banners.total || 0,
-        activeBanners: banners.active || 0,
-        totalOffers: offers ? offers.total || 0 : 0,
-        activeOffers: offers ? offers.active || 0 : 0,
-        totalDoctors: doctors.total || 0,
-        activeDoctors: doctors.active || 0,
-        totalTreatments: treatments.total || 0,
-        activeTreatments: treatments.active || 0,
-        featuredTreatments: treatments.featured || 0,
-        totalReviews: reviews.total || 0,
-        totalMemberships: memberships ? memberships.total || 0 : 0,
-        totalSubscribers: memberships ? memberships.subscribers || 0 : 0,
-        totalCoupons: coupons ? coupons.total || 0 : 0,
-        activeCoupons: coupons ? coupons.active || 0 : 0,
-        totalCouponUses: coupons ? coupons.total_uses || 0 : 0,
-        monthlyTrends: monthlyTrends.length ? monthlyTrends : [
-          { month_label: 'Nov 2026', count: appts.total || 3 }
-        ],
+        // 12 Core KPI Cards
+        kpis: {
+          totalPatients: patients ? Number(patients.totalPatients) || 0 : 0,
+          newPatientsThisMonth: newPatientsMonth ? Number(newPatientsMonth.newThisMonth) || 0 : 0,
+          totalAppointments: Number(appts.total) || 0,
+          todayAppointments: todayAppts ? Number(todayAppts.todayCount) || 0 : 0,
+          pendingAppointments: Number(appts.pending) || 0,
+          completedAppointments: completedAppts ? Number(completedAppts.completedCount) || 0 : 0,
+          totalTreatments: Number(treatments.total) || 0,
+          activePackages: activePackages ? Number(activePackages.activeCount) || 0 : 0,
+          totalRevenue: Number(revenueStats.totalRevenue) || 0,
+          totalRevenueFormatted: `₹${Number(revenueStats.totalRevenue || 0).toLocaleString('en-IN')}`,
+          pendingPayments: Number(pendingPayStats.pendingTotal) || 0,
+          pendingPaymentsFormatted: `₹${Number(pendingPayStats.pendingTotal || 0).toLocaleString('en-IN')}`,
+          totalEnquiries: Number(enqs.total) || 0,
+          activeVipMembers: vipMembers ? Number(vipMembers.totalVip) || 0 : 0,
+        },
+
+        // Revenue Breakdown
+        revenueAnalytics: {
+          total: Number(revenueStats.totalRevenue) || 0,
+          consultation: Number(revenueStats.consultationRevenue) || 0,
+          treatment: Number(revenueStats.treatmentRevenue) || 0,
+          package: Number(revenueStats.packageRevenue) || 0,
+          refunded: Number(revenueStats.refundedRevenue) || 0,
+          pending: Number(pendingPayStats.pendingTotal) || 0,
+        },
+
+        // Appointment Breakdown
+        appointmentAnalytics: {
+          total: Number(appts.total) || 0,
+          confirmed: Number(appts.confirmed) || 0,
+          pending: Number(appts.pending) || 0,
+          completed: completedAppts ? Number(completedAppts.completedCount) || 0 : 0,
+          cancelled: Number(appts.cancelled) || 0,
+          noShow: Number(appts.no_show) || 0,
+          monthlyTrends: monthlyTrends.length ? monthlyTrends : [
+            { month_label: 'Nov 2026', count: Number(appts.total) || 4 }
+          ],
+        },
+
+        // Patient Analytics
+        patientAnalytics: {
+          genderDistribution: patientGender,
+          branchDistribution: patientBranches,
+          ageGroups: patientAgeGroups && patientAgeGroups[0] ? patientAgeGroups[0] : { under_25: 0, age_25_35: 0, age_36_50: 0, over_50: 0 },
+        },
+
+        // Branch Performance
+        branchPerformance,
+
+        // Popular Treatments
         popularTreatments: popularTreatments.map((pt) => ({
           id: String(pt.id),
           name: pt.name,
           price: Number(pt.price),
           bookingCount: pt.booking_count || 0,
         })),
+
+        // Recent Activity Lists
         recentAppointments: recentAppts,
         recentEnquiries: recentEnqs,
-        recentActivities: recentActivities,
+        recentPayments,
+        recentPatients,
+
+        // Legacy compatibility properties
+        totalAppointments: Number(appts.total) || 0,
+        pendingAppointments: Number(appts.pending) || 0,
+        todayAppointments: todayAppts ? Number(todayAppts.todayCount) || 0 : 0,
+        completedAppointments: completedAppts ? Number(completedAppts.completedCount) || 0 : 0,
+        totalPatients: patients ? Number(patients.totalPatients) || 0 : 0,
+        totalEnquiries: Number(enqs.total) || 0,
+        newEnquiries: Number(enqs.newCount) || 0,
+        conversionRate: convRate,
+        totalDoctors: Number(doctors.total) || 0,
+        activeDoctors: Number(doctors.active) || 0,
+        totalTreatments: Number(treatments.total) || 0,
+        activeTreatments: Number(treatments.active) || 0,
+        monthlyTrends: monthlyTrends.length ? monthlyTrends : [{ month_label: 'Nov 2026', count: Number(appts.total) || 4 }],
       },
     });
   })

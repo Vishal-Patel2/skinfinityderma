@@ -35,6 +35,7 @@ export default function AccountPage() {
   const router = useRouter();
   const {
     user,
+    token,
     isLoggedIn,
     logout,
     updateProfile,
@@ -53,6 +54,7 @@ export default function AccountPage() {
     updateQuantity,
     removeItem,
     openCart,
+    checkout,
   } = useCart();
   const openModal = openAppointmentModal;
 
@@ -62,6 +64,43 @@ export default function AccountPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  const [liveRecords, setLiveRecords] = useState<{
+    appointments: any[];
+    packages: any[];
+    skinAssessments: any[];
+    prescriptions: any[];
+    payments: any[];
+    activityLogs: any[];
+  } | null>(null);
+  const [loadingRecords, setLoadingRecords] = useState(false);
+
+  React.useEffect(() => {
+    if (isLoggedIn && token) {
+      setLoadingRecords(true);
+      const getBackendUrl = () => {
+        if (typeof window !== "undefined") {
+          if (window.location.port === "3000") return "http://localhost:4000";
+          const envUrl = process.env.NEXT_PUBLIC_API_URL || "";
+          if (envUrl) return envUrl.replace(/\/api\/public\/?$/, "").replace(/\/api\/?$/, "");
+          return window.location.origin;
+        }
+        return "http://localhost:4000";
+      };
+
+      fetch(`${getBackendUrl()}/api/auth/patient/my-records`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData && resData.success && resData.data) {
+            setLiveRecords(resData.data);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setLoadingRecords(false));
+    }
+  }, [isLoggedIn, token]);
 
   // Editable Profile Form State
   const [formData, setFormData] = useState<Partial<UserProfile>>({
@@ -108,6 +147,38 @@ export default function AccountPage() {
     logout();
     router.push("/");
   };
+
+  const displayAppointments = (liveRecords?.appointments && liveRecords.appointments.length > 0)
+    ? liveRecords.appointments.map((a: any) => ({
+        id: a.appointment_no || `APT-${a.id}`,
+        treatmentName: a.service_name || "Specialist Dermatology Consultation",
+        doctorName: a.doctor_name || "Dr. Ipshita Johri & Team",
+        specialty: a.doctor_role || "Senior MD Dermatologist",
+        clinicBranch: a.clinic_branch || "Noida Sector 36 HQ",
+        date: a.appointment_date ? String(a.appointment_date).slice(0, 10) : "Scheduled",
+        timeSlot: a.appointment_time || "11:00 AM",
+        status: (a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : "Confirmed") as any,
+        tokenNumber: `SK-${String(a.id).slice(-4)}`,
+        originalFee: Number(a.consultation_fee) || 1200,
+        discountApplied: Number(a.discount) || 0,
+        finalAmountPaid: Number(a.final_amount) || Number(a.consultation_fee) || 1200,
+        paymentStatus: (a.payment_status === "paid" ? "Verified & Paid" : "Pay at Clinic") as any,
+        transactionId: a.invoice_id ? `INV-${a.invoice_id}` : undefined,
+      }))
+    : consultations;
+
+  const displayPackages = (liveRecords?.packages && liveRecords.packages.length > 0)
+    ? liveRecords.packages.map((pkg: any) => ({
+        id: `PKG-${pkg.id}`,
+        packageName: pkg.package_name || pkg.treatment_name || "Clinical Treatment Package",
+        sessionsPurchased: Number(pkg.total_sessions || 1),
+        sessionsCompleted: Number(pkg.used_sessions || 0),
+        orderDate: pkg.purchase_date ? String(pkg.purchase_date).slice(0, 10) : "Active",
+        amountPaid: `₹${Number(pkg.amount_paid || 0).toLocaleString("en-IN")}`,
+        status: (pkg.status === "Active" ? "Active" : "Completed") as any,
+        invoiceNumber: `INV-SKIN-${pkg.id}`,
+      }))
+    : treatmentOrders;
 
   // If not logged in, prompt user to sign in
   if (!isLoggedIn || !user) {
@@ -277,7 +348,7 @@ export default function AccountPage() {
                 My Appointments
               </span>
               <p className="text-lg font-extrabold text-slate-900 mt-0.5">
-                {consultations.length} Bookings
+                {displayAppointments.length} Bookings
               </p>
               <span className="text-[10px] text-[#008081] font-semibold">
                 Dr. Ipshita Johri &amp; Team
@@ -307,7 +378,7 @@ export default function AccountPage() {
                 Active Packages
               </span>
               <p className="text-lg font-extrabold text-slate-900 mt-0.5">
-                {treatmentOrders.length} Packages
+                {displayPackages.length} Packages
               </p>
               <span className="text-[10px] text-slate-500">US-FDA Certified</span>
             </div>
@@ -361,7 +432,7 @@ export default function AccountPage() {
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>My Treatment Packages ({treatmentOrders.length})</span>
+            <span>My Treatment Packages ({displayPackages.length})</span>
           </button>
 
           <button
@@ -412,7 +483,7 @@ export default function AccountPage() {
               </button>
             </div>
 
-            {consultations.map((c) => (
+            {displayAppointments.map((c) => (
               <div
                 key={c.id}
                 className="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:border-[#008081]/50 transition-all"
@@ -638,12 +709,28 @@ export default function AccountPage() {
 
                 <div className="space-y-2.5 pt-2">
                   <button
+                    onClick={async () => {
+                      if (cartItems.length === 0) return;
+                      const res = await checkout("UPI");
+                      if (res.success) {
+                        alert("Treatment package reserved! Order #" + (res.order?.orderNo || "CONFIRMED") + " created.");
+                        window.location.reload();
+                      } else {
+                        alert(res.error || "Checkout failed. Please try again.");
+                      }
+                    }}
+                    disabled={cartItems.length === 0}
+                    className="w-full py-3 rounded-xl bg-slate-950 hover:bg-[#008081] text-white text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Confirm &amp; Checkout Packages
+                  </button>
+                  <button
                     onClick={() =>
                       openModal(
                         cartItems[0]?.name || "General Dermatologist Consultation"
                       )
                     }
-                    className="w-full py-3 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-[#008081] hover:bg-[#006d6e] text-white text-xs font-bold uppercase tracking-wider shadow-md transition-all cursor-pointer"
                   >
                     Appointment Request for Cart
                   </button>
@@ -675,7 +762,7 @@ export default function AccountPage() {
         {/* TAB 3: MY TREATMENT PACKAGES */}
         {activeTab === "packages" && (
           <div className="space-y-4">
-            {treatmentOrders.map((order) => (
+            {displayPackages.map((order) => (
               <div
                 key={order.id}
                 className="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-[#008081]/50 transition-all"
@@ -911,48 +998,183 @@ export default function AccountPage() {
           </div>
         )}
 
-        {/* TAB 5: CLINICAL SKIN HEALTH RECORDS */}
+        {/* TAB 5: CLINICAL SKIN HEALTH RECORDS & PRESCRIPTIONS */}
         {activeTab === "records" && (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-6 sm:p-8 space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 font-serif">
-                Diagnostic Skin Health &amp; Fitz-Type Assessment
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Evaluated by Our Team of Dermatologists using German 3D Digital Derma Scanners.
-              </p>
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-6 sm:p-8 space-y-6">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 font-serif">
+                  Diagnostic Skin Health &amp; Fitz-Type Assessment
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Evaluated by Senior Dermatologists using German 3D Digital Derma Scanners.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200">
+                  <span className="text-[10px] font-bold text-[#006d6e] uppercase tracking-wider">
+                    Skin Hydration Level
+                  </span>
+                  <p className="text-2xl font-extrabold text-[#008081] mt-1">82%</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Optimal. Well suited for Sugarcane HydraFacial maintenance.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200">
+                  <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
+                    Fitzpatrick Classification
+                  </span>
+                  <p className="text-2xl font-extrabold text-amber-900 mt-1">Type IV</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Requires 810nm + 1064nm Nd:YAG laser wavelength for zero PIH risk.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Follicle Density
+                  </span>
+                  <p className="text-2xl font-extrabold text-slate-900 mt-1">Normal</p>
+                  <p className="text-xs text-slate-600 mt-1">
+                    35% reduction achieved after 2 Soprano Titanium sessions.
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Assessments from Doctor */}
+              {liveRecords?.skinAssessments && liveRecords.skinAssessments.length > 0 && (
+                <div className="pt-4 border-t border-slate-100 space-y-3">
+                  <h4 className="text-sm font-bold text-slate-800 font-serif">
+                    Clinical Skin Assessments History
+                  </h4>
+                  <div className="space-y-3">
+                    {liveRecords.skinAssessments.map((sa: any) => (
+                      <div
+                        key={sa.id}
+                        className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5"
+                      >
+                        <div className="flex justify-between items-center text-slate-500">
+                          <span className="font-semibold text-slate-700">
+                            Dr. {sa.doctor_name || "Specialist Dermatologist"}
+                          </span>
+                          <span>{sa.assessment_date ? String(sa.assessment_date).slice(0, 10) : "Recent"}</span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 font-medium text-slate-700">
+                          <div><span className="text-slate-400">Skin Type:</span> {sa.skin_type || "Combination"}</div>
+                          <div><span className="text-slate-400">Acne Grade:</span> {sa.acne_grade || "Grade 1"}</div>
+                          <div><span className="text-slate-400">Pigmentation:</span> {sa.pigmentation_type || "Epidermal"}</div>
+                          <div><span className="text-slate-400">Sensitivity:</span> {sa.sensitivity_level || "Normal"}</div>
+                        </div>
+                        {sa.assessment_notes && (
+                          <p className="text-slate-600 pt-1 italic">&ldquo;{sa.assessment_notes}&rdquo;</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-teal-50/60 border border-teal-200">
-                <span className="text-[10px] font-bold text-[#006d6e] uppercase tracking-wider">
-                  Skin Hydration Level
+            {/* Prescriptions Dossier */}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200/90 p-6 sm:p-8 space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 font-serif">
+                    Doctor Prescriptions &amp; Skincare Protocols
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Official clinical medical prescriptions issued by Skinfinity Derma dermatologists.
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-teal-50 text-[#006d6e] border border-teal-200 text-xs font-bold">
+                  {liveRecords?.prescriptions?.length || 0} Issued
                 </span>
-                <p className="text-2xl font-extrabold text-[#008081] mt-1">82%</p>
-                <p className="text-xs text-slate-600 mt-1">
-                  Optimal. Well suited for Sugarcane HydraFacial maintenance.
-                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200">
-                <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
-                  Fitzpatrick Classification
-                </span>
-                <p className="text-2xl font-extrabold text-amber-900 mt-1">Type IV</p>
-                <p className="text-xs text-slate-600 mt-1">
-                  Requires 810nm + 1064nm Nd:YAG laser wavelength for zero PIH risk.
-                </p>
-              </div>
+              {liveRecords?.prescriptions && liveRecords.prescriptions.length > 0 ? (
+                <div className="space-y-4 pt-2">
+                  {liveRecords.prescriptions.map((rx: any) => (
+                    <div
+                      key={rx.id}
+                      className="border border-slate-200 rounded-2xl p-5 space-y-3 bg-gradient-to-b from-white to-slate-50/50"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-sm text-slate-900 font-mono">
+                              {rx.rx_number}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-200">
+                              Active Protocol
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 mt-0.5">
+                            Prescribed by {rx.doctor_name} ({rx.doctor_role || "Dermatologist"})
+                          </p>
+                        </div>
+                        <div className="text-xs text-slate-500 text-left sm:text-right">
+                          <div>Date: {rx.prescription_date ? String(rx.prescription_date).slice(0, 10) : "Recent"}</div>
+                          {rx.follow_up_date && (
+                            <div className="text-[#008081] font-medium">
+                              Follow-up: {String(rx.follow_up_date).slice(0, 10)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  Follicle Density
-                </span>
-                <p className="text-2xl font-extrabold text-slate-900 mt-1">Normal</p>
-                <p className="text-xs text-slate-600 mt-1">
-                  35% reduction achieved after 2 Soprano Titanium sessions.
-                </p>
-              </div>
+                      {rx.diagnosis && (
+                        <div className="text-xs">
+                          <span className="font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                            Diagnosis:{" "}
+                          </span>
+                          <span className="font-semibold text-slate-800">{rx.diagnosis}</span>
+                        </div>
+                      )}
+
+                      {/* Medicines Table */}
+                      {rx.items && rx.items.length > 0 && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left border-collapse">
+                            <thead>
+                              <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px]">
+                                <th className="py-2 pr-3">Product / Medication</th>
+                                <th className="py-2 pr-3">Dosage</th>
+                                <th className="py-2 pr-3">Frequency</th>
+                                <th className="py-2 pr-3">Duration</th>
+                                <th className="py-2">Instructions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 text-slate-800">
+                              {rx.items.map((item: any, iIdx: number) => (
+                                <tr key={iIdx}>
+                                  <td className="py-2 pr-3 font-semibold text-slate-900">{item.item_name}</td>
+                                  <td className="py-2 pr-3">{item.dosage || "As directed"}</td>
+                                  <td className="py-2 pr-3">{item.frequency || "Once daily"}</td>
+                                  <td className="py-2 pr-3">{item.duration || "30 days"}</td>
+                                  <td className="py-2 text-slate-500">{item.instructions || "Apply before sleep"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {rx.general_advice && (
+                        <div className="pt-2 text-xs text-slate-500 bg-white p-3 rounded-xl border border-slate-100">
+                          <span className="font-bold text-slate-700">Clinical Advice: </span>
+                          <span>{rx.general_advice}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-slate-400 text-xs">
+                  No prescriptions currently on file. Prescriptions will appear here immediately after your doctor consultation.
+                </div>
+              )}
             </div>
           </div>
         )}

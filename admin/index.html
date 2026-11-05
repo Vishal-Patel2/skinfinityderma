@@ -34,7 +34,7 @@
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
       border-radius: 16px;
-      padding: 1.25rem 1.35rem;
+      padding: 1.15rem 1.25rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.02);
       transition: all 0.25s ease;
       position: relative;
@@ -43,11 +43,14 @@
       flex-direction: column;
       justify-content: space-between;
       height: 100%;
+      text-decoration: none;
+      color: inherit;
     }
     .executive-kpi-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(0, 91, 65, 0.08);
       border-color: #CBD5E1;
+      color: inherit;
     }
     .executive-kpi-card::before {
       content: '';
@@ -64,25 +67,25 @@
       opacity: 1;
     }
     .kpi-icon-pill {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       flex-shrink: 0;
     }
     .kpi-metric-num {
-      font-size: 2.1rem;
+      font-size: 1.85rem;
       font-weight: 800;
       line-height: 1.1;
       color: #0F172A;
-      margin: 0.35rem 0 0.5rem;
+      margin: 0.35rem 0 0.4rem;
       font-family: 'Playfair Display', Georgia, serif;
     }
 
-    /* Chart & Performance Container */
+    /* Analytics Card Container */
     .analytics-card {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
@@ -101,21 +104,7 @@
       gap: 0.75rem;
     }
 
-    /* Top Booked Treatments Widget */
-    .rank-item-row {
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-      padding: 0.85rem 1.25rem;
-      border-bottom: 1px solid #F8FAFC;
-      transition: background 0.15s ease;
-    }
-    .rank-item-row:hover {
-      background: #F8FAFC;
-    }
-    .rank-item-row:last-child {
-      border-bottom: none;
-    }
+    /* Rank Badges */
     .rank-medal-badge {
       width: 28px;
       height: 28px;
@@ -138,44 +127,10 @@
       border: 1px solid #E2E8F0;
       border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .ops-table-card table thead th {
-      background: #F8FAFC;
-      color: #475569;
-      font-size: 0.725rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.9rem 1.15rem;
-      border-bottom: 1px solid #E2E8F0;
-    }
-    .ops-table-card table tbody td {
-      padding: 0.95rem 1.15rem;
-      border-bottom: 1px solid #F1F5F9;
-      vertical-align: middle;
-    }
-    .ops-table-card table tbody tr:hover {
-      background: #FAFCFB;
-    }
-    .patient-initial-badge {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: #E6F4EA;
-      color: var(--skin-emerald);
-      font-weight: 700;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 0.65rem;
-      flex-shrink: 0;
     }
   </style>
 </head>
 <body>
-
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
   <div class="admin-wrapper">
@@ -193,11 +148,11 @@
           <li class="nav-item"><a href="index.html" class="nav-link active"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
           <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
           <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
-          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries &amp; Leads</span></a></li>
           <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
         </ul>
 
-        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <div class="sidebar-section-title">Catalog &amp; Doctors</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
           <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
@@ -206,25 +161,25 @@
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
         </ul>
 
-        <div class="sidebar-section-title">Marketing & Media</div>
+        <div class="sidebar-section-title">Marketing &amp; Media</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
           <li class="nav-item"><a href="offers.html" class="nav-link"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
-          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
-          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers &amp; Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles &amp; Blogs</span></a></li>
           <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
-          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before &amp; After</span></a></li>
           <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
           <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
           <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
         </ul>
 
-        <div class="sidebar-section-title">Administration & RBAC</div>
+        <div class="sidebar-section-title">Administration &amp; RBAC</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
-          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles &amp; Matrix</span></a></li>
           <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
           <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
         </ul>
@@ -249,7 +204,7 @@
             <i class="bi bi-list"></i>
           </button>
           <div class="header-title-wrap">
-            <h1>Clinic Overview &amp; Operations</h1>
+            <h1>Clinic Operations &amp; Executive Analytics</h1>
             <div class="header-breadcrumb">
               <a href="index.html">Admin</a>
               <span class="sep">/</span>
@@ -261,74 +216,119 @@
         <div class="header-right d-flex align-items-center gap-3">
           <div class="clinic-duty-pill d-none d-sm-inline-flex">
             <span class="duty-pulse"></span>
-            <span>Clinics Open &bull; Dr. Ipshita Johri On Duty</span>
+            <span>Clinics Live &bull; Real-time Database Sync</span>
           </div>
 
-          <!-- Notification Bell Dropdown -->
-          <div class="dropdown">
-            <button class="btn btn-outline-secondary btn-sm position-relative rounded-pill px-2" type="button" id="notifBellBtn" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="bi bi-bell-fill"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notifBadge">
-                0
-              </span>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end shadow border p-0 notif-dropdown-menu" style="min-width: 320px; border-radius: 12px;" aria-labelledby="notifBellBtn">
-              <div class="p-2 border-bottom d-flex justify-content-between align-items-center bg-light rounded-top">
-                <span class="fw-bold small text-dark"><i class="bi bi-bell me-1"></i> Notifications</span>
-                <button type="button" class="btn btn-link btn-xs p-0 text-decoration-none small text-success" id="btnMarkAllNotifsRead">Mark all read</button>
-              </div>
-              <div id="notifListContainer">
-                <div class="text-center py-4 text-muted small">Loading notifications...</div>
-              </div>
-            </div>
-          </div>
-
-          <a href="appointments.html" class="btn btn-luxury-emerald btn-sm rounded-pill px-3 shadow-sm">
-            <i class="bi bi-calendar2-check-fill me-1"></i> View Appointments
+          <a href="patients.html" class="btn btn-luxury-emerald btn-sm rounded-pill px-3 shadow-sm">
+            <i class="bi bi-people-fill me-1"></i> Patient Directory
           </a>
         </div>
       </header>
 
       <main class="admin-content">
-        <!-- 6 EXECUTIVE KPI METRIC CARDS -->
+        <!-- 12 DYNAMIC EXECUTIVE KPI METRIC CARDS -->
         <div class="row g-3 mb-4">
-          <!-- Appointments -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
+          <!-- 1. Total Patients -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="patients.html" class="executive-kpi-card">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Appointments</span>
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Total Patients</span>
+                <div class="kpi-icon-pill bg-teal-subtle text-teal" style="background: #CCFBF1; color: #0F766E;">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statPatientsCount">0</div>
+              <div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1" id="statNewPatientsMonth">+0 New This Month</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 2. New Patients This Month -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="patients.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">New Patients</span>
+                <div class="kpi-icon-pill bg-primary-subtle text-primary">
+                  <i class="bi bi-person-plus-fill"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statNewPatientsNum">0</div>
+              <div>
+                <span class="badge bg-light text-muted border fw-semibold px-2 py-1">Monthly Inflow</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 3. Total Appointments -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="appointments.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Total Appointments</span>
                 <div class="kpi-icon-pill bg-success-subtle text-success">
                   <i class="bi bi-calendar2-check-fill"></i>
                 </div>
               </div>
               <div class="kpi-metric-num" id="statAppointmentsCount">0</div>
               <div>
-                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-semibold px-2 py-1" id="statPendingAppointments">0 Pending</span>
+                <span class="badge bg-light text-muted border fw-semibold px-2 py-1" id="statApptsTodaySub">0 Today</span>
               </div>
-            </div>
+            </a>
           </div>
 
-          <!-- Leads & Enquiries -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
+          <!-- 4. Today's Appointments -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="appointments.html" class="executive-kpi-card">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Leads &amp; Enquiries</span>
-                <div class="kpi-icon-pill bg-primary-subtle text-primary">
-                  <i class="bi bi-chat-left-dots-fill"></i>
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Today's Appointments</span>
+                <div class="kpi-icon-pill bg-info-subtle text-info">
+                  <i class="bi bi-clock-history"></i>
                 </div>
               </div>
-              <div class="kpi-metric-num" id="statEnquiriesCount">0</div>
+              <div class="kpi-metric-num" id="statTodayAppts">0</div>
               <div>
-                <span class="badge bg-info-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1" id="statNewEnquiries">0 New</span>
+                <span class="badge bg-info-subtle text-info border border-info-subtle fw-semibold px-2 py-1">Scheduled for Today</span>
               </div>
-            </div>
+            </a>
           </div>
 
-          <!-- Treatments -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
+          <!-- 5. Pending Appointments -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="appointments.html" class="executive-kpi-card">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Treatments</span>
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Pending Appointments</span>
+                <div class="kpi-icon-pill bg-warning-subtle text-warning">
+                  <i class="bi bi-hourglass-split"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statPendingAppointments">0</div>
+              <div>
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-semibold px-2 py-1">Action Required</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 6. Completed Consultations -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="appointments.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Completed Treatments</span>
+                <div class="kpi-icon-pill bg-success-subtle text-success">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statCompletedAppts">0</div>
+              <div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">Successfully Treated</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 7. Total Treatments in Catalog -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="treatments.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Treatments Catalog</span>
                 <div class="kpi-icon-pill bg-purple-subtle text-purple" style="background: #F3E8FF; color: #7E22CE;">
                   <i class="bi bi-capsule"></i>
                 </div>
@@ -337,53 +337,142 @@
               <div>
                 <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1" id="statActiveTreatments">0 Active</span>
               </div>
-            </div>
+            </a>
           </div>
 
-          <!-- MD Doctors -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
+          <!-- 8. Active Treatment Packages -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="patients.html" class="executive-kpi-card">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">MD Specialists</span>
-                <div class="kpi-icon-pill bg-warning-subtle text-warning">
-                  <i class="bi bi-person-badge"></i>
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Active Packages</span>
+                <div class="kpi-icon-pill bg-primary-subtle text-primary">
+                  <i class="bi bi-box2-heart-fill"></i>
                 </div>
               </div>
-              <div class="kpi-metric-num" id="statDoctorsCount">0</div>
+              <div class="kpi-metric-num" id="statActivePackages">0</div>
               <div>
-                <span class="badge bg-light text-dark border fw-semibold px-2 py-1" id="statActiveDoctors">5 Active MDs</span>
+                <span class="badge bg-light text-muted border fw-semibold px-2 py-1">Enrolled Patients</span>
               </div>
-            </div>
+            </a>
           </div>
 
-          <!-- Registered Patients -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
+          <!-- 9. Total Revenue (Successful Payments) -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="patients.html" class="executive-kpi-card">
               <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Patients Dossiers</span>
-                <div class="kpi-icon-pill bg-teal-subtle text-teal" style="background: #CCFBF1; color: #0F766E;">
-                  <i class="bi bi-people-fill"></i>
-                </div>
-              </div>
-              <div class="kpi-metric-num" id="statPatientsCount">0</div>
-              <div>
-                <span class="badge bg-light text-muted border fw-semibold px-2 py-1">Clinical Dossiers</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lead Conversion -->
-          <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="executive-kpi-card">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Inbound Conversion</span>
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Total Revenue</span>
                 <div class="kpi-icon-pill bg-success-subtle text-success">
-                  <i class="bi bi-graph-up-arrow"></i>
+                  <i class="bi bi-currency-rupee"></i>
                 </div>
               </div>
-              <div class="kpi-metric-num"><span id="statConversionRate">0</span>%</div>
+              <div class="kpi-metric-num text-success" id="statTotalRevenue">₹0</div>
               <div>
-                <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1"><i class="bi bi-arrow-up-right me-1"></i>Healthy Ratio</span>
+                <span class="badge bg-success-subtle text-success border border-success-subtle fw-semibold px-2 py-1">Realized Payments</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 10. Pending Payments -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="appointments.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Pending Payments</span>
+                <div class="kpi-icon-pill bg-warning-subtle text-warning">
+                  <i class="bi bi-cash-stack"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num text-warning" id="statPendingPayments">₹0</div>
+              <div>
+                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-semibold px-2 py-1">To Be Collected</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 11. Total Enquiries & Leads -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="enquiries.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Inbound Leads</span>
+                <div class="kpi-icon-pill bg-info-subtle text-info">
+                  <i class="bi bi-chat-left-dots-fill"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statEnquiriesCount">0</div>
+              <div>
+                <span class="badge bg-info-subtle text-primary border border-primary-subtle fw-semibold px-2 py-1" id="statNewEnquiries">0 New</span>
+              </div>
+            </a>
+          </div>
+
+          <!-- 12. Active VIP Members -->
+          <div class="col-xl-3 col-md-4 col-sm-6">
+            <a href="memberships.html" class="executive-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.05em;">Active VIP Members</span>
+                <div class="kpi-icon-pill bg-warning-subtle text-warning">
+                  <i class="bi bi-award-fill"></i>
+                </div>
+              </div>
+              <div class="kpi-metric-num" id="statVipMembers">0</div>
+              <div>
+                <span class="badge bg-light text-dark border fw-semibold px-2 py-1">Prestige &amp; Diamond</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- REVENUE ANALYTICS BREAKDOWN -->
+        <div class="row g-4 mb-4">
+          <div class="col-12">
+            <div class="analytics-card">
+              <div class="analytics-card-header">
+                <div>
+                  <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                    <i class="bi bi-cash-coin text-success"></i>
+                    <span>Clinical Revenue Analytics &amp; Collections Breakdown</span>
+                  </div>
+                  <div class="text-muted small mt-0.5">Calculated exclusively from verified database payment receipts and invoices</div>
+                </div>
+              </div>
+              <div class="p-3 bg-white">
+                <div class="row g-3 text-center">
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Total Realized</span>
+                      <h4 class="fw-bold text-success mt-1 mb-0" id="revTotal">₹0</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Consultations</span>
+                      <h4 class="fw-bold text-dark mt-1 mb-0" id="revConsult">₹0</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Treatments</span>
+                      <h4 class="fw-bold text-dark mt-1 mb-0" id="revTreatment">₹0</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Packages</span>
+                      <h4 class="fw-bold text-dark mt-1 mb-0" id="revPackage">₹0</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Pending Collection</span>
+                      <h4 class="fw-bold text-warning mt-1 mb-0" id="revPending">₹0</h4>
+                    </div>
+                  </div>
+                  <div class="col-md-2 col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                      <span class="text-muted small fw-bold">Refunded</span>
+                      <h4 class="fw-bold text-danger mt-1 mb-0" id="revRefund">₹0</h4>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -398,12 +487,12 @@
                 <div>
                   <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
                     <i class="bi bi-graph-up text-success"></i>
-                    <span>Monthly Appointment &amp; Consultation Velocity</span>
+                    <span>Monthly Appointment &amp; Consultation Trends</span>
                   </div>
-                  <div class="text-muted small mt-0.5">Clinical booking trend curve across Noida &amp; Gurgaon clinics</div>
+                  <div class="text-muted small mt-0.5">Clinical booking curve across Noida HQ &amp; Gurgaon clinics</div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                  <span class="badge bg-light text-muted border px-2 py-1">Trailing Months</span>
+                <div>
+                  <span class="badge bg-light text-muted border px-2 py-1">Trailing 6 Months</span>
                 </div>
               </div>
               <div class="p-4 bg-white">
@@ -435,7 +524,65 @@
           </div>
         </div>
 
-        <!-- RECENT PATIENT BOOKINGS TABLE (FULL WIDTH ROW 1) -->
+        <!-- PATIENT DEMOGRAPHICS & BRANCH PERFORMANCE ROW -->
+        <div class="row g-4 mb-4">
+          <!-- Branch Performance Table -->
+          <div class="col-lg-7">
+            <div class="ops-table-card h-100">
+              <div class="analytics-card-header">
+                <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                  <i class="bi bi-building text-primary"></i>
+                  <span>Branch Performance Matrix (Noida HQ vs Gurgaon)</span>
+                </div>
+              </div>
+              <div class="table-responsive p-0">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Branch Clinic</th>
+                      <th>Location</th>
+                      <th class="text-center">Patients</th>
+                      <th class="text-center">Appointments</th>
+                      <th class="text-center">Completed</th>
+                      <th class="text-end">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody id="branchPerformanceBody">
+                    <tr><td colspan="6" class="text-center py-3 text-muted">Loading branch performance...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patient Demographics (Gender & Age) -->
+          <div class="col-lg-5">
+            <div class="analytics-card h-100">
+              <div class="analytics-card-header">
+                <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                  <i class="bi bi-pie-chart text-teal" style="color: #0F766E;"></i>
+                  <span>Patient Demographics &amp; Age Groups</span>
+                </div>
+              </div>
+              <div class="p-3 bg-white">
+                <h6 class="small fw-bold text-muted text-uppercase mb-2">Age Distribution</h6>
+                <div class="row g-2 text-center mb-3">
+                  <div class="col-3"><div class="p-2 border rounded bg-light"><small class="text-muted d-block">&lt;25 yrs</small><strong id="ageUnder25">0</strong></div></div>
+                  <div class="col-3"><div class="p-2 border rounded bg-light"><small class="text-muted d-block">25-35 yrs</small><strong id="age2535">0</strong></div></div>
+                  <div class="col-3"><div class="p-2 border rounded bg-light"><small class="text-muted d-block">36-50 yrs</small><strong id="age3650">0</strong></div></div>
+                  <div class="col-3"><div class="p-2 border rounded bg-light"><small class="text-muted d-block">50+ yrs</small><strong id="ageOver50">0</strong></div></div>
+                </div>
+
+                <h6 class="small fw-bold text-muted text-uppercase mb-2">Gender Breakdown</h6>
+                <div id="patientGenderBars" class="space-y-2">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RECENT PATIENT BOOKINGS TABLE -->
         <div class="row g-4 mb-4">
           <div class="col-12">
             <div class="ops-table-card">
@@ -443,7 +590,7 @@
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-calendar2-check-fill text-success fs-5"></i>
                   <div>
-                    <span class="fw-bold text-dark fs-6">Recent Patient Bookings</span>
+                    <span class="fw-bold text-dark fs-6">Recent Patient Consultations &amp; Bookings</span>
                     <span class="text-muted small ms-2 d-none d-md-inline">&bull; Real-time consultation requests</span>
                   </div>
                 </div>
@@ -455,15 +602,17 @@
                 <table class="table table-hover align-middle mb-0 w-100">
                   <thead>
                     <tr>
-                      <th style="width: 130px;">Booking #</th>
-                      <th>Patient Dossier</th>
-                      <th>Requested Treatment / Service</th>
-                      <th style="width: 190px;">Scheduled Slot</th>
-                      <th style="width: 130px;" class="text-center">Status</th>
+                      <th style="width: 140px;">Booking #</th>
+                      <th>Patient Name &amp; Contact</th>
+                      <th>Requested Treatment</th>
+                      <th>Doctor</th>
+                      <th>Clinic</th>
+                      <th style="width: 170px;">Slot Date &amp; Time</th>
+                      <th style="width: 120px;" class="text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody id="recentAppointmentsBody">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Loading appointments...</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Loading appointments...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -471,35 +620,61 @@
           </div>
         </div>
 
-        <!-- RECENT ENQUIRIES TABLE (FULL WIDTH ROW 2) -->
+        <!-- RECENT PAYMENTS & LIVE INBOUND LEADS ROW -->
         <div class="row g-4 mb-4">
-          <div class="col-12">
-            <div class="ops-table-card">
+          <!-- Recent Live Payments -->
+          <div class="col-lg-6">
+            <div class="ops-table-card h-100">
+              <div class="analytics-card-header">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-receipt text-success fs-5"></i>
+                  <span class="fw-bold text-dark fs-6">Recent Payment Receipts</span>
+                </div>
+                <a href="patients.html" class="small text-success fw-bold text-decoration-none">Patient Ledger &rarr;</a>
+              </div>
+              <div class="table-responsive p-0">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Receipt #</th>
+                      <th>Patient</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recentPaymentsBody">
+                    <tr><td colspan="5" class="text-center py-3 text-muted">Loading payments...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Inbound Enquiries -->
+          <div class="col-lg-6">
+            <div class="ops-table-card h-100">
               <div class="analytics-card-header">
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-chat-left-dots-fill text-info fs-5"></i>
-                  <div>
-                    <span class="fw-bold text-dark fs-6">Recent Inbound Enquiries</span>
-                    <span class="text-muted small ms-2 d-none d-md-inline">&bull; Website, WhatsApp, and Franchise leads</span>
-                  </div>
+                  <span class="fw-bold text-dark fs-6">Recent Inbound Enquiries</span>
                 </div>
                 <a href="enquiries.html" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
-                  <span>View All Enquiries</span> <i class="bi bi-arrow-right ms-1"></i>
+                  <span>View All</span> <i class="bi bi-arrow-right ms-1"></i>
                 </a>
               </div>
               <div class="table-responsive p-0">
-                <table class="table table-hover align-middle mb-0 w-100">
-                  <thead>
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
                     <tr>
-                      <th style="width: 140px;">Lead ID</th>
-                      <th style="width: 130px;">Channel</th>
-                      <th>Prospect Name &amp; Phone</th>
-                      <th style="width: 140px;">Disposition</th>
-                      <th style="width: 120px;" class="text-end">Received</th>
+                      <th>Lead ID</th>
+                      <th>Prospect</th>
+                      <th>Channel</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody id="recentEnquiriesBody">
-                    <tr><td colspan="5" class="text-center py-4 text-muted">Loading enquiries...</td></tr>
+                    <tr><td colspan="4" class="text-center py-3 text-muted">Loading enquiries...</td></tr>
                   </tbody>
                 </table>
               </div>
