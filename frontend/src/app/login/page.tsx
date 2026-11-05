@@ -281,14 +281,14 @@ export default function LoginPage() {
             <form onSubmit={handleSignIn} className="space-y-4 max-w-md mx-auto sm:mx-0">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                  Email Address
+                  Email or 10-Digit Mobile Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -357,7 +357,7 @@ export default function LoginPage() {
               </button>
 
               {/* Quick 1-Click Demo Auto-fill */}
-              <div className="pt-2">
+              <div className="hidden">
                 <button
                   type="button"
                   onClick={quickDemoLogin}
@@ -394,14 +394,14 @@ export default function LoginPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1 uppercase tracking-wider">
-                  Email Address
+                  Email or 10-Digit Mobile Number
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail className="w-4 h-4" />
                   </div>
                   <input
-                    type="email"
+                    type="text"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

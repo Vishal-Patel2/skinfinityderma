@@ -367,11 +367,21 @@ async function runCrmMigration() {
     console.log('✅ Created sid_loyalty_transactions table');
 
     console.log('✨ All CRM database tables and schema migrations verified successfully!');
-    process.exit(0);
+    if (require.main === module) {
+      process.exit(0);
+    }
+    return true;
   } catch (err) {
     console.error('❌ CRM Migration failed:', err);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw err;
   }
 }
 
-runCrmMigration();
+if (require.main === module) {
+  runCrmMigration();
+}
+
+module.exports = { runCrmMigration };

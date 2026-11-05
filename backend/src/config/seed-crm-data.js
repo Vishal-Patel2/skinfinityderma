@@ -355,10 +355,17 @@ async function seedCrmData() {
   console.log('✅ Seeded Patient Activity Logs');
 
   console.log('🎉 Clinical CRM Seeding completed successfully!');
-  process.exit(0);
+  if (require.main === module) {
+    process.exit(0);
+  }
+  return true;
 }
 
-seedCrmData().catch((err) => {
-  console.error('❌ Seeding error:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  seedCrmData().catch((err) => {
+    console.error('❌ Seeding error:', err);
+    process.exit(1);
+  });
+}
+
+module.exports = { seedCrmData };

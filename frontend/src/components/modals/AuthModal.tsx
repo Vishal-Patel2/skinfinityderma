@@ -86,7 +86,7 @@ export default function AuthModal() {
     }
   };
 
-  const quickDemoLogin = async () => {
+  /* demo login removed */ const quickDemoLogin = async () => { return; }; const _unusedDemo = async () => {
     setEmail("vishal@skinfinityderma.com");
     setPassword("derma123");
     setLoading(true);
@@ -334,7 +334,7 @@ export default function AuthModal() {
               </button>
 
               {/* Quick 1-Click Demo Login */}
-              <div className="pt-2">
+              <div className="hidden">
                 <button
                   type="button"
                   onClick={quickDemoLogin}
