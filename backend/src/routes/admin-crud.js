@@ -5,6 +5,7 @@ const { audit } = require('../middleware/audit');
 const { asyncHandler, HttpError } = require('../middleware/error');
 const { slugify } = require('../utils/slug');
 const { parseJson } = require('../utils/helpers');
+const { deleteUploadedFile, removeImageFromTreatment } = require('./upload');
 
 const router = express.Router();
 
@@ -797,17 +798,45 @@ router.put(
     const name = body.name || t.name;
     const slug = body.slug ? slugify(body.slug) : t.slug;
 
-    // Build unified galleryImages array if sub-images provided
+    // Gather existing treatment images to detect any removed images and delete them from disk
+    const oldImages = new Set();
+    if (t.banner_image) oldImages.add(t.banner_image);
+    if (t.sub_image_1) oldImages.add(t.sub_image_1);
+    if (t.sub_image_2) oldImages.add(t.sub_image_2);
+    if (t.sub_image_3) oldImages.add(t.sub_image_3);
+    const existingGallery = parseJson(t.gallery_images, []);
+    if (Array.isArray(existingGallery)) {
+      existingGallery.forEach((g) => {
+        const s = g && typeof g === 'object' ? g.src : g;
+        if (s) oldImages.add(s);
+      });
+    }
+
+    // Process new images
+    const newBanner = body.featuredImage !== undefined ? (body.featuredImage || null) : (body.bannerImage !== undefined ? (body.bannerImage || null) : t.banner_image);
+    const newSub1 = body.subImage1 !== undefined ? (body.subImage1 || null) : t.sub_image_1;
+    const newSub2 = body.subImage2 !== undefined ? (body.subImage2 || null) : t.sub_image_2;
+    const newSub3 = body.subImage3 !== undefined ? (body.subImage3 || null) : t.sub_image_3;
+
     let finalGallery = body.galleryImages !== undefined ? body.galleryImages : parseJson(t.gallery_images, []);
     if (!Array.isArray(finalGallery)) finalGallery = [];
-    if (body.subImage1 && !finalGallery.some((g) => g.src === body.subImage1)) {
-      finalGallery.push({ src: body.subImage1, caption: 'Sub-image 1' });
-    }
-    if (body.subImage2 && !finalGallery.some((g) => g.src === body.subImage2)) {
-      finalGallery.push({ src: body.subImage2, caption: 'Sub-image 2' });
-    }
-    if (body.subImage3 && !finalGallery.some((g) => g.src === body.subImage3)) {
-      finalGallery.push({ src: body.subImage3, caption: 'Sub-image 3' });
+
+    // Track active new images
+    const newImages = new Set();
+    if (newBanner) newImages.add(newBanner);
+    if (newSub1) newImages.add(newSub1);
+    if (newSub2) newImages.add(newSub2);
+    if (newSub3) newImages.add(newSub3);
+    finalGallery.forEach((g) => {
+      const s = g && typeof g === 'object' ? g.src : g;
+      if (s) newImages.add(s);
+    });
+
+    // Physically delete removed uploaded images from server folder
+    for (const oldSrc of oldImages) {
+      if (oldSrc && !newImages.has(oldSrc)) {
+        deleteUploadedFile(oldSrc);
+      }
     }
 
     let ytId = body.youtubeVideoId !== undefined ? body.youtubeVideoId : t.youtube_video_id;
@@ -824,7 +853,7 @@ router.put(
               short_desc = ?, full_desc = ?, explained_subtitle = COALESCE(?, explained_subtitle),
               sessions_info = COALESCE(?, sessions_info), emi_months = COALESCE(?, emi_months),
               emi_monthly = COALESCE(?, emi_monthly), banner_image = ?, image_alt_text = COALESCE(?, image_alt_text),
-              sub_image_1 = COALESCE(?, sub_image_1), sub_image_2 = COALESCE(?, sub_image_2), sub_image_3 = COALESCE(?, sub_image_3),
+              sub_image_1 = ?, sub_image_2 = ?, sub_image_3 = ?,
               gallery_images = ?, video_url = COALESCE(?, video_url), video_title = COALESCE(?, video_title),
               video_thumbnail = COALESCE(?, video_thumbnail), youtube_video_id = ?,
               benefits = COALESCE(?, benefits), how_it_works = ?, ideal_for = ?, not_ideal_for = COALESCE(?, not_ideal_for),
@@ -851,11 +880,11 @@ router.put(
         body.sessionsInfo || null,
         body.emiMonths !== undefined ? (body.emiMonths ? parseInt(body.emiMonths, 10) : null) : null,
         body.emiMonthly !== undefined ? (body.emiMonthly ? Number(body.emiMonthly) : null) : null,
-        body.featuredImage !== undefined ? body.featuredImage : (body.bannerImage !== undefined ? body.bannerImage : t.banner_image),
+        newBanner,
         body.imageAltText || null,
-        body.subImage1 || null,
-        body.subImage2 || null,
-        body.subImage3 || null,
+        newSub1,
+        newSub2,
+        newSub3,
         finalGallery.length ? JSON.stringify(finalGallery) : null,
         body.videoUrl || null,
         body.videoTitle || null,
@@ -955,12 +984,42 @@ router.patch(
 );
 
 router.delete(
+  '/treatments/:id/media',
+  requirePermission('treatments.edit'),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const target = req.body.filePath || req.body.url || req.query.url;
+    if (!target) throw new HttpError(400, 'Image filePath or url is required');
+
+    deleteUploadedFile(target);
+    await removeImageFromTreatment(id, target);
+
+    res.json({ success: true, message: 'Treatment image deleted from server folder and database' });
+  })
+);
+
+router.delete(
   '/treatments/:id',
   requirePermission('treatments.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const t = await one('SELECT banner_image, sub_image_1, sub_image_2, sub_image_3, gallery_images FROM sid_treatments WHERE id = ?', [id]);
+    if (t) {
+      const imagesToDelete = [t.banner_image, t.sub_image_1, t.sub_image_2, t.sub_image_3];
+      const gal = parseJson(t.gallery_images, []);
+      if (Array.isArray(gal)) {
+        gal.forEach((g) => {
+          const s = g && typeof g === 'object' ? g.src : g;
+          if (s) imagesToDelete.push(s);
+        });
+      }
+      imagesToDelete.forEach((src) => {
+        if (src) deleteUploadedFile(src);
+      });
+    }
+
     await query('DELETE FROM sid_treatments WHERE id = ?', [id]);
-    res.json({ success: true, message: 'Treatment deleted successfully' });
+    res.json({ success: true, message: 'Treatment and all associated media files deleted successfully' });
   })
 );
 

@@ -289,11 +289,12 @@ $(document).ready(function () {
         const compressed = await compressImageFile(file, 1600, 1600, 0.85);
         let finalSrc = compressed.dataUrl;
 
-        // Upload compressed file to /uploads/ to keep DB payload light and prevent MySQL max_allowed_packet error
-        if (window.API && typeof window.API.uploadImage === 'function' && compressed.blob) {
+        // Upload compressed file to /uploads/treatments/ with treatmentId prefix for uniqueness
+        if (window.API && typeof window.API.uploadTreatmentImage === 'function' && compressed.blob) {
           try {
-            const uploadFile = new File([compressed.blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', { type: 'image/jpeg' });
-            const uploadRes = await window.API.uploadImage(uploadFile);
+            const cleanBase = file.name.replace(/\.[^/.]+$/, '');
+            const uploadFile = new File([compressed.blob], cleanBase + '.jpg', { type: 'image/jpeg' });
+            const uploadRes = await window.API.uploadTreatmentImage(uploadFile, treatmentId || '');
             if (uploadRes && uploadRes.url) {
               finalSrc = uploadRes.url;
             }
@@ -347,9 +348,41 @@ $(document).ready(function () {
     window.App.toast('success', 'YouTube video added to gallery');
   });
 
-  // Remove media
-  $(document).on('click', '.btn-remove-media', function () {
+  // Remove media (deletes from database & server folder)
+  $(document).on('click', '.btn-remove-media', async function () {
     const idx = parseInt($(this).data('index'), 10);
+    const item = mediaGallery[idx];
+    if (!item) return;
+
+    // If it's an uploaded server image (/uploads/...), delete from server folder & DB
+    if (item.type === 'image' && item.src && item.src.startsWith('/uploads/')) {
+      const confirmDelete = await Swal.fire({
+        title: 'Delete Image?',
+        text: 'This image will be permanently removed from this treatment and deleted from the server folder.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Yes, Delete',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (!confirmDelete.isConfirmed) {
+        return;
+      }
+
+      try {
+        if (window.API && typeof window.API.deleteTreatmentMediaFile === 'function') {
+          await window.API.deleteTreatmentMediaFile(item.src, treatmentId || '');
+          if (window.App && window.App.toast) {
+            window.App.toast('success', 'Image deleted from server folder and database');
+          }
+        }
+      } catch (err) {
+        console.warn('Error deleting image from server:', err);
+      }
+    }
+
     const removed = mediaGallery.splice(idx, 1)[0];
     if (removed && removed.src === coverImageSrc) {
       coverImageSrc = mediaGallery.length > 0 ? mediaGallery[0].src : '';

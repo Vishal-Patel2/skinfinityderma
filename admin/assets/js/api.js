@@ -125,6 +125,27 @@
       });
     },
 
+    // Treatment Image Upload with Treatment ID and subfolder
+    uploadTreatmentImage: function (file, treatmentId) {
+      const formData = new FormData();
+      formData.append('image', file);
+      const url = treatmentId ? `/upload?treatmentId=${encodeURIComponent(treatmentId)}&folder=treatments` : '/upload?folder=treatments';
+      return this.request({
+        url: url,
+        method: 'POST',
+        data: formData,
+        contentType: false
+      });
+    },
+
+    // Delete Treatment Media File from disk folder & database
+    deleteTreatmentMediaFile: function (filePath, treatmentId) {
+      return this.post('/upload/delete', {
+        url: filePath,
+        treatmentId: treatmentId || undefined
+      });
+    },
+
     // Multiple Files Upload
     uploadMultipleImages: function (files) {
       const formData = new FormData();
