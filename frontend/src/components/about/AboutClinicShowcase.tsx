@@ -277,9 +277,6 @@ export default function AboutClinicShowcase() {
             }`}
           >
             <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-brand-700">
-                Founded by Dr. Ipshita Johri
-              </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-serif leading-snug">
                 {sectionData.subtitle?.includes("Meets Patient Luxury") ? (
                   <>

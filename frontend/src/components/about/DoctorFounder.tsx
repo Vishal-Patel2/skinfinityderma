@@ -37,7 +37,7 @@ export default function DoctorFounder() {
     experience: "Over 14 years of specialized aesthetic clinical experience in India & internationally",
     mediaUrl: "/images/doctors/dr-ipshita-johri.webp",
     buttonText: "Read Full Biography & Philosophy",
-    buttonUrl: "/about-clinic",
+    buttonUrl: "/about-us",
     secondaryButtonText: "Consult with Dr. Ipshita",
     secondaryButtonUrl: "#consultation",
     missCurvy: {
@@ -259,7 +259,7 @@ export default function DoctorFounder() {
 
             <div className="pt-4 flex flex-wrap items-center gap-3 sm:gap-4">
               <Link
-                href={founderSection.buttonUrl || "/about-clinic"}
+                href={founderSection.buttonUrl || "/about-us"}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs font-bold text-white bg-brand-700 hover:bg-brand-800 shadow-md hover:shadow-glow transition-all"
               >
                 <span>{founderSection.buttonText || "Read Full Biography & Philosophy"}</span>

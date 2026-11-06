@@ -1401,10 +1401,95 @@ export function getTreatmentBySlug(slug: string): RichTreatment {
 
   const coreSlug = normalized.replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim();
 
+  // Special rich doctor clinic consultation profile for location landing pages
+  if (coreSlug.includes("dermatologist") || coreSlug === "skin-clinic" || coreSlug === "skin-clinic-in") {
+    return {
+      id: slug,
+      slug,
+      name: `Senior Dermatologist Clinic & Consultation in ${cityName}`,
+      category: "Skin Treatments",
+      bodyArea: "Face, Scalp & Body",
+      tags: ["MD DERMATOLOGIST LED", "CARDIFF U.K. TRAINED", clinicTag],
+      rating: 4.96,
+      reviewsCount: 1250,
+      duration: "30-45 mins",
+      price: 1000,
+      priceFormatted: "₹1,000",
+      originalPriceFormatted: "₹1,500",
+      discountBadge: "33% OFF",
+      emiMonthly: "₹500",
+      emiMonths: 2,
+      sessionsInfo: "1 Comprehensive Consultation",
+      cardHighlights: [
+        `Detailed digital skin, hair & scalp assessment by Senior MD Dermatologists in ${cityName}`,
+        "Personalized root-cause diagnosis and evidence-based prescription",
+        "Confidential clinical consultation led by Dr. Ipshita Johri & expert team",
+      ],
+      explainedSubtitle: `Premier Medical Cosmetology & Clinical Dermatology Center in ${cityName}`,
+      shortDesc: `Comprehensive clinical skin & hair consultation with Senior MD Dermatologists at Skinfinity Derma ${cityName}.`,
+      fullDesc: `Welcome to Skinfinity Derma ${cityName}. Led by Dr. Ipshita Johri (Cardiff University, U.K.) and our team of senior MD dermatologists, our clinic offers world-class clinical dermatology, US-FDA laser hair removal, acne scar remodeling, pigmentation therapy, and non-surgical facial rejuvenation.`,
+      bannerImage: "/images/doctors/dr-ipshita-johri.webp",
+      galleryImages: [
+        { src: "/images/doctors/dr-ipshita-johri.webp", caption: "Dr. Ipshita Johri — Founder & Celebrity Dermatologist" },
+        { src: "/images/breadcrumbbanner/service.webp", caption: `Skinfinity Derma ${cityName} Consultation Suite` },
+        { src: "/images/clinic/interior-4.jpg", caption: "Sterilized Medical Dermatology Suites" },
+        { src: "/images/treatments/banner-hydrafacial.webp", caption: "US-FDA Approved Diagnostic Technology" },
+      ],
+      howItWorksSteps: [
+        { stepNumber: "STEP 1", title: "Patient History & Intake", desc: `Comprehensive evaluation of lifestyle, previous treatments, and symptoms at our ${cityName} clinic.`, image: "/images/clinic/interior-1.jpg" },
+        { stepNumber: "STEP 2", title: "Digital Skin & Scalp Analysis", desc: "Detailed dermascopic assessment to map sebum, pigmentation, follicle density and scar depth.", image: "/images/doctors/dr-ipshita-johri.webp" },
+        { stepNumber: "STEP 3", title: "Dermatologist Consultation", desc: "One-on-one session with Senior MD Dermatologist to formulate a tailored clinical roadmap.", image: "/images/clinic/interior-4.jpg" },
+        { stepNumber: "STEP 4", title: "Prescription & Protocol", desc: "Evidence-based clinical skincare regimen, lifestyle guidance, and procedure recommendations.", image: "/images/clinic/interior-5.jpg" },
+      ],
+      idealFrequency: "Initial consultation followed by quarterly follow-up evaluations.",
+      idealFor: [
+        `Individuals seeking expert dermatological advice and diagnosis in ${cityName}`,
+        "Patients with persistent acne, stubborn scars, hair loss, or pigmentation",
+        "Anyone looking for custom doctor-formulated medical skincare protocols",
+        "Pre-wedding and bridal skin preparation assessment",
+      ],
+      notIdealFor: [
+        "Routine non-medical spa pampering without clinical indications",
+      ],
+      beforeTreatment: [
+        "Arrive with clean skin free from heavy cosmetic makeup.",
+        "Bring previous medical records, prescriptions, or blood work if available.",
+        "List all current topical active serums and oral medications.",
+      ],
+      afterTreatment: [
+        "Follow prescribed dermatologist protocol diligently.",
+        "Apply broad-spectrum mineral SPF 50+ sunscreen daily.",
+        "Attend scheduled review to track clinical progress.",
+      ],
+      faqs: [
+        {
+          question: `Why choose Skinfinity Derma for dermatology in ${cityName}?`,
+          answer: `Skinfinity Derma is led by Dr. Ipshita Johri (Cardiff University, U.K.) and senior MD dermatologists with 14+ years of clinical excellence. We focus on accurate diagnosis, treating root causes, and providing US-FDA approved technologies.`,
+        },
+        {
+          question: `What concerns are treated at the ${cityName} clinic?`,
+          answer: `We specialize in acne & scar revision, laser hair removal, melasma & pigmentation, hair fall & PRP/GFC therapy, non-surgical anti-ageing, and medical facials.`,
+        },
+        {
+          question: "Can I book a consultation online?",
+          answer: "Yes, you can schedule a priority consultation directly through our website or via WhatsApp.",
+        },
+      ],
+    };
+  }
+
   // Try matching a rich base treatment from the catalog by core name
   const baseTreatment = RICH_TREATMENTS.find((t) => {
     const tNorm = t.slug.toLowerCase().replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim();
     if (tNorm === coreSlug || t.id.toLowerCase() === coreSlug) return true;
+    if (coreSlug.startsWith("laser-hair") && t.slug.startsWith("laser-hair")) return true;
+    if (coreSlug.startsWith("acne") && t.slug.startsWith("acne")) return true;
+    if (coreSlug.startsWith("pigmentation") && t.slug.startsWith("pigmentation")) return true;
+    if (coreSlug.startsWith("hydra") && t.slug.startsWith("sugarcane-hydra")) return true;
+    if (coreSlug.startsWith("chemical-peel") && t.slug.startsWith("chemical-peel")) return true;
+    if (coreSlug.startsWith("hair-fall") && t.slug.startsWith("hair-loss")) return true;
+    if (coreSlug.startsWith("anti-ageing") && t.slug.startsWith("anti-ageing")) return true;
+    if (coreSlug.startsWith("hifu") && t.slug.startsWith("hifu")) return true;
     return t.aliases?.some((a) => a.toLowerCase().replace(/-in-noida|-in-gurgaon|-noida|-gurgaon/gi, "").trim() === coreSlug);
   });
 
@@ -1420,14 +1505,19 @@ export function getTreatmentBySlug(slug: string): RichTreatment {
     : (isGurgaon ? `${cleanTitle} in Gurgaon` : cleanTitle);
 
   if (baseTreatment) {
+    const cleanBaseName = baseTreatment.name.replace(/\s*in\s*(Noida|Gurgaon)/gi, "").trim();
+    const finalTreatmentName = isNoida 
+      ? `${cleanBaseName} in Noida` 
+      : (isGurgaon ? `${cleanBaseName} in Gurgaon` : baseTreatment.name);
+
     return {
       ...baseTreatment,
       id: slug,
       slug: slug,
-      name: isNoida ? `${baseTreatment.name} in Noida` : (isGurgaon ? `${baseTreatment.name} in Gurgaon` : baseTreatment.name),
+      name: finalTreatmentName,
       tags: Array.from(new Set([...baseTreatment.tags, "US-FDA APPROVED", "MD DERMATOLOGIST LED", clinicTag])),
-      shortDesc: `Doctor-certified clinical protocol for ${baseTreatment.name} in ${cityName} at Skinfinity Derma. US-FDA approved technologies with zero downtime.`,
-      fullDesc: `At Skinfinity Derma ${cityName}, our board-certified dermatologists provide tailored clinical protocols for ${baseTreatment.name}. ${baseTreatment.fullDesc}`,
+      shortDesc: `Doctor-certified clinical protocol for ${cleanBaseName} in ${cityName} at Skinfinity Derma. US-FDA approved technologies with zero downtime.`,
+      fullDesc: `At Skinfinity Derma ${cityName}, our board-certified dermatologists provide tailored clinical protocols for ${cleanBaseName}. ${baseTreatment.fullDesc}`,
     };
   }
 
