@@ -91,15 +91,57 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // 2. Otherwise treatment
   const apiData = await getTreatment(params.slug);
   const treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
-  const isGurgaon = params.slug.toLowerCase().includes("gurgaon");
-  const isNoida = params.slug.toLowerCase().includes("noida");
-  const locationLabel = isGurgaon ? "Gurgaon Golf Course Road" : (isNoida ? "Noida Sector 36" : "Noida & Gurgaon");
+  const isGurgaon =
+    params.slug.toLowerCase().includes("gurgaon") ||
+    params.slug.toLowerCase().includes("gurugram");
+  const isNoida =
+    !isGurgaon && params.slug.toLowerCase().includes("noida");
+  const isLocation = isGurgaon || isNoida;
+  const locationLabel = isGurgaon
+    ? "Gurgaon Golf Course Road"
+    : isNoida
+    ? "Noida Sector 36"
+    : "Noida & Gurgaon";
+
+  const metaTitle = isLocation
+    ? `${treatment.name} | Best Skin Clinic ${locationLabel} | Skinfinity Derma`
+    : `${treatment.name} (${treatment.priceFormatted}) | Best Skin & Hair Clinic | Skinfinity Derma`;
+
+  const metaDescription = `${treatment.shortDesc} Starts from ${treatment.priceFormatted} with 0% EMI options. US-FDA approved clinical protocols led by Dr. Ipshita Johri.`;
 
   return {
-    title: `${treatment.name} (${treatment.priceFormatted}) | Skinfinity Derma ${locationLabel}`,
-    description: `${treatment.shortDesc} Starts from ${treatment.priceFormatted} with 0% EMI options. US-FDA approved clinical protocols.`,
+    title: metaTitle,
+    description: metaDescription,
+    keywords: [
+      treatment.name,
+      `${treatment.name} cost`,
+      `${treatment.name} reviews`,
+      `${treatment.name} before after`,
+      isGurgaon
+        ? "dermatologist in gurgaon, skin clinic golf course road"
+        : isNoida
+        ? "dermatologist in noida, skin clinic noida sector 36"
+        : "dermatologist in delhi ncr, top skin clinic",
+      "Skinfinity Derma",
+      "Dr. Ipshita Johri",
+    ].join(", "),
     alternates: {
-      canonical: `/${treatment.slug}`,
+      canonical: `https://www.skinfinityderma.com/${treatment.slug}`,
+    },
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: `https://www.skinfinityderma.com/${treatment.slug}`,
+      type: "website",
+      images: treatment.bannerImage
+        ? [{ url: treatment.bannerImage, alt: treatment.name }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: metaTitle,
+      description: metaDescription,
+      images: treatment.bannerImage ? [treatment.bannerImage] : [],
     },
   };
 }
@@ -241,25 +283,95 @@ export default async function CatchAllSlugPage({ params }: Props) {
   // 2. Otherwise Treatment Detail View
   const apiData = await getTreatment(params.slug);
   const treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
+  const isGurgaon =
+    params.slug.toLowerCase().includes("gurgaon") ||
+    params.slug.toLowerCase().includes("gurugram");
+  const isNoida =
+    !isGurgaon && params.slug.toLowerCase().includes("noida");
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: (treatment.faqs || []).map((faq) => ({
-      "@type": "Question",
-      name: faq.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: faq.answer,
+  const treatmentSchemas: any[] = [
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalProcedure",
+      name: treatment.name,
+      description: treatment.shortDesc,
+      bodyLocation: treatment.bodyArea,
+      procedureType: "NonSurgicalProcedure",
+      url: `https://www.skinfinityderma.com/${treatment.slug}`,
+      provider: {
+        "@type": "MedicalClinic",
+        name: isGurgaon
+          ? "Skinfinity Derma Gurgaon Clinic"
+          : isNoida
+          ? "Skinfinity Derma Noida Clinic"
+          : "Skinfinity Derma",
+        url: "https://www.skinfinityderma.com",
+        telephone: isGurgaon ? "+918591110110" : "+919871941444",
+        address: isGurgaon
+          ? {
+              "@type": "PostalAddress",
+              streetAddress: "2nd Floor, SP1, Sector 28, Golf Course Road",
+              addressLocality: "Gurugram",
+              addressRegion: "Haryana",
+              postalCode: "122002",
+              addressCountry: "IN",
+            }
+          : {
+              "@type": "PostalAddress",
+              streetAddress: "Basement Floor, House B1, Sector 36, Near Logix City Centre Mall",
+              addressLocality: "Noida",
+              addressRegion: "Uttar Pradesh",
+              postalCode: "201303",
+              addressCountry: "IN",
+            },
       },
-    })),
-  };
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://www.skinfinityderma.com",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Treatments",
+          item: "https://www.skinfinityderma.com/treatments",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: treatment.name,
+          item: `https://www.skinfinityderma.com/${treatment.slug}`,
+        },
+      ],
+    },
+  ];
+
+  if (treatment.faqs && treatment.faqs.length > 0) {
+    treatmentSchemas.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: treatment.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.answer,
+        },
+      })),
+    });
+  }
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(treatmentSchemas) }}
       />
       <TreatmentDetailView treatment={treatment} />
     </>

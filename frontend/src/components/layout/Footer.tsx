@@ -27,7 +27,7 @@ const CITY_CATEGORIES: Record<"Noida" | "Gurgaon", CityCategoryGroup[]> = {
       links: [
         { name: "Dermatologist Clinic in Noida", slug: "dermatologist-in-noida" },
         { name: "Skin Clinic in Noida", slug: "skin-clinic-in-noida" },
-        { name: "Acne Treatment in Noida", slug: "acne-treatment-in-noida" },
+        { name: "Acne & Pimple Treatment in Noida", slug: "acne-pimple-treatment-in-noida" },
         { name: "Pigmentation Treatment in Noida", slug: "pigmentation-treatment-in-noida" },
         { name: "HydraFacial Treatment in Noida", slug: "hydrafacial-in-noida" },
         { name: "Chemical Peel in Noida", slug: "chemical-peel-in-noida" },
@@ -67,7 +67,7 @@ const CITY_CATEGORIES: Record<"Noida" | "Gurgaon", CityCategoryGroup[]> = {
       links: [
         { name: "Dermatologist Clinic in Gurgaon", slug: "dermatologist-in-gurgaon" },
         { name: "Skin Clinic in Gurgaon", slug: "skin-clinic-in-gurgaon" },
-        { name: "Acne Treatment in Gurgaon", slug: "acne-treatment-in-gurgaon" },
+        { name: "Acne & Pimple Treatment in Gurgaon", slug: "acne-pimple-treatment-in-gurgaon" },
         { name: "Pigmentation Treatment in Gurgaon", slug: "pigmentation-treatment-in-gurgaon" },
         { name: "HydraFacials in Gurgaon", slug: "hydrafacial-in-gurgaon" },
         { name: "Chemical Peel in Gurgaon", slug: "chemical-peel-in-gurgaon" },
