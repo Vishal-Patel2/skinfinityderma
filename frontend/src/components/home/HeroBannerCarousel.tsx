@@ -103,7 +103,7 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
   useEffect(() => {
     let active = true;
     getBanners().then((data) => {
-      if (active && data) {
+      if (active && Array.isArray(data) && data.length > 0) {
         setSlides(
           data.map((b) => ({
             id: String(b.id),
@@ -113,8 +113,12 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
             link: "/about-us",
           }))
         );
+      } else if (active && Array.isArray(data) && data.length === 0) {
+        setSlides(defaultSlides);
       }
-    }).catch(() => {});
+    }).catch(() => {
+      if (active) setSlides(defaultSlides);
+    });
 
     if (typeof getTrustBadges === "function") {
       getTrustBadges().then((badges) => {

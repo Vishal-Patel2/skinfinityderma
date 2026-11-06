@@ -51,12 +51,18 @@ $(document).ready(function () {
   $('#bannerDesktopFile').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Instant local client preview
+    const previewUrl = URL.createObjectURL(file);
+    $('#bannerDesktopPreviewImg').attr('src', previewUrl);
+    $('#bannerDesktopFileName').text(file.name);
+    $('#bannerDesktopDropzone').addClass('d-none');
+    $('#bannerDesktopPreviewWrap').removeClass('d-none');
+
     uploadBannerFile(file, 'banners/desktop', function (url, name) {
       $('#bannerDesktopImageUrl').val(url);
       $('#bannerDesktopPreviewImg').attr('src', window.API.resolveImageUrl(url));
-      $('#bannerDesktopFileName').text(name || 'Desktop Banner Creative');
-      $('#bannerDesktopDropzone').addClass('d-none');
-      $('#bannerDesktopPreviewWrap').removeClass('d-none');
+      $('#bannerDesktopFileName').text(name || file.name);
     });
   });
 
@@ -64,12 +70,18 @@ $(document).ready(function () {
   $('#bannerMobileFile').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Instant local client preview
+    const previewUrl = URL.createObjectURL(file);
+    $('#bannerMobilePreviewImg').attr('src', previewUrl);
+    $('#bannerMobileFileName').text(file.name);
+    $('#bannerMobileDropzone').addClass('d-none');
+    $('#bannerMobilePreviewWrap').removeClass('d-none');
+
     uploadBannerFile(file, 'banners/mobile', function (url, name) {
       $('#bannerMobileImageUrl').val(url);
       $('#bannerMobilePreviewImg').attr('src', window.API.resolveImageUrl(url));
-      $('#bannerMobileFileName').text(name || 'Mobile Banner Creative');
-      $('#bannerMobileDropzone').addClass('d-none');
-      $('#bannerMobilePreviewWrap').removeClass('d-none');
+      $('#bannerMobileFileName').text(name || file.name);
     });
   });
 
@@ -159,18 +171,18 @@ $(document).ready(function () {
       // Desktop Thumbnail
       const desktopThumb = b.desktopImage ? `
         <div class="banner-thumb-wrap position-relative" style="width: 220px; height: 70px; overflow: hidden; border-radius: 8px; border: 1px solid #e2e8f0; background: #0f172a;">
-          <img src="${b.desktopImage}" alt="Desktop Banner" 
+          <img src="${window.API.resolveImageUrl(b.desktopImage)}" alt="Desktop Banner" 
                style="width: 100%; height: 100%; object-fit: cover;" 
-               onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
+               onerror="this.onerror=null; this.src='assets/img/avatar-default.svg';">
         </div>
       ` : `<span class="badge bg-light text-muted border">No Desktop Image</span>`;
 
       // Mobile Thumbnail
       const mobileThumb = b.mobileImage ? `
         <div class="banner-thumb-wrap position-relative" style="width: 54px; height: 70px; overflow: hidden; border-radius: 6px; border: 1px solid #e2e8f0; background: #0f172a;">
-          <img src="${b.mobileImage}" alt="Mobile Banner" 
+          <img src="${window.API.resolveImageUrl(b.mobileImage)}" alt="Mobile Banner" 
                style="width: 100%; height: 100%; object-fit: cover;" 
-               onerror="this.onerror=null; this.src='assets/img/placeholder.svg';">
+               onerror="this.onerror=null; this.src='assets/img/avatar-default.svg';">
         </div>
       ` : `<span class="text-muted small">Auto (Desktop)</span>`;
 
@@ -313,7 +325,7 @@ $(document).ready(function () {
     $('#bannerId').val(b.id);
     $('#bannerDesktopImageUrl').val(b.desktopImage || '');
     if (b.desktopImage) {
-      $('#bannerDesktopPreviewImg').attr('src', b.desktopImage);
+      $('#bannerDesktopPreviewImg').attr('src', window.API.resolveImageUrl(b.desktopImage));
       $('#bannerDesktopFileName').text(b.desktopImage.split('/').pop() || 'Desktop Creative');
       $('#bannerDesktopDropzone').addClass('d-none');
       $('#bannerDesktopPreviewWrap').removeClass('d-none');
@@ -324,7 +336,7 @@ $(document).ready(function () {
 
     $('#bannerMobileImageUrl').val(b.mobileImage || '');
     if (b.mobileImage) {
-      $('#bannerMobilePreviewImg').attr('src', b.mobileImage);
+      $('#bannerMobilePreviewImg').attr('src', window.API.resolveImageUrl(b.mobileImage));
       $('#bannerMobileFileName').text(b.mobileImage.split('/').pop() || 'Mobile Creative');
       $('#bannerMobileDropzone').addClass('d-none');
       $('#bannerMobilePreviewWrap').removeClass('d-none');

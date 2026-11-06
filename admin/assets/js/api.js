@@ -119,13 +119,28 @@
       if (!url || typeof url !== 'string') return defaultFallback;
       const trimmed = url.trim();
       if (!trimmed) return defaultFallback;
-      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
         return trimmed;
       }
-      if (trimmed.startsWith('/')) {
-        return trimmed;
+
+      const normalizedPath = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+
+      // Handle running from non-backend origin (e.g. Next.js on port 3000)
+      let backendOrigin = '';
+      if (window.SKINFINITY_API_URL && window.SKINFINITY_API_URL.startsWith('http')) {
+        try {
+          const u = new URL(window.SKINFINITY_API_URL);
+          backendOrigin = u.origin;
+        } catch(e) {}
+      } else if (isLocalhost && window.location.port !== '4000') {
+        backendOrigin = 'http://127.0.0.1:4000';
       }
-      return '/' + trimmed;
+
+      if (backendOrigin && (normalizedPath.startsWith('/uploads') || normalizedPath.startsWith('/images'))) {
+        return backendOrigin + normalizedPath;
+      }
+
+      return normalizedPath;
     },
 
     // File Upload (Single) - Guaranteed query string routing for Multer
