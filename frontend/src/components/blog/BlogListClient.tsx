@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { ApiBlog } from "@/lib/types";
 import { getDoctorByAuthorName } from "@/data/clinicData";
+import { getImageUrl } from "@/utils/imageUrl";
 
 interface Props {
   initialBlogs: ApiBlog[];
@@ -33,8 +34,7 @@ const CATEGORIES = [
 ];
 
 function getValidBlogImage(src?: string | null, _category?: string, _title?: string): string {
-  if (src && (src.startsWith("http") || src.startsWith("/images/"))) return src;
-  return "/images/blog/doctor-consultation-dermatology.jpg";
+  return getImageUrl(src, "/images/blog/doctor-consultation-dermatology.jpg");
 }
 
 export default function BlogListClient({ initialBlogs }: Props) {

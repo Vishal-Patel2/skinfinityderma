@@ -22,6 +22,7 @@ import type { ApiBlog } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 import { getDoctorByAuthorName } from "@/data/clinicData";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
+import { getImageUrl } from "@/utils/imageUrl";
 
 interface Props {
   blog: ApiBlog;
@@ -29,8 +30,7 @@ interface Props {
 }
 
 function getValidBlogImage(src?: string | null, _category?: string, _title?: string): string {
-  if (src && (src.startsWith("http") || src.startsWith("/images/"))) return src;
-  return "/images/blog/doctor-consultation-dermatology.jpg";
+  return getImageUrl(src, "/images/blog/doctor-consultation-dermatology.jpg");
 }
 
 export default function BlogDetailView({ blog, relatedBlogs }: Props) {

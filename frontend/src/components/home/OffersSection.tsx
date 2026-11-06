@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, Tag } from "lucide-react";
 import { SPECIAL_OFFERS } from "@/data/clinicData";
 import { getOffers } from "@/lib/api";
+import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 
 const CATEGORIES = ["All", "Skin", "Hair", "Laser", "Body", "Bridal"];
 
@@ -132,7 +133,7 @@ export default function OffersSection({ initialOffers }: { initialOffers?: any[]
                 {/* Image Banner */}
                 <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
                   <Image
-                    src={offer.image}
+                    src={getImageUrl(offer.image, DEFAULT_FALLBACKS.offer)}
                     alt={offer.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

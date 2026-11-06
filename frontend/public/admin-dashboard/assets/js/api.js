@@ -113,11 +113,28 @@
       return this.request({ url: endpoint, method: 'DELETE' });
     },
 
-    // File Upload (Single)
+    // Centralized Image / Media URL Resolver
+    resolveImageUrl: function (url, fallback) {
+      const defaultFallback = fallback || 'assets/img/avatar-default.svg';
+      if (!url || typeof url !== 'string') return defaultFallback;
+      const trimmed = url.trim();
+      if (!trimmed) return defaultFallback;
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('/')) {
+        return trimmed;
+      }
+      return '/' + trimmed;
+    },
+
+    // File Upload (Single) - Guaranteed query string routing for Multer
     uploadImage: function (file, folder) {
       const formData = new FormData();
+      formData.append('file', file);
       formData.append('image', file);
-      const url = folder ? `/upload?folder=${encodeURIComponent(folder)}` : '/upload';
+      const targetFolder = folder || 'general';
+      const url = `/upload?folder=${encodeURIComponent(targetFolder)}`;
       return this.request({
         url: url,
         method: 'POST',
@@ -129,16 +146,12 @@
     // Universal File / FormData Upload
     uploadFile: function (fileOrFormData, folder) {
       let data = fileOrFormData;
-      let url = '/upload';
-      if (fileOrFormData instanceof FormData) {
-        data = fileOrFormData;
-        const f = folder || data.get('folder');
-        if (f) url = `/upload?folder=${encodeURIComponent(f)}`;
-      } else {
+      const targetFolder = folder || (fileOrFormData instanceof FormData ? fileOrFormData.get('folder') : null) || 'general';
+      const url = `/upload?folder=${encodeURIComponent(targetFolder)}`;
+      if (!(fileOrFormData instanceof FormData)) {
         data = new FormData();
         data.append('file', fileOrFormData);
         data.append('image', fileOrFormData);
-        if (folder) url = `/upload?folder=${encodeURIComponent(folder)}`;
       }
       return this.request({
         url: url,
@@ -151,8 +164,11 @@
     // Treatment Image Upload with Treatment ID and subfolder
     uploadTreatmentImage: function (file, treatmentId) {
       const formData = new FormData();
+      formData.append('file', file);
       formData.append('image', file);
-      const url = treatmentId ? `/upload?treatmentId=${encodeURIComponent(treatmentId)}&folder=treatments` : '/upload?folder=treatments';
+      const url = treatmentId 
+        ? `/upload?treatmentId=${encodeURIComponent(treatmentId)}&folder=treatments` 
+        : '/upload?folder=treatments';
       return this.request({
         url: url,
         method: 'POST',
@@ -170,13 +186,15 @@
     },
 
     // Multiple Files Upload
-    uploadMultipleImages: function (files) {
+    uploadMultipleImages: function (files, folder) {
       const formData = new FormData();
+      const targetFolder = folder || 'treatments';
       for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
         formData.append('images', files[i]);
       }
       return this.request({
-        url: '/upload-multiple',
+        url: `/upload/multiple?folder=${encodeURIComponent(targetFolder)}`,
         method: 'POST',
         data: formData,
         contentType: false

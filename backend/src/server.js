@@ -58,7 +58,7 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 if (!fs.existsSync(config.uploadsDir)) {
   fs.mkdirSync(config.uploadsDir, { recursive: true });
 }
-app.use('/uploads', express.static(config.uploadsDir));
+app.use('/uploads', express.static(config.uploadsDir, { maxAge: '1d' }));
 
 // Static frontend public directory for images, banners, icons
 const frontendPublicDir = [
@@ -68,7 +68,59 @@ const frontendPublicDir = [
 ].find((p) => fs.existsSync(p));
 if (frontendPublicDir) {
   app.use(express.static(frontendPublicDir));
+  const imagesDir = path.join(frontendPublicDir, 'images');
+  if (fs.existsSync(imagesDir)) {
+    app.use('/images', express.static(imagesDir));
+  }
 }
+
+// Resilient fallback for /uploads (recovers from legacy subfolder / root naming differences)
+app.use('/uploads', (req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+
+  const reqRelPath = decodeURIComponent(req.path.replace(/^\/+/, ''));
+  const filename = path.basename(reqRelPath);
+  if (!filename || !filename.includes('.')) return next();
+
+  // Search candidate locations on disk
+  const candidates = [
+    path.join(config.uploadsDir, filename),
+    path.join(config.uploadsDir, 'banners', filename),
+    path.join(config.uploadsDir, 'banners', 'desktop', filename),
+    path.join(config.uploadsDir, 'banners', 'mobile', filename),
+    path.join(config.uploadsDir, 'treatments', filename),
+    path.join(config.uploadsDir, 'doctors', filename),
+    path.join(config.uploadsDir, 'offers', filename),
+    path.join(config.uploadsDir, 'blogs', filename),
+    path.join(config.uploadsDir, 'gallery', filename),
+    path.join(config.uploadsDir, 'website', filename),
+    path.join(config.uploadsDir, 'patients', 'before-after', filename),
+    path.join(config.uploadsDir, 'patients', 'documents', filename),
+  ];
+
+  if (frontendPublicDir) {
+    candidates.push(
+      path.join(frontendPublicDir, 'uploads', filename),
+      path.join(frontendPublicDir, 'images', filename),
+      path.join(frontendPublicDir, 'images', 'banners', filename),
+      path.join(frontendPublicDir, 'images', 'treatments', filename),
+      path.join(frontendPublicDir, 'images', 'doctors', filename)
+    );
+  }
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.sendFile(candidate);
+      }
+    } catch {
+      // Ignore filesystem permission or parsing error
+    }
+  }
+
+  next();
+});
 
 // Static Admin Dashboard Panel (served at root and at /admin)
 if (fs.existsSync(config.adminDir)) {
@@ -121,14 +173,14 @@ app.use(errorHandler);
 // Start Server
 if (require.main === module) {
   app.listen(config.port, () => {
-  console.log('================================================================');
-  console.log(` 🩺 Skinfinity Derma Backend & Admin API Server Active!`);
-  console.log(` 🌐 Server URL:        http://localhost:${config.port}`);
-  console.log(` 🔗 Public REST API:   http://localhost:${config.port}/api/public/site`);
-  console.log(` 🛡️ Admin Dashboard:   http://localhost:${config.port}/index.html`);
-  console.log(` 📁 Uploads Directory: ${config.uploadsDir}`);
-  console.log('================================================================');
-});
+    console.log('================================================================');
+    console.log(` 🩺 Skinfinity Derma Backend & Admin API Server Active!`);
+    console.log(` 🌐 Server URL:        http://localhost:${config.port}`);
+    console.log(` 🔗 Public REST API:   http://localhost:${config.port}/api/public/site`);
+    console.log(` 🛡️ Admin Dashboard:   http://localhost:${config.port}/index.html`);
+    console.log(` 📁 Uploads Directory: ${config.uploadsDir}`);
+    console.log('================================================================');
+  });
 }
 
 module.exports = app;

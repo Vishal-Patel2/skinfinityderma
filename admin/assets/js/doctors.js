@@ -26,12 +26,12 @@ $(document).ready(function () {
       showConfirmButton: false
     });
 
-    API.uploadMediaFile(file)
+    API.uploadImage(file, 'doctors')
       .then(res => {
         Swal.close();
-        const fileUrl = res.data ? res.data.file_url : (res.fileUrl || res.url);
+        const fileUrl = res.url || (res.data ? res.data.url : res.fileUrl);
         $('#doctorPhotoUrl').val(fileUrl);
-        $('#doctorPhotoPreviewImg').attr('src', fileUrl);
+        $('#doctorPhotoPreviewImg').attr('src', API.resolveImageUrl(fileUrl));
         window.App.toast('success', 'Photo uploaded successfully.');
       })
       .catch(err => {
@@ -43,7 +43,7 @@ $(document).ready(function () {
   $('#doctorPhotoUrl').on('input change', function () {
     const val = $(this).val().trim();
     if (val) {
-      $('#doctorPhotoPreviewImg').attr('src', val);
+      $('#doctorPhotoPreviewImg').attr('src', API.resolveImageUrl(val));
     } else {
       $('#doctorPhotoPreviewImg').attr('src', '/images/doctors/dr-ipshita-johri.webp');
     }

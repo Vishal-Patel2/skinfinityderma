@@ -1,30 +1,17 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 const { requirePermission } = require('../middleware/auth');
 const { asyncHandler, HttpError } = require('../middleware/error');
 const config = require('../config/env');
 const { query, one } = require('../config/db');
 const { parseJson } = require('../utils/helpers');
-const { safeDeleteFile } = require('../utils/safe-media');
+const {
+  uploadMiddleware,
+  formatUploadResponse,
+  recordMediaMetadata,
+  deleteManagedFile,
+} = require('../services/imageStorageService');
 
 const router = express.Router();
-
-const uploadDir = config.uploadsDir;
-
-/**
- * Safe file deletion helper to physically remove an uploaded file from disk.
- * Uses centralized SafeMediaService to verify paths and references.
- */
-async function deleteUploadedFile(fileUrlOrPath) {
-  try {
-    const res = await safeDeleteFile(fileUrlOrPath);
-    return res.success;
-  } catch (e) {
-    return false;
-  }
-}
 
 /**
  * Removes an image reference from sid_treatments database columns
@@ -66,116 +53,97 @@ async function removeImageFromTreatment(treatmentId, targetPath) {
   console.log(`✅ Removed image reference from treatment #${treatmentId}:`, targetPath);
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const folder = (req.query.folder || (req.body && req.body.folder) || '').replace(/[^a-z0-9_-]/gi, '');
-    let target = uploadDir;
-    if (folder) {
-      target = path.join(uploadDir, folder);
-      if (!fs.existsSync(target)) {
-        fs.mkdirSync(target, { recursive: true });
-      }
-    }
-    cb(null, target);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const cleanBase = path.basename(file.originalname, ext).replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e4)}`;
-
-    const treatmentId = req.query.treatmentId || (req.body && req.body.treatmentId);
-    let prefix = '';
-    if (treatmentId) {
-      prefix = `treatment-${treatmentId}-`;
-    } else if (req.query.folder === 'treatments' || (req.body && req.body.folder === 'treatments')) {
-      prefix = 'treatment-';
-    }
-
-    cb(null, `${prefix}${cleanBase}-${unique}${ext}`);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif'];
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new HttpError(400, 'Only image files (jpg, jpeg, png, webp, svg, gif) are allowed'));
-  }
-};
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-  fileFilter,
-});
-
 /**
  * POST /api/upload
+ * Single file upload. Accepts 'file', 'image', or any field name.
  */
 router.post(
   '/',
   requirePermission('media.create'),
-  upload.any(),
+  uploadMiddleware.any(),
   asyncHandler(async (req, res) => {
     const file = req.files && req.files.length ? req.files[0] : req.file;
     if (!file) throw new HttpError(400, 'No file uploaded');
 
-    const folder = (req.query.folder || (req.body && req.body.folder) || '').replace(/[^a-z0-9_-]/gi, '');
-    const relativeUrl = folder ? `/uploads/${folder}/${file.filename}` : `/uploads/${file.filename}`;
-    const absoluteUrl = `${config.publicBaseUrl}${relativeUrl}`;
+    const formatted = formatUploadResponse(file, req);
+
+    // Record in media metadata table
+    const mediaId = await recordMediaMetadata(
+      {
+        filename: formatted.filename,
+        originalName: formatted.originalName,
+        url: formatted.url,
+        mimeType: formatted.mimeType,
+        size: formatted.size,
+        altText: req.body?.altText || formatted.originalName,
+      },
+      req.user?.id || null
+    );
 
     res.json({
-      success: true,
-      url: relativeUrl,
-      absoluteUrl,
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size,
+      ...formatted,
+      id: mediaId ? String(mediaId) : undefined,
     });
   })
 );
 
 /**
  * POST /api/upload/multiple
+ * Multiple files upload. Accepts 'files' or 'images'.
  */
 router.post(
   '/multiple',
   requirePermission('media.create'),
-  upload.array('files', 10),
+  uploadMiddleware.any(),
   asyncHandler(async (req, res) => {
-    if (!req.files || !req.files.length) throw new HttpError(400, 'No files uploaded');
+    const files = req.files;
+    if (!files || !files.length) throw new HttpError(400, 'No files uploaded');
 
-    const folder = (req.query.folder || (req.body && req.body.folder) || '').replace(/[^a-z0-9_-]/gi, '');
-    const files = req.files.map((f) => {
-      const rel = folder ? `/uploads/${folder}/${f.filename}` : `/uploads/${f.filename}`;
-      return {
-        url: rel,
-        absoluteUrl: `${config.publicBaseUrl}${rel}`,
-        filename: f.filename,
-        originalName: f.originalname,
-        size: f.size,
-      };
-    });
+    const results = [];
+    for (const f of files) {
+      const formatted = formatUploadResponse(f, req);
+      const mediaId = await recordMediaMetadata(
+        {
+          filename: formatted.filename,
+          originalName: formatted.originalName,
+          url: formatted.url,
+          mimeType: formatted.mimeType,
+          size: formatted.size,
+          altText: formatted.originalName,
+        },
+        req.user?.id || null
+      );
+      results.push({
+        ...formatted,
+        id: mediaId ? String(mediaId) : undefined,
+      });
+    }
 
-    res.json({ success: true, data: files });
+    res.json({ success: true, data: results });
   })
 );
 
 /**
  * POST /api/upload/delete
- * Physically deletes an uploaded file from disk and updates DB reference if treatmentId is provided.
+ * Safely deletes an uploaded file from disk and updates treatment references if provided.
  */
 router.post(
   '/delete',
   requirePermission('media.delete'),
   asyncHandler(async (req, res) => {
-    const { url, filePath, filename, treatmentId } = req.body;
+    const { url, filePath, filename, treatmentId, force } = req.body;
     const targetPath = url || filePath || filename;
     if (!targetPath) throw new HttpError(400, 'File path or URL is required');
 
-    const deletedFromDisk = await deleteUploadedFile(targetPath);
+    const result = await deleteManagedFile(targetPath, { force: force === true });
+
+    if (!result.success && result.reason && result.reason.includes('actively referenced')) {
+      return res.status(409).json({
+        success: false,
+        message: 'Cannot delete: this file is actively used by other catalog items.',
+        references: result.references,
+      });
+    }
 
     if (treatmentId) {
       await removeImageFromTreatment(treatmentId, targetPath);
@@ -183,12 +151,12 @@ router.post(
 
     res.json({
       success: true,
-      message: 'File deleted from server folder and treatment reference updated',
-      deletedFromDisk,
+      message: 'File deleted from server storage',
+      deletedFromDisk: result.fileUnlinked,
     });
   })
 );
 
 module.exports = router;
-module.exports.deleteUploadedFile = deleteUploadedFile;
+module.exports.deleteUploadedFile = deleteManagedFile;
 module.exports.removeImageFromTreatment = removeImageFromTreatment;

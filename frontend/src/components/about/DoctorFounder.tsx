@@ -14,6 +14,7 @@ import {
 import { DOCTORS } from "@/data/clinicData";
 import { useAuth } from "@/context/AuthContext";
 import { getDoctors, getHomepageData } from "@/lib/api";
+import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 
 export default function DoctorFounder() {
   const { openAppointmentModal } = useAuth();
@@ -161,7 +162,7 @@ export default function DoctorFounder() {
               {/* Founder Image */}
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[3/4] bg-slate-100">
                 <img
-                  src={founder.image || founderSection.mediaUrl || "/images/doctors/dr-ipshita-johri.webp"}
+                  src={getImageUrl(founder.image || founderSection.mediaUrl, DEFAULT_FALLBACKS.doctor)}
                   alt={founder.name || founderSection.title}
                   className="w-full h-full object-cover object-top block"
                 />
@@ -181,7 +182,7 @@ export default function DoctorFounder() {
                 <div className="absolute -bottom-6 right-2 sm:-right-6 bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-slate-100 flex items-center gap-3 max-w-[235px] sm:max-w-[250px] z-10">
                   <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden shrink-0 border border-amber-300">
                     <img
-                      src={founderSection.missCurvy.image || "/images/doctors/dr-ipshita-miss-curvy.jpg"}
+                      src={getImageUrl(founderSection.missCurvy.image, "/images/doctors/dr-ipshita-miss-curvy.jpg")}
                       alt={founderSection.missCurvy.title || "Ms. India Curvy 2020"}
                       className="w-full h-full object-cover block"
                     />
@@ -340,7 +341,7 @@ export default function DoctorFounder() {
                 <div>
                   <Link href={`/doctors/${doc.slug || doc.id}`} className="block relative rounded-2xl overflow-hidden aspect-[4/5] bg-slate-100 mb-4">
                     <img
-                      src={doc.image}
+                      src={getImageUrl(doc.image, DEFAULT_FALLBACKS.doctor)}
                       alt={doc.name}
                       className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500 block"
                     />

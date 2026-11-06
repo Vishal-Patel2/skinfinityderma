@@ -28,6 +28,7 @@ import { TESTIMONIALS } from "@/data/clinicData";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 
 interface Props {
@@ -91,16 +92,21 @@ export default function TreatmentDetailView({ treatment }: Props) {
     const raw = Array.isArray(treatment.galleryImages) ? treatment.galleryImages : [];
     const base: Array<{ type: "image" | "youtube"; src: string; caption: string; videoId?: string }> = raw
       .filter((img) => img && img.src && !img.src.includes("img.youtube.com") && !img.src.includes("youtube") && !img.src.includes("youtu.be"))
-      .map((img) => ({ type: "image", src: img.src, caption: img.caption || treatment.name }));
+      .map((img) => ({
+        type: "image",
+        src: getImageUrl(img.src, DEFAULT_FALLBACKS.treatment),
+        caption: img.caption || treatment.name,
+      }));
 
     // Ensure bannerImage is first as Cover Media
     if (treatment.bannerImage) {
-      const bannerIdx = base.findIndex((b) => b.src === treatment.bannerImage);
+      const bannerSrc = getImageUrl(treatment.bannerImage, DEFAULT_FALLBACKS.treatment);
+      const bannerIdx = base.findIndex((b) => b.src === bannerSrc);
       if (bannerIdx > 0) {
         const [bannerItem] = base.splice(bannerIdx, 1);
         base.unshift(bannerItem);
       } else if (bannerIdx === -1) {
-        base.unshift({ type: "image", src: treatment.bannerImage, caption: treatment.name });
+        base.unshift({ type: "image", src: bannerSrc, caption: treatment.name });
       }
     }
 
@@ -111,8 +117,9 @@ export default function TreatmentDetailView({ treatment }: Props) {
       (treatment as any).subImage3,
     ].filter(Boolean);
     for (const sub of extraSubs) {
-      if (!base.some((b) => b.src === sub)) {
-        base.push({ type: "image", src: sub, caption: `${treatment.name} Clinical View` });
+      const resolvedSub = getImageUrl(sub, DEFAULT_FALLBACKS.treatment);
+      if (!base.some((b) => b.src === resolvedSub)) {
+        base.push({ type: "image", src: resolvedSub, caption: `${treatment.name} Clinical View` });
       }
     }
 
@@ -120,15 +127,18 @@ export default function TreatmentDetailView({ treatment }: Props) {
     if (base.length < 4 && Array.isArray(treatment.howItWorksSteps)) {
       for (const step of treatment.howItWorksSteps) {
         if (base.length >= 4) break;
-        if (step.image && !base.some((img) => img.src === step.image)) {
-          base.push({ type: "image", src: step.image, caption: `${step.stepNumber}: ${step.title}` });
+        if (step.image) {
+          const resolvedStep = getImageUrl(step.image, DEFAULT_FALLBACKS.treatment);
+          if (!base.some((img) => img.src === resolvedStep)) {
+            base.push({ type: "image", src: resolvedStep, caption: `${step.stepNumber}: ${step.title}` });
+          }
         }
       }
     }
 
     // Fallback if empty
     if (base.length === 0) {
-      base.push({ type: "image", src: treatment.bannerImage || "/images/default-treatment.jpg", caption: treatment.name });
+      base.push({ type: "image", src: getImageUrl(treatment.bannerImage, DEFAULT_FALLBACKS.treatment), caption: treatment.name });
     }
 
     // Append YouTube Video at the end of sub-images strip
@@ -602,7 +612,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                   <div>
                     <div className="relative aspect-[16/11] w-full rounded-xl overflow-hidden bg-slate-100 mb-3.5">
                       <Image
-                        src={step.image}
+                        src={getImageUrl(step.image, DEFAULT_FALLBACKS.treatment)}
                         alt={step.title}
                         fill
                         className="object-cover"
@@ -943,7 +953,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
                   <div className="relative w-28 shrink-0 flex flex-col items-center">
                     <div className="relative w-28 h-24 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
                       <Image
-                        src={rel.bannerImage}
+                        src={getImageUrl(rel.bannerImage, DEFAULT_FALLBACKS.treatment)}
                         alt={rel.name}
                         fill
                         className="object-cover"

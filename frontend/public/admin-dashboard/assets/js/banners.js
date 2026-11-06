@@ -47,26 +47,26 @@ $(document).ready(function () {
   setupDropzoneEvents('#bannerDesktopDropzone', '#bannerDesktopFile');
   setupDropzoneEvents('#bannerMobileDropzone', '#bannerMobileFile');
 
-  // When desktop file selected -> upload via /api/upload
+  // When desktop file selected -> upload via Centralized Image Storage
   $('#bannerDesktopFile').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
-    uploadBannerFile(file, function (url, name) {
+    uploadBannerFile(file, 'banners/desktop', function (url, name) {
       $('#bannerDesktopImageUrl').val(url);
-      $('#bannerDesktopPreviewImg').attr('src', url);
+      $('#bannerDesktopPreviewImg').attr('src', window.API.resolveImageUrl(url));
       $('#bannerDesktopFileName').text(name || 'Desktop Banner Creative');
       $('#bannerDesktopDropzone').addClass('d-none');
       $('#bannerDesktopPreviewWrap').removeClass('d-none');
     });
   });
 
-  // When mobile file selected -> upload via /api/upload
+  // When mobile file selected -> upload via Centralized Image Storage
   $('#bannerMobileFile').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
-    uploadBannerFile(file, function (url, name) {
+    uploadBannerFile(file, 'banners/mobile', function (url, name) {
       $('#bannerMobileImageUrl').val(url);
-      $('#bannerMobilePreviewImg').attr('src', url);
+      $('#bannerMobilePreviewImg').attr('src', window.API.resolveImageUrl(url));
       $('#bannerMobileFileName').text(name || 'Mobile Banner Creative');
       $('#bannerMobileDropzone').addClass('d-none');
       $('#bannerMobilePreviewWrap').removeClass('d-none');
@@ -94,43 +94,29 @@ $(document).ready(function () {
     $('#bannerMobileDropzone').removeClass('d-none');
   });
 
-  function uploadBannerFile(file, onSuccess) {
+  function uploadBannerFile(file, folder, onSuccess) {
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      window.App.toast('error', 'Image size exceeds 10MB limit');
+    if (file.size > 20 * 1024 * 1024) {
+      window.App.toast('error', 'Image size exceeds 20MB limit');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('folder', 'banners');
+    window.App.toast('info', 'Uploading creative...');
 
-    const token = window.API.getToken();
-
-    $.ajax({
-      url: '/api/upload',
-      type: 'POST',
-      data: formData,
-      processData: false,
-      contentType: false,
-      headers: token ? { 'Authorization': 'Bearer ' + token } : {},
-      beforeSend: function () {
-        window.App.toast('info', 'Uploading creative...');
-      },
-      success: function (res) {
+    window.API.uploadImage(file, folder || 'banners')
+      .done(function (res) {
         if (res.success && res.url) {
           window.App.toast('success', 'Image uploaded successfully');
           onSuccess(res.url, file.name);
         } else {
           window.App.toast('error', res.message || 'Upload failed');
         }
-      },
-      error: function (xhr) {
+      })
+      .fail(function (xhr) {
         const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Upload failed';
         window.App.toast('error', msg);
-      }
-    });
+      });
   }
 
   // Load Banners from API
@@ -520,7 +506,7 @@ $(document).ready(function () {
   $('#trustBadgeCustomIconFile').on('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
-    uploadBannerFile(file, function (url, name) {
+    uploadBannerFile(file, 'website', function (url, name) {
       $('#trustBadgeCustomIconUrl').val(url);
       $('#badgeCustomIconPreviewImg').attr('src', url);
       $('#badgeCustomIconFileName').text(name || 'custom-icon.png');

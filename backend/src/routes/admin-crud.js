@@ -305,13 +305,24 @@ router.put(
     const b = await one('SELECT * FROM sid_banners WHERE id = ?', [id]);
     if (!b) throw new HttpError(404, 'Banner not found');
 
+    const nextDesktop = desktopImage !== undefined ? desktopImage : b.desktop_image;
+    const nextMobile = mobileImage !== undefined ? mobileImage : b.mobile_image;
+
+    // If an image was replaced, safely clean up the old file
+    if (desktopImage !== undefined && b.desktop_image && b.desktop_image !== desktopImage) {
+      await deleteUploadedFile(b.desktop_image);
+    }
+    if (mobileImage !== undefined && b.mobile_image && b.mobile_image !== mobileImage) {
+      await deleteUploadedFile(b.mobile_image);
+    }
+
     await query(
       `UPDATE sid_banners
           SET desktop_image = ?, mobile_image = ?, display_order = ?, is_active = ?
         WHERE id = ?`,
       [
-        desktopImage !== undefined ? desktopImage : b.desktop_image,
-        mobileImage !== undefined ? mobileImage : b.mobile_image,
+        nextDesktop,
+        nextMobile,
         displayOrder !== undefined ? displayOrder : b.display_order,
         isActive !== undefined ? (isActive ? 1 : 0) : b.is_active,
         id,
@@ -340,7 +351,12 @@ router.delete(
   requirePermission('banners.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const b = await one('SELECT desktop_image, mobile_image FROM sid_banners WHERE id = ?', [id]);
     await query('DELETE FROM sid_banners WHERE id = ?', [id]);
+    if (b) {
+      if (b.desktop_image) await deleteUploadedFile(b.desktop_image);
+      if (b.mobile_image) await deleteUploadedFile(b.mobile_image);
+    }
     res.json({ success: true, message: 'Banner deleted successfully' });
   })
 );
@@ -537,6 +553,11 @@ router.put(
     const d = await one('SELECT * FROM sid_doctors WHERE id = ?', [id]);
     if (!d) throw new HttpError(404, 'Doctor not found');
 
+    const newImg = image || photo || d.image;
+    if (newImg && d.image && d.image !== newImg) {
+      await deleteUploadedFile(d.image);
+    }
+
     const locs = availableLocations || (clinicCity ? clinicCity.split(',').map((s) => s.trim()) : parseJson(d.available_locations, []));
 
     await query(
@@ -552,7 +573,7 @@ router.put(
         qualifications !== undefined ? qualifications : d.qualifications,
         specialty || specialization || d.specialty,
         experience !== undefined ? experience : d.experience,
-        image || photo || d.image,
+        newImg,
         bio || fullBio || d.bio,
         consultationFee !== undefined ? consultationFee : d.consultation_fee,
         JSON.stringify(locs),
@@ -585,7 +606,12 @@ router.delete(
   requirePermission('doctors.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const d = await one('SELECT image, profile_banner FROM sid_doctors WHERE id = ?', [id]);
     await query('DELETE FROM sid_doctors WHERE id = ?', [id]);
+    if (d) {
+      if (d.image) await deleteUploadedFile(d.image);
+      if (d.profile_banner) await deleteUploadedFile(d.profile_banner);
+    }
     res.json({ success: true, message: 'Doctor profile deleted' });
   })
 );
@@ -2724,6 +2750,11 @@ router.put(
       ? displayOrder
       : existing.display_order;
 
+    const newImg = image.trim();
+    if (newImg && existing.image && existing.image !== newImg) {
+      await deleteUploadedFile(existing.image);
+    }
+
     await query(
       `UPDATE sid_offers
           SET title = ?, badge = ?, category = ?, description = ?, image = ?,
@@ -2735,7 +2766,7 @@ router.put(
         badge !== undefined ? badge.trim() : 'Special Offer',
         category !== undefined ? category.trim() : 'Skin',
         description !== undefined ? description.trim() : null,
-        image.trim(),
+        newImg,
         linkText !== undefined ? linkText.trim() : 'Claim Offer',
         slug !== undefined ? slug.trim() : '/contact-us#appointment_form',
         couponId || null,
@@ -2794,10 +2825,11 @@ router.delete(
   requirePermission('offers.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const offer = await one('SELECT id, title FROM sid_offers WHERE id = ?', [id]);
+    const offer = await one('SELECT id, title, image FROM sid_offers WHERE id = ?', [id]);
     await query('DELETE FROM sid_offers WHERE id = ?', [id]);
 
     if (offer) {
+      if (offer.image) await deleteUploadedFile(offer.image);
       await audit(req, { action: 'delete', entity: 'offers', entityId: id, summary: `Deleted offer "${offer.title}"` });
     }
 

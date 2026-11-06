@@ -1,5 +1,4 @@
 const express = require('express');
-const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { query, one } = require('../config/db');
@@ -9,49 +8,14 @@ const { asyncHandler, HttpError } = require('../middleware/error');
 const config = require('../config/env');
 const {
   uploadsRoot,
-  safeDeleteFile,
-  scanStorageAudit,
-  resolveSafeUploadPath,
-  countFileReferences,
-} = require('../utils/safe-media');
+  deleteManagedFile,
+  uploadMiddleware,
+  formatUploadResponse,
+  recordMediaMetadata,
+} = require('../services/imageStorageService');
+const { scanStorageAudit } = require('../utils/safe-media');
 
 const router = express.Router();
-
-// Dynamic disk storage based on optional module parameter
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let targetSub = req.body.module || 'treatments';
-    // Sanitize module name to avoid traversal
-    targetSub = targetSub.replace(/[^a-z0-9_-]/gi, '').toLowerCase();
-    const destDir = path.join(uploadsRoot, targetSub);
-    if (!fs.existsSync(destDir)) {
-      fs.mkdirSync(destDir, { recursive: true });
-    }
-    cb(null, destDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const cleanBase = path.basename(file.originalname, ext).replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e4)}`;
-    cb(null, `${cleanBase}-${unique}${ext}`);
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.mp4', '.mov', '.pdf', '.doc', '.docx'];
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new HttpError(400, 'Unsupported media format. Allowed: JPG, PNG, WEBP, SVG, GIF, MP4, PDF.'));
-  }
-};
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
-  fileFilter,
-});
 
 /**
  * GET /api/media/storage-audit
@@ -197,40 +161,43 @@ router.get(
 router.post(
   '/upload',
   requirePermission('media.create'),
-  upload.single('file'),
+  uploadMiddleware.any(),
   asyncHandler(async (req, res) => {
-    if (!req.file) throw new HttpError(400, 'No file provided');
+    const file = req.files && req.files.length ? req.files[0] : req.file;
+    if (!file) throw new HttpError(400, 'No file provided');
 
-    const relToUploads = path.relative(uploadsRoot, req.file.path).replace(/\\/g, '/');
-    const relativeUrl = `/uploads/${relToUploads}`;
-    const altText = req.body.altText || req.file.originalname.replace(/[-_]/g, ' ');
+    const formatted = formatUploadResponse(file, req);
+    const altText = req.body.altText || formatted.originalName.replace(/[-_]/g, ' ');
 
-    const r = await query(
-      `INSERT INTO sid_media_files (filename, original_name, url, mime_type, size_bytes, alt_text, uploaded_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [
-        req.file.filename,
-        req.file.originalname,
-        relativeUrl,
-        req.file.mimetype,
-        req.file.size,
+    const mediaId = await recordMediaMetadata(
+      {
+        filename: formatted.filename,
+        originalName: formatted.originalName,
+        url: formatted.url,
+        mimeType: formatted.mimeType,
+        size: formatted.size,
         altText,
-        req.user?.id || null,
-      ]
+      },
+      req.user?.id || null
     );
 
     res.status(201).json({
       success: true,
       message: 'File uploaded successfully',
       data: {
-        id: String(r.insertId),
-        url: relativeUrl,
-        absoluteUrl: `${config.publicBaseUrl}${relativeUrl}`,
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size,
+        id: mediaId ? String(mediaId) : undefined,
+        url: formatted.url,
+        absoluteUrl: formatted.absoluteUrl,
+        filename: formatted.filename,
+        originalName: formatted.originalName,
+        size: formatted.size,
         altText,
       },
+      // Top-level aliases for backwards compatibility with diverse admin clients
+      url: formatted.url,
+      absoluteUrl: formatted.absoluteUrl,
+      fileUrl: formatted.url,
+      filename: formatted.filename,
     });
   })
 );
@@ -262,7 +229,7 @@ router.delete(
     const fileRow = await one('SELECT * FROM sid_media_files WHERE id = ?', [id]);
     if (!fileRow) throw new HttpError(404, 'File not found');
 
-    const result = await safeDeleteFile(fileRow.url, { force: req.query.force === 'true' });
+    const result = await deleteManagedFile(fileRow.url, { force: req.query.force === 'true' });
     if (!result.success && result.reason && result.reason.includes('actively referenced')) {
       return res.status(409).json({
         success: false,

@@ -201,6 +201,7 @@ $(document).ready(function () {
         coverBtn = `<button type="button" class="btn btn-xs btn-outline-secondary w-100 py-1 btn-set-cover" data-index="${idx}" style="font-size: 0.7rem;">Set as Cover</button>`;
       }
 
+      const resolvedSrc = window.API ? window.API.resolveImageUrl(item.src) : item.src;
       const cardHtml = `
         <div class="col-6 col-md-4 col-xl-2-4 gallery-card-col" style="flex: 0 0 20%; max-width: 20%; cursor: grab;" draggable="true" data-index="${idx}">
           <div class="media-card-item">
@@ -208,7 +209,7 @@ $(document).ready(function () {
             <button type="button" class="media-card-remove btn-remove-media" data-index="${idx}" title="Remove media">
               <i class="bi bi-x"></i>
             </button>
-            <img src="${item.src}" alt="${item.caption || 'Media'}" class="media-card-thumb" onerror="this.src='assets/img/avatar-default.svg'" draggable="false">
+            <img src="${resolvedSrc}" alt="${item.caption || 'Media'}" class="media-card-thumb" onerror="this.onerror=null; this.src='assets/img/placeholder.svg'" draggable="false">
             <div class="p-2 bg-white">
               <input type="text" class="form-control form-control-sm mb-1 media-caption-input" data-index="${idx}" value="${item.caption || ''}" placeholder="Alt text / Caption" style="font-size: 0.7rem; padding: 0.2rem 0.4rem;">
               <div class="d-flex justify-content-between align-items-center">
@@ -290,48 +291,48 @@ $(document).ready(function () {
     $('#treatmentImageFileInput').trigger('click');
   });
 
-  // Handle local file uploads with high-fidelity client compression & server storage
+  // Handle local file uploads with high-fidelity client compression & centralized server storage
   $('#treatmentImageFileInput').on('change', async function (e) {
     const files = e.target.files;
     if (!files || !files.length) return;
 
     if (window.App && window.App.toast) {
-      window.App.toast('info', `Optimizing & saving ${files.length} image(s)...`);
+      window.App.toast('info', `Uploading & saving ${files.length} image(s)...`);
     }
 
+    let successCount = 0;
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
-        const compressed = await compressImageFile(file, 1600, 1600, 0.85);
-        let finalSrc = compressed.dataUrl;
+        const compressed = await compressImageFile(file, 1600, 1600, 0.88);
+        const cleanBase = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9_-]/gi, '-');
+        const uploadFile = new File([compressed.blob || file], cleanBase + '.jpg', { type: 'image/jpeg' });
 
-        // Upload compressed file to /uploads/treatments/ with treatmentId prefix for uniqueness
-        if (window.API && typeof window.API.uploadTreatmentImage === 'function' && compressed.blob) {
-          try {
-            const cleanBase = file.name.replace(/\.[^/.]+$/, '');
-            const uploadFile = new File([compressed.blob], cleanBase + '.jpg', { type: 'image/jpeg' });
-            const uploadRes = await window.API.uploadTreatmentImage(uploadFile, treatmentId || '');
-            if (uploadRes && uploadRes.url) {
-              finalSrc = uploadRes.url;
-            }
-          } catch (uploadErr) {
-            console.warn('Direct upload failed, using optimized data URL', uploadErr);
+        const uploadRes = await window.API.uploadTreatmentImage(uploadFile, treatmentId || '');
+        if (uploadRes && uploadRes.url) {
+          mediaGallery.push({
+            type: 'image',
+            src: uploadRes.url,
+            caption: cleanBase.replace(/[-_]/g, ' ')
+          });
+          if (!coverImageSrc) coverImageSrc = uploadRes.url;
+          successCount++;
+        } else {
+          if (window.App && window.App.toast) {
+            window.App.toast('error', `Could not upload "${file.name}"`);
           }
         }
-
-        mediaGallery.push({
-          type: 'image',
-          src: finalSrc,
-          caption: file.name.replace(/\.[^/.]+$/, '')
-        });
-        if (!coverImageSrc) coverImageSrc = finalSrc;
       } catch (err) {
-        console.error('Error compressing image:', err);
+        console.error('Upload error:', err);
+        if (window.App && window.App.toast) {
+          window.App.toast('error', `Error uploading "${file.name}": ${err.message || 'Server error'}`);
+        }
       }
     }
+
     renderMediaGallery();
-    if (window.App && window.App.toast) {
-      window.App.toast('success', `${files.length} image(s) processed & added to gallery!`);
+    if (successCount > 0 && window.App && window.App.toast) {
+      window.App.toast('success', `${successCount} image(s) uploaded & synchronized to treatment gallery!`);
     }
     $(this).val('');
   });

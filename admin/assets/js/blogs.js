@@ -216,36 +216,24 @@
         return;
       }
 
-      const formData = new FormData();
-      formData.append('file', file);
-
       const $btn = $('#btnUploadBlogImg').prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
 
-      $.ajax({
-        url: '/api/upload',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: {
-          'Authorization': 'Bearer ' + (localStorage.getItem('token') || '')
-        }
-      })
-      .done(function (res) {
-        const url = res.url || res.path || (res.data && res.data.url);
-        if (url) {
-          $('#blogImageInput').val(url);
-          updateImagePreview(url);
-          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Image uploaded', timer: 2000, showConfirmButton: false });
-        }
-      })
-      .fail(function (xhr) {
-        const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Upload failed';
-        Swal.fire('Upload Error', msg, 'error');
-      })
-      .always(function () {
-        $btn.prop('disabled', false).html('<i class="bi bi-cloud-arrow-up"></i> Upload');
-      });
+      window.API.uploadImage(file, 'blogs')
+        .done(function (res) {
+          const url = res.url || res.path || (res.data && res.data.url);
+          if (url) {
+            $('#blogImageInput').val(url);
+            updateImagePreview(window.API.resolveImageUrl(url));
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Image uploaded', timer: 2000, showConfirmButton: false });
+          }
+        })
+        .fail(function (xhr) {
+          const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Upload failed';
+          Swal.fire('Upload Error', msg, 'error');
+        })
+        .always(function () {
+          $btn.prop('disabled', false).html('<i class="bi bi-cloud-arrow-up"></i> Upload');
+        });
     });
 
     $('#btnCreateBlog').on('click', function () {

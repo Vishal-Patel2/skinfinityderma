@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="150" viewBox="0 0 200 150" fill="none">
+  <rect width="200" height="150" fill="#F1F5F9" rx="8"/>
+  <rect x="2" y="2" width="196" height="146" stroke="#E2E8F0" stroke-width="2" stroke-dasharray="6 6" rx="6"/>
+  <g transform="translate(76, 45)" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="3" y="3" width="42" height="42" rx="4"/>
+    <circle cx="16" cy="16" r="3"/>
+    <path d="M41 33L31 23L11 41"/>
+  </g>
+  <text x="100" y="112" fill="#64748B" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" text-anchor="middle">Image Not Available</text>
+</svg>

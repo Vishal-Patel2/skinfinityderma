@@ -45,6 +45,8 @@ const TIMEOUT_MS = 6000;
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.skinfinityderma.com").replace(/\/+$/, "");
 
+import { getImageUrl, resolveGalleryList, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
+
 /* ------------------------------------------------------------------------- */
 /* Media URL handling                                                        */
 /* ------------------------------------------------------------------------- */
@@ -53,13 +55,13 @@ let MEDIA_ORIGIN = "";
 try {
   MEDIA_ORIGIN = new URL(PUBLIC_BASE).origin;
 } catch {
-  MEDIA_ORIGIN = "http://localhost:4000";
+  MEDIA_ORIGIN = "https://skinfinityderma.onrender.com";
 }
 
-/** `/uploads/x.webp` lives on the API host; `/images/..` and absolute URLs are returned untouched. */
+/** Resolves any image URL (backend uploads, static assets, external CDNs) cleanly. */
 export function mediaUrl<T>(src: T): T {
-  if (typeof src === "string" && src.startsWith("/uploads/")) {
-    return (MEDIA_ORIGIN + src) as unknown as T;
+  if (typeof src === "string") {
+    return getImageUrl(src) as unknown as T;
   }
   return src;
 }
@@ -133,9 +135,14 @@ const arr = <T,>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 /* ------------------------------------------------------------------------- */
 
 export function normalizeTreatment(t: any): RichTreatment {
+  const bannerImage = getImageUrl(t.bannerImage || t.featuredImage, DEFAULT_FALLBACKS.treatment);
+  const gallery = resolveGalleryList(t.galleryImages, bannerImage);
+
   return {
     ...t,
     id: String(t.id ?? t.slug),
+    bannerImage,
+    galleryImages: gallery,
     aliases: arr<string>(t.aliases),
     tags: arr<string>(t.tags),
     rating: num(t.rating, 4.9),
@@ -143,7 +150,6 @@ export function normalizeTreatment(t: any): RichTreatment {
     price: num(t.price),
     emiMonths: num(t.emiMonths, 6),
     cardHighlights: arr<string>(t.cardHighlights),
-    galleryImages: arr(t.galleryImages),
     howItWorksSteps: arr(t.howItWorksSteps),
     idealFor: arr<string>(t.idealFor),
     notIdealFor: arr<string>(t.notIdealFor),
@@ -159,6 +165,8 @@ export function normalizeDoctor(d: any): Doctor {
     ...d,
     id: String(d.id ?? d.slug),
     slug: String(d.slug ?? d.id),
+    image: getImageUrl(d.image || d.photo, DEFAULT_FALLBACKS.doctor),
+    profileBanner: d.profileBanner ? getImageUrl(d.profileBanner, DEFAULT_FALLBACKS.treatment) : undefined,
     consultationFee: num(d.consultationFee, 1000),
     availableLocations: (locations.length ? locations : ["Noida", "Gurgaon"]) as Doctor["availableLocations"],
   } as Doctor;

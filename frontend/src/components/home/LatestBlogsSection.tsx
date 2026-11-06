@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, ArrowRight } from "lucide-react";
 import { BLOG_POSTS } from "@/data/clinicData";
+import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 
 export default function LatestBlogsSection() {
   return (
@@ -44,7 +45,7 @@ export default function LatestBlogsSection() {
               <div>
                 <div className="relative aspect-[16/10] bg-slate-100 overflow-hidden">
                   <Image
-                    src={post.image}
+                    src={getImageUrl(post.image, DEFAULT_FALLBACKS.blog)}
                     alt={post.title}
                     fill
                     className="object-cover group-hover:scale-104 transition-transform duration-500"

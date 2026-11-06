@@ -253,19 +253,32 @@
     },
 
     // Image Upload & Preview Helper
-    setupImagePreview: function (fileInputSelector, previewImgSelector, removeBtnSelector, hiddenUrlSelector) {
+    setupImagePreview: function (fileInputSelector, previewImgSelector, removeBtnSelector, hiddenUrlSelector, folder) {
       const $input = $(fileInputSelector);
       const $preview = $(previewImgSelector);
       const $removeBtn = $(removeBtnSelector);
       const $hidden = $(hiddenUrlSelector);
 
+      // Infer category folder if not explicitly provided
+      let targetFolder = folder;
+      if (!targetFolder) {
+        const id = (fileInputSelector || '').toLowerCase();
+        if (id.includes('ba') || id.includes('before') || id.includes('after')) targetFolder = 'patients/before-after';
+        else if (id.includes('gallery')) targetFolder = 'gallery';
+        else if (id.includes('doctor')) targetFolder = 'doctors';
+        else if (id.includes('banner')) targetFolder = 'banners';
+        else if (id.includes('offer')) targetFolder = 'offers';
+        else if (id.includes('blog')) targetFolder = 'blogs';
+        else targetFolder = 'general';
+      }
+
       $input.on('change', function () {
         const file = this.files[0];
         if (!file) return;
 
-        // Size check (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          App.toast('error', 'File size exceeds 5MB limit');
+        // Size check (max 15MB)
+        if (file.size > 15 * 1024 * 1024) {
+          App.toast('error', 'File size exceeds 15MB limit');
           this.value = '';
           return;
         }
@@ -277,10 +290,11 @@
         };
         reader.readAsDataURL(file);
 
-        // Upload to server
-        window.API.uploadImage(file).done(function (res) {
-          if (res.success) {
+        // Upload to server using Centralized API
+        window.API.uploadImage(file, targetFolder).done(function (res) {
+          if (res.success && res.url) {
             $hidden.val(res.url);
+            $preview.attr('src', window.API.resolveImageUrl(res.url));
             App.toast('success', 'Image uploaded successfully');
           }
         }).fail(function (xhr) {

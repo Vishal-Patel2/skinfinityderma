@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getBanners, getTrustBadges } from "@/lib/api";
+import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -82,8 +83,8 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
     ? initialBanners.map((b) => ({
         id: String(b.id),
         alt: "Skinfinity Derma Banner",
-        desktopImage: b.desktopImage,
-        mobileImage: b.mobileImage || b.desktopImage,
+        desktopImage: getImageUrl(b.desktopImage, DEFAULT_FALLBACKS.bannerDesktop),
+        mobileImage: getImageUrl(b.mobileImage || b.desktopImage, DEFAULT_FALLBACKS.bannerMobile),
         link: "/about-us",
       }))
     : defaultSlides;
@@ -91,7 +92,7 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
   const formattedPills = Array.isArray(initialTrustBadges)
     ? initialTrustBadges.map((badge: any) => ({
         icon: getPillIcon(badge.icon || badge.title),
-        iconUrl: badge.iconUrl || null,
+        iconUrl: badge.iconUrl ? getImageUrl(badge.iconUrl) : null,
         text: badge.title,
       }))
     : defaultTrustPills.map(p => ({ icon: p.icon, iconUrl: null, text: p.text }));
@@ -107,8 +108,8 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
           data.map((b) => ({
             id: String(b.id),
             alt: "Skinfinity Derma Banner",
-            desktopImage: b.desktopImage,
-            mobileImage: b.mobileImage || b.desktopImage,
+            desktopImage: getImageUrl(b.desktopImage, DEFAULT_FALLBACKS.bannerDesktop),
+            mobileImage: getImageUrl(b.mobileImage || b.desktopImage, DEFAULT_FALLBACKS.bannerMobile),
             link: "/about-us",
           }))
         );
@@ -121,7 +122,7 @@ export default function HeroBannerCarousel({ initialBanners, initialTrustBadges 
           setTrustPills(
             badges.map((badge: any) => ({
               icon: getPillIcon(badge.icon || badge.title),
-              iconUrl: badge.iconUrl || null,
+              iconUrl: badge.iconUrl ? getImageUrl(badge.iconUrl) : null,
               text: badge.title,
             }))
           );

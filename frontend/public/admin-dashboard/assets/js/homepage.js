@@ -138,10 +138,10 @@ $(document).ready(function () {
       showConfirmButton: false
     });
 
-    API.uploadMediaFile(file)
+    API.uploadImage(file, 'website')
       .then(res => {
         Swal.close();
-        const fileUrl = res.data ? res.data.file_url : (res.fileUrl || res.url);
+        const fileUrl = res.url || (res.data ? res.data.url : res.fileUrl);
         onSuccess(fileUrl);
         window.App.toast('success', 'Media uploaded successfully.');
       })
