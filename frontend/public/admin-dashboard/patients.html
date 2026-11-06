@@ -3,13 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patient Management | Skinfinity Derma Admin</title>
+  <title>Patient Management & Clinical CRM | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    :root {
+      --skin-emerald: #005B41;
+      --skin-emerald-hover: #004531;
+      --skin-teal: #008081;
+    }
+    .btn-luxury-emerald {
+      background-color: var(--skin-emerald);
+      color: #FFFFFF;
+      font-weight: 600;
+      border: 1px solid var(--skin-emerald);
+      transition: all 0.2s ease;
+    }
+    .btn-luxury-emerald:hover {
+      background-color: var(--skin-emerald-hover);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(0, 91, 65, 0.2);
+    }
+    .patient-avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--skin-emerald) 0%, #10B981 100%);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 91, 65, 0.15);
+    }
+    /* Tab Styling inside Dossier */
+    .dossier-nav-tabs .nav-link {
+      color: #64748B;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.65rem 0.9rem;
+      border: none;
+      border-bottom: 2px solid transparent;
+      border-radius: 0;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .dossier-nav-tabs .nav-link:hover {
+      color: var(--skin-emerald);
+      background: #F8FAFC;
+    }
+    .dossier-nav-tabs .nav-link.active {
+      color: var(--skin-emerald);
+      background: transparent;
+      border-bottom: 2.5px solid var(--skin-emerald);
+      font-weight: 700;
+    }
+    .kpi-stat-badge {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .timeline-dot-item {
+      position: relative;
+      padding-left: 28px;
+      padding-bottom: 20px;
+    }
+    .timeline-dot-item::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 0;
+      width: 2px;
+      background: #E2E8F0;
+    }
+    .timeline-dot-item:last-child::before {
+      display: none;
+    }
+    .timeline-dot-circle {
+      position: absolute;
+      left: 0;
+      top: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--skin-emerald);
+      border: 3px solid #FFFFFF;
+      box-shadow: 0 0 0 2px rgba(0, 91, 65, 0.25);
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #printablePrescriptionArea, #printablePrescriptionArea * { visibility: visible; }
+      #printablePrescriptionArea { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
 </head>
 <body>
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -40,13 +135,13 @@
           <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
           <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
-          
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="offers.html" class="nav-link"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
           <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
@@ -82,63 +177,103 @@
         <div class="header-left">
           <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
           <div class="header-title-wrap">
-            <h1 class="font-serif">Patient Directory & Medical Records</h1>
+            <h1 class="font-serif">Patient Directory & Clinical CRM</h1>
             <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Patients</span></div>
           </div>
         </div>
-        <div class="header-right d-flex align-items-center gap-3">
-          <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewPatientModal">
-            <i class="bi bi-person-plus-fill me-1"></i> Register New Patient
+        <div class="header-right d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3" id="btnExportPatients">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Excel/CSV
+          </button>
+          <button type="button" class="btn btn-luxury-emerald btn-sm rounded-pill px-3" id="btnOpenNewPatientModal">
+            <i class="bi bi-person-plus-fill me-1"></i> Register Walk-in Patient
           </button>
         </div>
       </header>
 
       <main class="admin-content">
-        <!-- Search & Filter Bar -->
+        <!-- Search, Filter & Quick Metrics Bar -->
         <div class="skin-card mb-4">
           <div class="skin-card-body p-3">
-            <div class="row g-3 align-items-center">
-              <div class="col-lg-6 col-md-8">
-                <div class="input-group">
+            <div class="row g-2 align-items-center">
+              <div class="col-xl-4 col-lg-4 col-md-6">
+                <div class="input-group input-group-sm">
                   <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control border-start-0" id="patientSearchInput" placeholder="Search by patient name, phone (+91), email, or patient ID...">
+                  <input type="text" class="form-control border-start-0" id="patientSearchInput" placeholder="Search by name, phone (+91), email, or patient ID...">
                 </div>
               </div>
-              <div class="col-lg-3 col-md-4">
-                <select class="form-select" id="patientGenderFilter">
+              <div class="col-xl-2 col-lg-2 col-md-3 col-6">
+                <select class="form-select form-select-sm" id="patientGenderFilter">
                   <option value="">All Genders</option>
                   <option value="Female">Female</option>
                   <option value="Male">Male</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
-              <div class="col-lg-3 col-md-12 text-end">
-                <span class="text-muted small">Showing <strong id="patientCountBadge">0</strong> patient profiles</span>
+              <div class="col-xl-2 col-lg-2 col-md-3 col-6">
+                <select class="form-select form-select-sm" id="patientBranchFilter">
+                  <option value="">All Clinic Branches</option>
+                  <option value="1">Noida HQ Clinic (Sec 36)</option>
+                  <option value="2">Gurgaon Clinic (Golf Course)</option>
+                </select>
+              </div>
+              <div class="col-xl-2 col-lg-2 col-md-3 col-6">
+                <select class="form-select form-select-sm" id="patientStatusFilter">
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Blocked">Blocked</option>
+                </select>
+              </div>
+              <div class="col-xl-2 col-lg-2 col-md-3 col-6 text-end">
+                <button type="button" class="btn btn-light btn-sm border w-100 text-muted" id="btnResetFilters">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Patients Table Card -->
+        <!-- Patients Dynamic Table Card -->
         <div class="skin-card">
+          <div class="skin-card-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-white">
+            <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+              <i class="bi bi-people-fill text-success"></i>
+              <span>Registered Patient Directory</span>
+              <span class="badge bg-success-subtle text-success border ms-2" id="patientCountBadge">0 Profiles</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="text-muted small">Show</span>
+              <select class="form-select form-select-sm py-0" id="patientLimitSelect" style="width: 75px;">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+              </select>
+              <span class="text-muted small">entries</span>
+            </div>
+          </div>
+
           <div class="skin-card-body p-0">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0" id="patientsTable">
                 <thead class="table-light">
                   <tr>
-                    <th class="ps-4">Patient ID</th>
-                    <th>Full Name</th>
-                    <th>Phone / WhatsApp</th>
+                    <th class="ps-4" style="width: 50px;">S.N.</th>
+                    <th>Patient ID</th>
+                    <th>Patient Name &amp; Location</th>
+                    <th>Phone &amp; WhatsApp</th>
                     <th>Email Address</th>
-                    <th>Gender & Age</th>
-                    <th>Consultations</th>
+                    <th>Gender &amp; Age</th>
+                    <th>Preferred Branch</th>
+                    <th>Visits</th>
                     <th>Last Visit</th>
+                    <th>Status</th>
                     <th class="text-end pe-4">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="patientsTableBody">
                   <tr>
-                    <td colspan="8" class="text-center py-5 text-muted">
+                    <td colspan="11" class="text-center py-5 text-muted">
                       <div class="spinner-border spinner-border-sm text-success me-2" role="status"></div>
                       Loading patient medical profiles...
                     </td>
@@ -146,57 +281,457 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Table Pagination Footer -->
+            <div class="d-flex justify-content-between align-items-center p-3 border-top bg-light flex-wrap gap-2">
+              <div class="text-muted small" id="paginationInfo">Showing 0 to 0 of 0 entries</div>
+              <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                <!-- Dynamic pagination buttons -->
+              </ul>
+            </div>
           </div>
         </div>
       </main>
     </div>
   </div>
 
-  <!-- View Patient Profile & Medical History Modal -->
-  <div class="modal fade" id="patientDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
-        <div class="modal-header bg-light">
-          <h5 class="modal-title font-serif fw-bold text-dark"><i class="bi bi-file-earmark-medical me-2 text-success"></i> Patient Clinical Dossier</h5>
+  <!-- COMPLETE 14-TAB PATIENT CLINICAL DOSSIER MODAL -->
+  <div class="modal fade" id="patientDossierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <!-- Dossier Header -->
+        <div class="modal-header bg-white border-bottom p-4 align-items-start">
+          <div class="d-flex align-items-center gap-3 flex-grow-1">
+            <div class="patient-avatar-circle" id="dossierAvatar" style="width: 54px; height: 54px; font-size: 1.4rem;">P</div>
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <h4 class="fw-bold mb-0 text-dark font-serif" id="dossierPatientName">Patient Name</h4>
+                <span class="badge bg-dark font-monospace" id="dossierPatientCode">PAT-00000</span>
+                <span class="badge bg-success-subtle text-success border" id="dossierPatientStatus">Active</span>
+                <span class="badge bg-warning-subtle text-dark border" id="dossierPatientTier">Gold Prestige Club</span>
+              </div>
+              <div class="text-muted small mt-1 d-flex align-items-center gap-3 flex-wrap">
+                <span><i class="bi bi-telephone text-success me-1"></i> <strong id="dossierPhone">—</strong></span>
+                <span><i class="bi bi-whatsapp text-success me-1"></i> <strong id="dossierWhatsapp">—</strong></span>
+                <span><i class="bi bi-envelope text-primary me-1"></i> <span id="dossierEmail">—</span></span>
+                <span><i class="bi bi-geo-alt text-danger me-1"></i> <span id="dossierLocation">—</span></span>
+              </div>
+            </div>
+          </div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body p-4" id="patientDetailBody">
-          <!-- Populated dynamically -->
+
+        <!-- 14-Tabs Navigation Bar (Scrollable) -->
+        <div class="bg-light border-bottom px-3 overflow-x-auto no-scrollbar">
+          <ul class="nav dossier-nav-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-overview"><i class="bi bi-speedometer2 me-1"></i> 1. Overview</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-personal"><i class="bi bi-person-lines-fill me-1"></i> 2. Personal Details</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-appointments"><i class="bi bi-calendar2-check me-1"></i> 3. Appointments</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-consultations"><i class="bi bi-clipboard2-pulse me-1"></i> 4. Consultations</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-treatments"><i class="bi bi-bandaid me-1"></i> 5. Treatment History</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-medical"><i class="bi bi-file-earmark-medical me-1"></i> 6. Medical Records</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-prescriptions"><i class="bi bi-prescription2 me-1"></i> 7. Prescriptions</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-skinhealth"><i class="bi bi-heart-pulse me-1"></i> 8. Skin Health</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-documents"><i class="bi bi-folder2-open me-1"></i> 9. Documents</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-payments"><i class="bi bi-credit-card me-1"></i> 10. Payments &amp; Invoices</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-membership"><i class="bi bi-award me-1"></i> 11. Membership &amp; Loyalty</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-enquiries"><i class="bi bi-chat-dots me-1"></i> 12. Enquiries &amp; Leads</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-notes"><i class="bi bi-journal-text me-1"></i> 13. Internal Notes</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-timeline"><i class="bi bi-clock-history me-1"></i> 14. Activity Timeline</a></li>
+          </ul>
         </div>
-        <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+
+        <!-- 14-Tabs Content Body -->
+        <div class="modal-body p-4 bg-white">
+          <div class="tab-content" id="dossierTabContent">
+            <!-- TAB 1: OVERVIEW -->
+            <div class="tab-pane fade show active" id="tab-overview">
+              <div class="row g-3 mb-4">
+                <div class="col-md-3 col-sm-6">
+                  <div class="kpi-stat-badge">
+                    <span class="text-muted small text-uppercase fw-bold">Total Appointments</span>
+                    <h3 class="fw-bold mb-0 text-dark mt-1" id="ovTotalAppts">0</h3>
+                    <span class="text-muted small" id="ovCompletedAppts">0 completed</span>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="kpi-stat-badge">
+                    <span class="text-muted small text-uppercase fw-bold">Total Spent</span>
+                    <h3 class="fw-bold mb-0 text-success mt-1" id="ovTotalSpent">₹0</h3>
+                    <span class="text-muted small">Successful payments</span>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="kpi-stat-badge">
+                    <span class="text-muted small text-uppercase fw-bold">Active Packages</span>
+                    <h3 class="fw-bold mb-0 text-dark mt-1" id="ovActivePackages">0</h3>
+                    <span class="text-muted small">Treatment packages</span>
+                  </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <div class="kpi-stat-badge">
+                    <span class="text-muted small text-uppercase fw-bold">Loyalty Credits</span>
+                    <h3 class="fw-bold mb-0 text-warning mt-1" id="ovLoyaltyPoints">0</h3>
+                    <span class="text-muted small" id="ovMemberTier">Silver Tier</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-shield-exclamation text-danger me-1"></i> Clinical Alerts &amp; Sensitivities</h6>
+                    <div class="mb-2"><strong>Allergies:</strong> <span id="ovAllergies" class="text-danger">None recorded</span></div>
+                    <div class="mb-2"><strong>Medical Contraindications:</strong> <span id="ovHistory">No chronic history</span></div>
+                    <div><strong>Current Skin Concerns:</strong> <span id="ovConcerns">None</span></div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-building text-success me-1"></i> Clinic Branch &amp; Coordinator</h6>
+                    <div class="mb-2"><strong>Preferred Branch:</strong> <span id="ovBranch">Noida HQ</span></div>
+                    <div class="mb-2"><strong>Registration Date:</strong> <span id="ovRegistered">Nov 2026</span></div>
+                    <div><strong>Last Visit Date:</strong> <span id="ovLastVisit">Never</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: PERSONAL DETAILS -->
+            <div class="tab-pane fade" id="tab-personal">
+              <div class="card border rounded-3 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h6 class="fw-bold text-dark mb-0">Patient Demographic &amp; Contact Records</h6>
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="btnEditCurrentPatient">
+                    <i class="bi bi-pencil me-1"></i> Edit Details
+                  </button>
+                </div>
+                <div class="row g-3">
+                  <div class="col-md-4"><strong>Full Name:</strong> <div id="pdName">—</div></div>
+                  <div class="col-md-4"><strong>Patient Code:</strong> <div id="pdCode">—</div></div>
+                  <div class="col-md-4"><strong>Gender &amp; Age:</strong> <div id="pdGenderAge">—</div></div>
+                  <div class="col-md-4"><strong>Date of Birth:</strong> <div id="pdDob">—</div></div>
+                  <div class="col-md-4"><strong>Primary Phone:</strong> <div id="pdPhone">—</div></div>
+                  <div class="col-md-4"><strong>WhatsApp Phone:</strong> <div id="pdWhatsapp">—</div></div>
+                  <div class="col-md-4"><strong>Email Address:</strong> <div id="pdEmail">—</div></div>
+                  <div class="col-md-4"><strong>Preferred Clinic:</strong> <div id="pdClinic">—</div></div>
+                  <div class="col-md-4"><strong>Emergency Contact:</strong> <div id="pdEmergency">—</div></div>
+                  <div class="col-md-12"><strong>Residential Address:</strong> <div id="pdAddress">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: APPOINTMENTS -->
+            <div class="tab-pane fade" id="tab-appointments">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Appointment History &amp; Consultations</h6>
+                <a href="appointments.html" class="btn btn-outline-success btn-sm"><i class="bi bi-calendar-plus me-1"></i> Book New Appointment</a>
+              </div>
+              <div class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Booking #</th>
+                      <th>Date &amp; Time</th>
+                      <th>Treatment / Service</th>
+                      <th>Doctor</th>
+                      <th>Clinic Branch</th>
+                      <th>Fee</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierApptsBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 4: CONSULTATIONS -->
+            <div class="tab-pane fade" id="tab-consultations">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Clinical Consultation Dossiers</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewConsultationModal">
+                  <i class="bi bi-plus-lg me-1"></i> Record New Consultation
+                </button>
+              </div>
+              <div id="dossierConsultationsList" class="space-y-3">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 5: TREATMENT HISTORY -->
+            <div class="tab-pane fade" id="tab-treatments">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Purchased Treatment Packages &amp; Sessions</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewPackageModal">
+                  <i class="bi bi-plus-lg me-1"></i> Assign Treatment Package
+                </button>
+              </div>
+              <div id="dossierPackagesList" class="row g-3">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 6: MEDICAL RECORDS & CONTRAINDICATIONS -->
+            <div class="tab-pane fade" id="tab-medical">
+              <div class="border rounded-3 p-4 mb-4 bg-light">
+                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clipboard2-pulse text-danger me-1"></i> Patient Clinical History &amp; Sensitivities</h6>
+                <div class="row g-4">
+                  <div class="col-md-4">
+                    <div class="p-3 bg-white rounded border h-100">
+                      <strong class="text-danger d-block mb-1"><i class="bi bi-exclamation-triangle me-1"></i> Known Drug Allergies</strong>
+                      <div id="medAllergies">None recorded</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="p-3 bg-white rounded border h-100">
+                      <strong class="text-primary d-block mb-1"><i class="bi bi-heart-pulse me-1"></i> Medical History</strong>
+                      <div id="medHistory">No chronic contraindications</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="p-3 bg-white rounded border h-100">
+                      <strong class="text-success d-block mb-1"><i class="bi bi-heart-pulse me-1"></i> Primary Skin Concerns</strong>
+                      <div id="medConcerns">Acne, Pigmentation</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Before and After Photos Sub-Section -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-layout-split text-info me-1"></i> Patient Clinical Photography (Before &amp; After)</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenAddGalleryModal">
+                  <i class="bi bi-camera me-1"></i> Add Before/After Case
+                </button>
+              </div>
+              <div id="dossierGalleryList" class="row g-3">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 7: PRESCRIPTIONS -->
+            <div class="tab-pane fade" id="tab-prescriptions">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Prescriptions &amp; Medication Regimen</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewPrescriptionModal">
+                  <i class="bi bi-plus-lg me-1"></i> Issue New Prescription
+                </button>
+              </div>
+              <div id="dossierPrescriptionsList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 8: SKIN HEALTH RECORDS -->
+            <div class="tab-pane fade" id="tab-skinhealth">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Skin &amp; Scalp Health Assessments (Historical Chronology)</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenNewSkinAssessmentModal">
+                  <i class="bi bi-plus-lg me-1"></i> Record New Assessment
+                </button>
+              </div>
+              <div id="dossierSkinHealthList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 9: UPLOADED DOCUMENTS -->
+            <div class="tab-pane fade" id="tab-documents">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Medical Documents, Scans &amp; Lab Reports</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenUploadDocumentModal">
+                  <i class="bi bi-upload me-1"></i> Upload Medical Document
+                </button>
+              </div>
+              <div class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Document Name</th>
+                      <th>Type</th>
+                      <th>File Size</th>
+                      <th>Uploaded On</th>
+                      <th>Uploaded By</th>
+                      <th class="text-end">Download / View</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierDocumentsBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 10: PAYMENTS & INVOICES -->
+            <div class="tab-pane fade" id="tab-payments">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-dark mb-0">Payments, Invoices &amp; Billing History</h6>
+                <button type="button" class="btn btn-luxury-emerald btn-sm" id="btnOpenRecordPaymentModal">
+                  <i class="bi bi-currency-rupee me-1"></i> Record Clinic Payment
+                </button>
+              </div>
+              <div class="table-responsive border rounded-3 mb-4">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Receipt #</th>
+                      <th>Amount</th>
+                      <th>Method</th>
+                      <th>Payment Type</th>
+                      <th>Date &amp; Time</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierPaymentsBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <h6 class="fw-bold text-dark mb-2">Issued Invoices</h6>
+              <div class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Invoice #</th>
+                      <th>Taxable Base</th>
+                      <th>GST (18%)</th>
+                      <th>Total Amount</th>
+                      <th>Invoice Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierInvoicesBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 11: MEMBERSHIP & LOYALTY -->
+            <div class="tab-pane fade" id="tab-membership">
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <div class="border rounded-3 p-4 bg-light h-100">
+                    <span class="text-muted small text-uppercase fw-bold">VIP Membership Tier</span>
+                    <h3 class="fw-bold text-dark mt-1" id="dossierMemTier">Gold Prestige Club</h3>
+                    <p class="text-muted small mb-0">Entitled to 15% discount on all aesthetic medical facials and priority doctor booking slots.</p>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="border rounded-3 p-4 bg-light h-100">
+                    <span class="text-muted small text-uppercase fw-bold">Current Loyalty Balance</span>
+                    <h3 class="fw-bold text-success mt-1"><span id="dossierMemPoints">0</span> Credits</h3>
+                    <p class="text-muted small mb-0">1 Credit = ₹1 redeemable against any consultation or treatment session at checkout.</p>
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="fw-bold text-dark mb-2">Loyalty Points Ledger</h6>
+              <div class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Date</th>
+                      <th>Points</th>
+                      <th>Type</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierLoyaltyBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 12: ENQUIRIES & COMMUNICATIONS -->
+            <div class="tab-pane fade" id="tab-enquiries">
+              <h6 class="fw-bold text-dark mb-3">Inbound Enquiries, Website Leads &amp; Consult Requests</h6>
+              <div class="table-responsive border rounded-3">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Lead #</th>
+                      <th>Channel / Form</th>
+                      <th>Date Received</th>
+                      <th>Status</th>
+                      <th>Message / Inquiry</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dossierEnquiriesBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- TAB 13: INTERNAL NOTES -->
+            <div class="tab-pane fade" id="tab-notes">
+              <div class="card border rounded-3 p-3 mb-4 bg-light">
+                <h6 class="fw-bold text-dark mb-2">Add Internal Clinical / Coordinator Note</h6>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="newInternalNoteInput" placeholder="Add confidential internal note (e.g. prefers weekend appointments, sensitive skin)...">
+                  <button type="button" class="btn btn-luxury-emerald" id="btnAddInternalNoteBtn">Save Note</button>
+                </div>
+              </div>
+              <div id="dossierInternalNotesList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- TAB 14: ACTIVITY TIMELINE -->
+            <div class="tab-pane fade" id="tab-timeline">
+              <h6 class="fw-bold text-dark mb-4">Chronological Patient Journey Timeline</h6>
+              <div id="dossierTimelineList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light p-3">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close Dossier</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Create / Edit Patient Modal -->
+  <!-- PATIENT REGISTRATION / EDIT MODAL -->
   <div class="modal fade" id="patientFormModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <form id="patientForm" novalidate>
           <div class="modal-header bg-light">
-            <h5 class="modal-title font-serif fw-bold" id="patientFormModalTitle">Register Patient</h5>
+            <h5 class="modal-title font-serif fw-bold" id="patientFormModalTitle">Register Walk-in Patient</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body p-4">
             <input type="hidden" id="formPatientId">
-            <div class="mb-3">
-              <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="formPatientName" placeholder="e.g. Pooja Verma" required>
-            </div>
             <div class="row g-3 mb-3">
-              <div class="col-6">
-                <label class="form-label fw-semibold small">Phone (10 Digits) <span class="text-danger">*</span></label>
-                <input type="tel" class="form-control" id="formPatientPhone" placeholder="9876543210" required>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="formPatientName" placeholder="e.g. Pooja Verma" required>
               </div>
-              <div class="col-6">
+              <div class="col-md-6">
                 <label class="form-label fw-semibold small">Email Address</label>
                 <input type="email" class="form-control" id="formPatientEmail" placeholder="pooja@gmail.com">
               </div>
             </div>
             <div class="row g-3 mb-3">
-              <div class="col-6">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Primary Phone (10 Digits) <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control" id="formPatientPhone" placeholder="9876543210" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">WhatsApp Number</label>
+                <input type="tel" class="form-control" id="formPatientWhatsapp" placeholder="9876543210">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
                 <label class="form-label fw-semibold small">Gender</label>
                 <select class="form-select" id="formPatientGender">
                   <option value="Female">Female</option>
@@ -204,27 +739,281 @@
                   <option value="Other">Other</option>
                 </select>
               </div>
-              <div class="col-6">
-                <label class="form-label fw-semibold small">Age</label>
-                <input type="number" class="form-control" id="formPatientAge" placeholder="e.g. 28">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Date of Birth</label>
+                <input type="date" class="form-control" id="formPatientDob">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Age (Auto-calculated)</label>
+                <input type="number" class="form-control" id="formPatientAge" placeholder="28">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Preferred Clinic Branch</label>
+                <select class="form-select" id="formPatientClinic">
+                  <option value="1">Noida Flagship Clinic (Sector 36)</option>
+                  <option value="2">Gurgaon Clinic (Golf Course Road)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Emergency Contact (Name &amp; Phone)</label>
+                <input type="text" class="form-control" id="formPatientEmergency" placeholder="e.g. Ramesh Verma (Spouse) - 9876500000">
+              </div>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">City</label>
+                <input type="text" class="form-control" id="formPatientCity" value="Noida">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold small">State</label>
+                <input type="text" class="form-control" id="formPatientState" value="Uttar Pradesh">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold small">Pincode</label>
+                <input type="text" class="form-control" id="formPatientPincode" placeholder="201301">
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold small">Allergies / Drug Sensitivities</label>
-              <input type="text" class="form-control" id="formPatientAllergies" placeholder="e.g. Penicillin, Retinol allergy, None">
+              <label class="form-label fw-semibold small">Residential Address</label>
+              <input type="text" class="form-control" id="formPatientAddress" placeholder="Flat, Street, Area...">
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Allergies / Drug Sensitivities</label>
+                <input type="text" class="form-control" id="formPatientAllergies" placeholder="e.g. Penicillin, Retinol, None">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Skin / Hair Concerns</label>
+                <input type="text" class="form-control" id="formPatientSkinConcerns" placeholder="e.g. Hormonal cystic acne, Hair loss, Pigmentation">
+              </div>
             </div>
             <div class="mb-3">
-              <label class="form-label fw-semibold small">Medical History / Contraindications</label>
-              <textarea class="form-control" id="formPatientMedicalHistory" rows="2" placeholder="e.g. Keloid prone, PCOS, Previous laser treatments..."></textarea>
+              <label class="form-label fw-semibold small">Medical History / Past Procedures</label>
+              <textarea class="form-control" id="formPatientMedicalHistory" rows="2" placeholder="e.g. PCOS, Keloid-prone, Previous laser hair removal..."></textarea>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold small">Consultation Notes / Patient Preferences</label>
-              <textarea class="form-control" id="formPatientNotes" rows="2" placeholder="General clinic coordinator notes..."></textarea>
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small">Internal Coordinator Notes</label>
+                <input type="text" class="form-control" id="formPatientNotes" placeholder="General preferences or notes...">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">Patient Status</label>
+                <select class="form-select" id="formPatientStatus">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Blocked">Blocked</option>
+                </select>
+              </div>
             </div>
           </div>
           <div class="modal-footer bg-light">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-luxury-emerald btn-sm" id="btnSavePatient">Save Patient</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RECORD NEW CONSULTATION -->
+  <div class="modal fade" id="newConsultationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <form id="consultationForm">
+          <div class="modal-header bg-light">
+            <h5 class="modal-title font-serif fw-bold"><i class="bi bi-clipboard2-pulse text-success me-2"></i> Record Clinical Consultation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Consulting Doctor <span class="text-danger">*</span></label>
+                <select class="form-select" id="consDoctorId" required>
+                  <option value="1">Dr. Ipshita Johri (Founder &amp; Senior Dermatologist)</option>
+                  <option value="2">Dr. Sukriti Agarwal (MD Dermatologist)</option>
+                  <option value="3">Dr. Anchal Bansal (Aesthetic Dermatologist)</option>
+                  <option value="4">Dr. Neha Sharma (Laser Specialist)</option>
+                  <option value="5">Dr. Shradha Saxena (Trichologist)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Consultation Date</label>
+                <input type="date" class="form-control" id="consDate" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Primary Patient Concern <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="consConcern" placeholder="e.g. Hormonal acne on jawline, hair thinning at crown" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Symptoms &amp; Clinical Presentation</label>
+              <textarea class="form-control" id="consSymptoms" rows="2" placeholder="Patient reported symptoms and physical observations..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Skin / Scalp Assessment Details</label>
+              <textarea class="form-control" id="consAssessment" rows="2" placeholder="Fitzpatrick scale, dermascope findings, sebum index, follicle health..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Clinical Diagnosis <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="consDiagnosis" placeholder="e.g. Acne Vulgaris Grade 3 with PIE" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Treatment Recommendations</label>
+              <textarea class="form-control" id="consRecommendations" rows="2" placeholder="Recommended clinical procedures (e.g. Salicylic peel, Subcision, GFC therapy)..."></textarea>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Follow-up Review Date</label>
+                <input type="date" class="form-control" id="consFollowUp">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Consultation Status</label>
+                <select class="form-select" id="consStatus">
+                  <option value="Completed">Completed</option>
+                  <option value="Follow-up Due">Follow-up Due</option>
+                  <option value="In Progress">In Progress</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald btn-sm">Save Consultation Dossier</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ISSUE NEW PRESCRIPTION -->
+  <div class="modal fade" id="newPrescriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <form id="prescriptionForm">
+          <div class="modal-header bg-light">
+            <h5 class="modal-title font-serif fw-bold"><i class="bi bi-prescription2 text-primary me-2"></i> Issue New Prescription</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Prescribing Doctor <span class="text-danger">*</span></label>
+                <select class="form-select" id="rxDoctorId" required>
+                  <option value="1">Dr. Ipshita Johri (Founder &amp; Senior Dermatologist)</option>
+                  <option value="2">Dr. Sukriti Agarwal (MD Dermatologist)</option>
+                  <option value="3">Dr. Anchal Bansal (Aesthetic Dermatologist)</option>
+                  <option value="4">Dr. Neha Sharma (Laser Specialist)</option>
+                  <option value="5">Dr. Shradha Saxena (Trichologist)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Diagnosis <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rxDiagnosis" placeholder="e.g. Hormonal Acne Vulgaris" required>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label fw-semibold small mb-0">Prescribed Medications &amp; Skincare Products</label>
+              <button type="button" class="btn btn-outline-primary btn-xs py-1" id="btnAddRxItemRow"><i class="bi bi-plus-lg me-1"></i> Add Medicine</button>
+            </div>
+
+            <div id="rxItemsContainer" class="space-y-2 mb-3">
+              <!-- Item rows populated here -->
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">General Advice &amp; Precautions</label>
+              <textarea class="form-control" id="rxAdvice" rows="2" placeholder="e.g. Strict mineral SPF 50+ broad spectrum every 3 hours; do not pick lesions..."></textarea>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Prescription Date</label>
+                <input type="date" class="form-control" id="rxDate" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Next Review Date</label>
+                <input type="date" class="form-control" id="rxFollowUp">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald btn-sm">Issue &amp; Save Prescription</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRINTABLE PRESCRIPTION VIEW -->
+  <div class="modal fade" id="printPrescriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title font-serif fw-bold"><i class="bi bi-printer text-success me-2"></i> Clinical Prescription Dossier</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4" id="printablePrescriptionArea">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-luxury-emerald btn-sm" onclick="window.print()"><i class="bi bi-printer me-1"></i> Print Prescription</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RECORD PAYMENT -->
+  <div class="modal fade" id="recordPaymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <form id="recordPaymentForm">
+          <div class="modal-header bg-light">
+            <h5 class="modal-title font-serif fw-bold"><i class="bi bi-currency-rupee text-success me-2"></i> Record Clinic Payment</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Payment Amount (₹) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="payAmount" placeholder="e.g. 3499" required>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold small">Payment Method</label>
+                <select class="form-select" id="payMethod">
+                  <option value="UPI">UPI / GPay / PhonePe</option>
+                  <option value="Credit Card">Credit Card</option>
+                  <option value="Debit Card">Debit Card</option>
+                  <option value="Cash">Cash at Counter</option>
+                  <option value="EMI">0% Interest EMI</option>
+                  <option value="Net Banking">Net Banking</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold small">Payment For</label>
+                <select class="form-select" id="payType">
+                  <option value="treatment">Treatment / Procedure</option>
+                  <option value="consultation">Doctor Consultation</option>
+                  <option value="package">Treatment Package</option>
+                  <option value="product">Dermaceutical Product</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Transaction Reference / UTR Number</label>
+              <input type="text" class="form-control" id="payRef" placeholder="e.g. UPI-99882211 or Cash Receipt #">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Billing Notes</label>
+              <input type="text" class="form-control" id="payNotes" placeholder="e.g. Advance payment for Session 1">
+            </div>
+          </div>
+          <div class="modal-footer bg-light">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luxury-emerald btn-sm">Confirm &amp; Generate Invoice</button>
           </div>
         </form>
       </div>

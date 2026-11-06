@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { Play, Sparkles, X, Youtube, ArrowRight } from "lucide-react";
+import { Play, X, Youtube, ArrowRight } from "lucide-react";
 import { YOUTUBE_VIDEOS } from "@/data/clinicData";
 
 export default function YouTubeVideosSection() {

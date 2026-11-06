@@ -63,7 +63,21 @@ $(document).ready(function () {
         $('#totalEnquiriesCount').text(`${enquiriesList.length} Leads`);
 
         if (enquiriesList.length === 0) {
-          $('#enquiriesTableBody').html('<tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-chat-square-dots fs-2 d-block mb-2 text-secondary"></i>No enquiries found in this pipeline stage.</td></tr>');
+          $('#enquiriesTableBody').html(`
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="py-4">
+                  <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border p-3 mb-3 text-info">
+                    <i class="bi bi-chat-left-dots fs-2"></i>
+                  </div>
+                  <h5 class="fw-bold text-dark mb-1">No enquiries available.</h5>
+                  <p class="text-muted small mb-0 mx-auto" style="max-width: 440px;">
+                    New patient leads, website contact enquiries, and consultation requests will appear here automatically.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          `);
           return;
         }
 

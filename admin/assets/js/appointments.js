@@ -94,7 +94,34 @@ $(document).ready(function () {
         $('#totalApptsCount').text(`${appointmentsList.length} Bookings`);
 
         if (appointmentsList.length === 0) {
-          $('#appointmentsTableBody').html('<tr><td colspan="8" class="text-center py-5 text-muted"><i class="bi bi-calendar-x fs-2 d-block mb-2 text-secondary"></i>No clinical appointments found matching filter criteria.</td></tr>');
+          const isFiltered = Boolean((status && status !== 'all') || date || q);
+          const emptyTitle = isFiltered ? 'No matching appointments found' : 'No appointments found.';
+          const emptyDesc = isFiltered 
+            ? 'Try adjusting your search query, status or date filters.' 
+            : 'There are no active or scheduled patient appointments in the clinic system.';
+
+          $('#appointmentsTableBody').html(`
+            <tr>
+              <td colspan="8" class="text-center py-5">
+                <div class="py-4">
+                  <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border p-3 mb-3 text-success">
+                    <i class="bi bi-calendar2-x fs-2"></i>
+                  </div>
+                  <h5 class="fw-bold text-dark mb-1">${emptyTitle}</h5>
+                  <p class="text-muted small mb-3 mx-auto" style="max-width: 440px;">${emptyDesc}</p>
+                  ${!isFiltered ? `
+                    <button type="button" class="btn btn-luxury-emerald btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#newApptModal">
+                      <i class="bi bi-calendar-plus me-1.5"></i> Create Appointment
+                    </button>
+                  ` : `
+                    <button type="button" class="btn btn-light btn-sm border px-3" onclick="$('#filterStatus').val('all'); $('#filterDate').val(''); $('#filterSearch').val(''); $('#filterSearch').trigger('input');">
+                      <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                    </button>
+                  `}
+                </div>
+              </td>
+            </tr>
+          `);
           return;
         }
 

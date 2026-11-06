@@ -268,7 +268,7 @@ export default function Header() {
                             onClick={() => setActiveDropdown(null)}
                             className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-700 pb-2 mb-2 border-b border-slate-100 hover:underline"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                            <Crown className="w-3.5 h-3.5 text-amber-600" />
                             Body &amp; Wedding Packages
                           </Link>
                           <ul className="space-y-1.5 text-xs">
@@ -299,7 +299,7 @@ export default function Header() {
                             </li>
                             <li>
                               <Link href="/gold-package" onClick={() => setActiveDropdown(null)} className="block py-1 text-amber-600 hover:text-amber-700 font-semibold transition-colors">
-                                ✨ Gold Wedding Transformation
+                                Gold Wedding Transformation
                               </Link>
                             </li>
                           </ul>

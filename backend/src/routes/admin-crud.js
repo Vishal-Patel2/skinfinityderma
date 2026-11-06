@@ -39,7 +39,7 @@ router.get(
       coupons,
       offers,
     ] = await Promise.all([
-      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN status="confirmed" THEN 1 ELSE 0 END) AS confirmed, SUM(CASE WHEN status="cancelled" THEN 1 ELSE 0 END) AS cancelled, SUM(CASE WHEN status="no_show" THEN 1 ELSE 0 END) AS no_show FROM sid_appointments'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status="pending" THEN 1 ELSE 0 END), 0) AS pending, COALESCE(SUM(CASE WHEN status="confirmed" THEN 1 ELSE 0 END), 0) AS confirmed, COALESCE(SUM(CASE WHEN status="cancelled" THEN 1 ELSE 0 END), 0) AS cancelled, COALESCE(SUM(CASE WHEN status="no_show" THEN 1 ELSE 0 END), 0) AS no_show FROM sid_appointments'),
       one('SELECT COUNT(*) AS todayCount FROM sid_appointments WHERE appointment_date = ?', [today]),
       one('SELECT COUNT(*) AS completedCount FROM sid_appointments WHERE status="completed"'),
       one('SELECT COUNT(*) AS totalPatients FROM sid_patients'),
@@ -53,16 +53,16 @@ router.get(
             COALESCE(SUM(CASE WHEN status='refunded' THEN amount ELSE 0 END), 0) AS refundedRevenue
            FROM sid_payments`),
       one('SELECT COALESCE(SUM(CASE WHEN final_amount > 0 THEN final_amount ELSE amount_estimate END), 0) AS pendingTotal FROM sid_appointments WHERE payment_status="pending" AND status != "cancelled"'),
-      one('SELECT COUNT(*) AS total, SUM(CASE WHEN status="new" THEN 1 ELSE 0 END) AS newCount FROM sid_enquiries'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status="new" THEN 1 ELSE 0 END), 0) AS newCount FROM sid_enquiries'),
       one('SELECT COUNT(*) AS converted FROM sid_enquiries WHERE status="converted"'),
       one('SELECT COUNT(*) AS totalVip FROM sid_patients WHERE member_tier != "Silver" AND status = "Active"'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_banners'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_doctors'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(is_featured) AS featured FROM sid_treatments'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM sid_banners'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM sid_doctors'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active, COALESCE(SUM(is_featured), 0) AS featured FROM sid_treatments'),
       one('SELECT COUNT(*) AS total FROM sid_reviews'),
-      one('SELECT COUNT(*) AS total, SUM(subscribers_count) AS subscribers FROM sid_membership_plans'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active, SUM(used_count) AS total_uses FROM sid_coupons'),
-      one('SELECT COUNT(*) AS total, SUM(is_active) AS active FROM sid_offers'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(subscribers_count), 0) AS subscribers FROM sid_membership_plans'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active, COALESCE(SUM(used_count), 0) AS total_uses FROM sid_coupons'),
+      one('SELECT COUNT(*) AS total, COALESCE(SUM(is_active), 0) AS active FROM sid_offers'),
     ]);
 
     // Monthly appointment & consultation trends (last 6 months)

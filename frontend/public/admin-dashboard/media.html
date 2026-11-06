@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Centralized Media Library | Skinfinity Derma Admin</title>
+  <title>Centralized Media Library & Storage System | Skinfinity Derma Admin</title>
   <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -11,30 +11,46 @@
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/responsive.css">
   <style>
+    .storage-kpi-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .storage-kpi-card:hover {
+      border-color: #008081;
+      box-shadow: 0 4px 12px rgba(0, 128, 129, 0.08);
+    }
     .media-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
       gap: 1.25rem;
     }
     .media-card {
       background: #FFFFFF;
       border: 1px solid #E2E8F0;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
       transition: all 0.2s ease;
       position: relative;
+      display: flex;
+      flex-direction: column;
     }
     .media-card:hover {
-      box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
       transform: translateY(-2px);
+      border-color: #CBD5E1;
     }
     .media-thumb-wrap {
-      aspect-ratio: 4/3;
+      aspect-ratio: 16/10;
       background: #0f172a;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      position: relative;
     }
     .media-thumb-wrap img {
       width: 100%;
@@ -42,14 +58,30 @@
       object-fit: cover;
     }
     .media-info {
-      padding: 0.65rem 0.75rem;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      justify-content: space-between;
     }
     .media-name {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 600;
+      color: #1E293B;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .media-module-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+    .orphan-card {
+      border: 2px dashed #EF4444;
+      background: #FFF5F5;
     }
   </style>
 </head>
@@ -81,13 +113,13 @@
           <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
           <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
           <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
-          
         </ul>
 
         <div class="sidebar-section-title">Marketing & Media</div>
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="offers.html" class="nav-link"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
           <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
@@ -123,40 +155,114 @@
         <div class="header-left">
           <button type="button" class="header-toggle-btn" id="sidebarToggleBtn"><i class="bi bi-list"></i></button>
           <div class="header-title-wrap">
-            <h1 class="font-serif">Centralized Media Assets & Storage</h1>
-            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Media Library</span></div>
+            <h1 class="font-serif">Media Storage & Asset Management</h1>
+            <div class="header-breadcrumb"><a href="index.html">Admin</a><span class="sep">/</span><span>Media Storage</span></div>
           </div>
         </div>
-        <div class="header-right d-flex align-items-center gap-3">
+        <div class="header-right d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-light btn-sm border" id="btnScanStorage" title="Audit physical disk vs database references">
+            <i class="bi bi-search me-1 text-primary"></i> Scan Storage
+          </button>
           <label class="btn btn-luxury-emerald btn-sm mb-0 cursor-pointer">
             <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload New File
-            <input type="file" id="mediaUploadInput" class="d-none" accept="image/*,video/*">
+            <input type="file" id="mediaUploadInput" class="d-none" accept="image/*,video/*,application/pdf">
           </label>
         </div>
       </header>
 
       <main class="admin-content">
-        <!-- Search Bar -->
-        <div class="skin-card mb-4">
-          <div class="skin-card-body p-3">
-            <div class="row g-3 align-items-center">
-              <div class="col-md-6">
-                <div class="input-group">
-                  <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control border-start-0" id="mediaSearchInput" placeholder="Search files by name or alt text...">
-                </div>
+        <!-- 1. STORAGE METRICS KPI ROW -->
+        <div class="row g-3 mb-4">
+          <div class="col-xl-3 col-sm-6">
+            <div class="storage-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase">Total Uploads</span>
+                <i class="bi bi-folder-check text-success fs-5"></i>
               </div>
-              <div class="col-md-6 text-end">
-                <span class="text-muted small">Total Files: <strong id="mediaTotalCount">0</strong></span>
+              <h3 class="fw-bold text-dark mt-1 mb-0" id="statTotalFiles">0</h3>
+              <span class="text-muted small" id="statFileBreakdown">0 Images • 0 Docs</span>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="storage-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase">Disk Storage Used</span>
+                <i class="bi bi-hdd-network text-primary fs-5"></i>
+              </div>
+              <h3 class="fw-bold text-dark mt-1 mb-0" id="statTotalStorage">0 KB</h3>
+              <span class="text-muted small">Managed physical files</span>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="storage-kpi-card">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase">Active Modules</span>
+                <i class="bi bi-grid text-teal fs-5"></i>
+              </div>
+              <h3 class="fw-bold text-dark mt-1 mb-0" id="statActiveModules">0</h3>
+              <span class="text-muted small">Organized upload folders</span>
+            </div>
+          </div>
+          <div class="col-xl-3 col-sm-6">
+            <div class="storage-kpi-card" id="orphanKpiBox">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small fw-bold text-uppercase">Orphan / Unused</span>
+                <i class="bi bi-exclamation-diamond text-danger fs-5"></i>
+              </div>
+              <h3 class="fw-bold text-danger mt-1 mb-0" id="statOrphanFiles">0</h3>
+              <div class="d-flex justify-content-between align-items-center mt-1">
+                <span class="text-muted small">Unreferenced files</span>
+                <button type="button" class="btn btn-link btn-sm text-danger p-0 fw-semibold text-decoration-none d-none" id="btnQuickCleanupOrphans">
+                  Clean up
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Media Grid -->
+        <!-- 2. FILTER & SEARCH BAR -->
+        <div class="skin-card mb-4">
+          <div class="skin-card-body p-3">
+            <div class="row g-3 align-items-center">
+              <div class="col-lg-4 col-md-5">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+                  <input type="text" class="form-control border-start-0" id="mediaSearchInput" placeholder="Search by filename or alt text...">
+                </div>
+              </div>
+              <div class="col-lg-3 col-md-3 col-6">
+                <select class="form-select form-select-sm" id="mediaModuleFilter">
+                  <option value="all">All Modules / Folders</option>
+                  <option value="treatments">Treatments</option>
+                  <option value="banners">Banners</option>
+                  <option value="doctors">Doctors</option>
+                  <option value="offers">Offers</option>
+                  <option value="blogs">Articles &amp; Blogs</option>
+                  <option value="patients">Patients &amp; Documents</option>
+                  <option value="website">Website &amp; CMS</option>
+                  <option value="_orphans">⚠️ Orphan / Unused Files</option>
+                </select>
+              </div>
+              <div class="col-lg-2 col-md-2 col-6">
+                <select class="form-select form-select-sm" id="mediaTypeFilter">
+                  <option value="all">All File Types</option>
+                  <option value="image">Images (JPG, PNG, WEBP)</option>
+                  <option value="video">Videos (MP4, MOV)</option>
+                  <option value="document">Documents (PDF)</option>
+                </select>
+              </div>
+              <div class="col-lg-3 col-md-2 text-end">
+                <span class="text-muted small">Showing <strong id="mediaTotalCount">0</strong> files</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. MEDIA GRID / EMPTY STATE -->
         <div class="media-grid" id="mediaGridContainer">
           <div class="text-center py-5 text-muted w-100" style="grid-column: 1/-1;">
-            Loading media files...
+            <div class="spinner-border text-success spinner-border-sm me-2" role="status"></div>
+            Loading media catalog...
           </div>
         </div>
       </main>

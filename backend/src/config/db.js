@@ -76,13 +76,6 @@ const pool = mysql.createPool({
     const { runCrmMigration } = require('./init-crm-schema');
     await runCrmMigration();
     console.log('✅ CRM database schema initialized and up-to-date.');
-
-    const [patRows] = await pool.query('SELECT COUNT(*) AS total FROM sid_patients WHERE password_hash IS NOT NULL');
-    if (!patRows || !patRows[0] || Number(patRows[0].total) < 2) {
-      const { seedCrmData } = require('./seed-crm-data');
-      await seedCrmData();
-      console.log('✅ CRM patients and clinical dossiers seeded successfully.');
-    }
   } catch (crmErr) {
     console.warn('CRM auto-init notice:', crmErr.message);
   }

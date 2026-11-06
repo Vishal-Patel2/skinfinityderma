@@ -125,6 +125,27 @@
       });
     },
 
+    // Treatment Image Upload with Treatment ID and subfolder
+    uploadTreatmentImage: function (file, treatmentId) {
+      const formData = new FormData();
+      formData.append('image', file);
+      const url = treatmentId ? `/upload?treatmentId=${encodeURIComponent(treatmentId)}&folder=treatments` : '/upload?folder=treatments';
+      return this.request({
+        url: url,
+        method: 'POST',
+        data: formData,
+        contentType: false
+      });
+    },
+
+    // Delete Treatment Media File from disk folder & database
+    deleteTreatmentMediaFile: function (filePath, treatmentId) {
+      return this.post('/upload/delete', {
+        url: filePath,
+        treatmentId: treatmentId || undefined
+      });
+    },
+
     // Multiple Files Upload
     uploadMultipleImages: function (files) {
       const formData = new FormData();
@@ -413,7 +434,7 @@
       return this.delete('/appointments/' + id);
     },
 
-    // Patients
+    // Patients & Comprehensive Clinical CRM
     getPatients: function (params) {
       return this.get('/patients', params);
     },
@@ -428,6 +449,36 @@
     },
     deletePatient: function (id) {
       return this.delete('/patients/' + id);
+    },
+    addPatientConsultation: function (id, data) {
+      return this.post('/patients/' + id + '/consultations', data);
+    },
+    addPatientSkinAssessment: function (id, data) {
+      return this.post('/patients/' + id + '/skin-assessments', data);
+    },
+    addPatientPrescription: function (id, data) {
+      return this.post('/patients/' + id + '/prescriptions', data);
+    },
+    getPrescriptionPrintData: function (rxId) {
+      return this.get('/patients/prescription/' + rxId + '/print');
+    },
+    addPatientDocument: function (id, data) {
+      return this.post('/patients/' + id + '/documents', data);
+    },
+    addPatientGallery: function (id, data) {
+      return this.post('/patients/' + id + '/gallery', data);
+    },
+    addPatientPackage: function (id, data) {
+      return this.post('/patients/' + id + '/packages', data);
+    },
+    usePackageSession: function (patientId, pkgId) {
+      return this.post('/patients/' + patientId + '/packages/' + pkgId + '/use-session');
+    },
+    addPatientPayment: function (id, data) {
+      return this.post('/patients/' + id + '/payments', data);
+    },
+    addPatientNote: function (id, note) {
+      return this.post('/patients/' + id + '/notes', { note: note });
     },
 
     // Enquiries & CRM
@@ -508,8 +559,14 @@
     updateMediaMeta: function (id, data) {
       return this.put('/media/' + id, data);
     },
-    deleteMediaFile: function (id) {
-      return this.delete('/media/' + id);
+    deleteMediaFile: function (id, force) {
+      return this.delete('/media/' + id + (force ? '?force=true' : ''));
+    },
+    getStorageAudit: function () {
+      return this.get('/media/storage-audit');
+    },
+    cleanupOrphans: function (filePaths) {
+      return this.post('/media/cleanup-orphans', { filePaths: filePaths || [] });
     },
 
     // Notifications Center
@@ -538,6 +595,29 @@
     },
     deleteCoupon: function (id) {
       return this.delete('/coupons/' + id);
+    },
+
+    // Seasonal / Monthly Offers (Best Offers this Month)
+    getOffers: function () {
+      return this.get('/offers');
+    },
+    getOffer: function (id) {
+      return this.get('/offers/' + id);
+    },
+    createOffer: function (data) {
+      return this.post('/offers', data);
+    },
+    updateOffer: function (id, data) {
+      return this.put('/offers/' + id, data);
+    },
+    toggleOfferStatus: function (id) {
+      return this.patch('/offers/' + id + '/toggle-status');
+    },
+    reorderOffers: function (order) {
+      return this.post('/offers/reorder', { order: order });
+    },
+    deleteOffer: function (id) {
+      return this.delete('/offers/' + id);
     },
     validateCoupon: function (data) {
       return this.post('/public/coupons/validate', data);

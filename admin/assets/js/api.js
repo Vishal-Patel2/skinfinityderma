@@ -559,8 +559,14 @@
     updateMediaMeta: function (id, data) {
       return this.put('/media/' + id, data);
     },
-    deleteMediaFile: function (id) {
-      return this.delete('/media/' + id);
+    deleteMediaFile: function (id, force) {
+      return this.delete('/media/' + id + (force ? '?force=true' : ''));
+    },
+    getStorageAudit: function () {
+      return this.get('/media/storage-audit');
+    },
+    cleanupOrphans: function (filePaths) {
+      return this.post('/media/cleanup-orphans', { filePaths: filePaths || [] });
     },
 
     // Notifications Center

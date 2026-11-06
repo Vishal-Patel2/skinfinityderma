@@ -70,7 +70,24 @@ $(document).ready(function () {
     const $tbody = $('#treatmentsTableBody').empty();
 
     if (!data || data.length === 0) {
-      $tbody.html('<tr><td colspan="9" class="text-center py-4 text-muted">No clinical treatments found.</td></tr>');
+      $tbody.html(`
+        <tr>
+          <td colspan="9" class="text-center py-5">
+            <div class="py-4">
+              <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border p-3 mb-3 text-success">
+                <i class="bi bi-capsule fs-2"></i>
+              </div>
+              <h5 class="fw-bold text-dark mb-1">No treatments available.</h5>
+              <p class="text-muted small mb-3 mx-auto" style="max-width: 420px;">
+                Add clinical aesthetic treatments, skin procedures, laser therapies or medical facials to your catalog.
+              </p>
+              <a href="treatment-form.html" class="btn btn-luxury-emerald btn-sm px-3 shadow-sm">
+                <i class="bi bi-plus-lg me-1.5"></i> Add New Treatment
+              </a>
+            </div>
+          </td>
+        </tr>
+      `);
       return;
     }
 

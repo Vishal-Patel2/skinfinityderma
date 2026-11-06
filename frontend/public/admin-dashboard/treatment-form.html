@@ -140,6 +140,28 @@
       transform: scale(1.1);
     }
 
+    /* Drag & Drop Hero Media Reordering */
+    .gallery-card-col {
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.15s ease;
+    }
+    .gallery-card-col:active {
+      cursor: grabbing;
+    }
+    .gallery-card-col.dragging {
+      opacity: 0.4;
+    }
+    .gallery-card-col.dragging .media-card-item {
+      border: 2px dashed #008081 !important;
+      transform: scale(0.96);
+    }
+    .gallery-card-col.drag-over .media-card-item {
+      border: 2px dashed #008081 !important;
+      box-shadow: 0 0 0 3px rgba(0, 128, 129, 0.25) !important;
+      transform: scale(1.03);
+    }
+
     /* Step Item Card in Clinical Sections */
     .procedure-step-card {
       background: #F8FAFC;
@@ -254,6 +276,7 @@
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="offers.html" class="nav-link"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
           <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
@@ -526,7 +549,7 @@
                   <!-- Card Highlights -->
                   <div class="mb-4 ck-overview-box">
                     <label for="treatmentCardHighlights" class="form-label fw-semibold small d-flex align-items-center justify-content-between">
-                      <span><i class="bi bi-stars text-warning me-1"></i> Card Highlights / Key Clinical Features</span>
+                      <span><i class="bi bi-check2-circle text-success me-1"></i> Card Highlights / Key Clinical Features</span>
                       <span class="badge bg-light text-muted border fw-normal" style="font-size: 0.72rem;">Rich Text / Bullet Points</span>
                     </label>
                     <textarea class="form-control" id="treatmentCardHighlights" rows="3" placeholder="US-FDA Gold Standard Technology&#10;Zero Social Downtime&#10;Visible Improvement from Session 1"></textarea>

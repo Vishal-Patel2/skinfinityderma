@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Tag, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Tag } from "lucide-react";
 import { SPECIAL_OFFERS } from "@/data/clinicData";
 import { getOffers } from "@/lib/api";
 
@@ -67,7 +67,7 @@ export default function OffersSection({ initialOffers }: { initialOffers?: any[]
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Tag className="w-3.5 h-3.5" />
               <span>Limited Period Specials</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 font-serif">

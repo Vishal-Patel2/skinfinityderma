@@ -7,70 +7,23 @@ const { asyncHandler, HttpError } = require('../middleware/error');
 const config = require('../config/env');
 const { query, one } = require('../config/db');
 const { parseJson } = require('../utils/helpers');
+const { safeDeleteFile } = require('../utils/safe-media');
 
 const router = express.Router();
 
 const uploadDir = config.uploadsDir;
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Treatments subfolder
-const treatmentsDir = path.join(uploadDir, 'treatments');
-if (!fs.existsSync(treatmentsDir)) {
-  fs.mkdirSync(treatmentsDir, { recursive: true });
-}
 
 /**
  * Safe file deletion helper to physically remove an uploaded file from disk.
- * Returns true if deleted, false otherwise.
+ * Uses centralized SafeMediaService to verify paths and references.
  */
-function deleteUploadedFile(fileUrlOrPath) {
-  if (!fileUrlOrPath || typeof fileUrlOrPath !== 'string') return false;
-
-  let rel = fileUrlOrPath.trim();
-  if (rel.startsWith('http://') || rel.startsWith('https://')) {
-    try {
-      const parsed = new URL(rel);
-      rel = parsed.pathname;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // Only remove files within /uploads/
-  if (rel.startsWith('/uploads/')) {
-    rel = rel.replace(/^\/uploads\//, '');
-  } else if (rel.startsWith('uploads/')) {
-    rel = rel.replace(/^uploads\//, '');
-  } else {
-    // Ignore static /images/ or external URLs
+async function deleteUploadedFile(fileUrlOrPath) {
+  try {
+    const res = await safeDeleteFile(fileUrlOrPath);
+    return res.success;
+  } catch (e) {
     return false;
   }
-
-  // Prevent path traversal
-  const safeRel = path.normalize(rel).replace(/^(\.\.[\/\\])+/, '');
-  const absPath = path.join(uploadDir, safeRel);
-
-  // Security check: Must reside within uploadDir
-  const normalizedUploadDir = path.normalize(uploadDir);
-  const normalizedAbsPath = path.normalize(absPath);
-  if (!normalizedAbsPath.startsWith(normalizedUploadDir)) {
-    console.warn('⚠️ Path traversal attempt blocked for delete:', fileUrlOrPath);
-    return false;
-  }
-
-  if (fs.existsSync(normalizedAbsPath)) {
-    try {
-      fs.unlinkSync(normalizedAbsPath);
-      console.log('🗑️ Physically deleted file from uploads folder:', normalizedAbsPath);
-      return true;
-    } catch (err) {
-      console.error('❌ Failed to unlink file:', normalizedAbsPath, err.message);
-      return false;
-    }
-  }
-  return false;
 }
 
 /**
@@ -222,7 +175,7 @@ router.post(
     const targetPath = url || filePath || filename;
     if (!targetPath) throw new HttpError(400, 'File path or URL is required');
 
-    const deletedFromDisk = deleteUploadedFile(targetPath);
+    const deletedFromDisk = await deleteUploadedFile(targetPath);
 
     if (treatmentId) {
       await removeImageFromTreatment(treatmentId, targetPath);

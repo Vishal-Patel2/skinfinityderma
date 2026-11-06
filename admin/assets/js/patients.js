@@ -61,14 +61,43 @@
     renderPagination(page, totalPages);
 
     if (!list || list.length === 0) {
+      const q = $('#patientSearchInput').val().trim();
+      const gender = $('#patientGenderFilter').val();
+      const clinicId = $('#patientBranchFilter').val();
+      const status = $('#patientStatusFilter').val();
+      const isFiltered = Boolean(q || gender || clinicId || status);
+
+      const emptyTitle = isFiltered ? 'No matching patient records found' : 'No patients registered yet.';
+      const emptyDesc = isFiltered 
+        ? 'Try clearing your filters or search query to view all clinic patients.' 
+        : 'Get started by creating your first patient profile to track clinical consultations, treatments, and medical history.';
+
       $('#patientsTableBody').html(`
         <tr>
-          <td colspan="11" class="text-center py-5 text-muted">
-            <i class="bi bi-person-x fs-2 d-block mb-2 text-secondary"></i>
-            No matching patient records found in clinic database.
+          <td colspan="11" class="text-center py-5">
+            <div class="py-4">
+              <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light border p-3 mb-3 text-success">
+                <i class="bi bi-people fs-2"></i>
+              </div>
+              <h5 class="fw-bold text-dark mb-1">${emptyTitle}</h5>
+              <p class="text-muted small mb-3 mx-auto" style="max-width: 440px;">${emptyDesc}</p>
+              ${!isFiltered ? `
+                <button type="button" class="btn btn-luxury-emerald btn-sm px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#newPatientModal">
+                  <i class="bi bi-person-plus-fill me-1.5"></i> Register New Patient
+                </button>
+              ` : `
+                <button type="button" class="btn btn-light btn-sm border px-3" id="btnEmptyReset">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                </button>
+              `}
+            </div>
           </td>
         </tr>
       `);
+
+      $('#btnEmptyReset').on('click', function () {
+        $('#btnResetFilters').click();
+      });
       return;
     }
 

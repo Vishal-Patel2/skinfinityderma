@@ -190,7 +190,7 @@ export default function AppointmentForm({
       <div className="flex flex-wrap items-center justify-between gap-3 pb-5 mb-6 border-b border-slate-100">
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 border border-brand-200">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-brand-700" />
             {step === 2 ? "Step 2: Get Consultation" : step === 3 ? "Step 3: Make Payment" : "Priority Doctor Booking"}
           </span>
           <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-2 font-serif">
