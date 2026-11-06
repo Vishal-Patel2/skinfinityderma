@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Best Offers this Month | Skinfinity Derma Admin</title>
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/responsive.css">
+  <style>
+    :root {
+      --brand-teal-dark: #004D4D;
+      --brand-teal: #008081;
+      --brand-teal-light: #e8f6f3;
+      --brand-amber: #f59e0b;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .metric-card:hover {
+      box-shadow: 0 8px 20px -4px rgba(0, 77, 77, 0.08);
+      border-color: #cbd5e1;
+    }
+    .metric-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    /* Filter Pills */
+    .filter-pill-btn {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #475569;
+      font-weight: 600;
+      font-size: 0.825rem;
+      padding: 0.45rem 1rem;
+      border-radius: 9999px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .filter-pill-btn:hover {
+      background: #f8fafc;
+      color: var(--brand-teal);
+      border-color: #cbd5e1;
+    }
+    .filter-pill-btn.active {
+      background: linear-gradient(135deg, var(--brand-teal-dark) 0%, var(--brand-teal) 100%) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+      box-shadow: 0 4px 12px rgba(0, 77, 77, 0.18);
+    }
+    .filter-pill-btn .pill-badge {
+      font-size: 0.725rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 700;
+    }
+    .filter-pill-btn.active .pill-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+    }
+
+    /* Table Design */
+    .table-container {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .table > :not(caption) > * > * {
+      padding: 1rem 1.15rem;
+      vertical-align: middle;
+    }
+    .table thead th {
+      background-color: #f8fafc;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .table tbody tr:hover {
+      background-color: #fbfdfd;
+    }
+
+    /* Table Image Thumbnail */
+    .offer-thumbnail-wrapper {
+      position: relative;
+      width: 100px;
+      height: 62px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: all 0.2s ease;
+    }
+    .offer-thumbnail-wrapper:hover {
+      transform: scale(1.04);
+      border-color: var(--brand-teal);
+    }
+    .offer-thumbnail-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .offer-thumbnail-wrapper .zoom-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 77, 77, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      font-size: 1rem;
+    }
+    .offer-thumbnail-wrapper:hover .zoom-overlay {
+      opacity: 1;
+    }
+
+    /* Category Badges */
+    .cat-badge {
+      font-size: 0.725rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .cat-badge-skin { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .cat-badge-hair { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    .cat-badge-laser { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+    .cat-badge-body { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .cat-badge-bridal { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+    /* Switch Style */
+    .form-switch .form-check-input {
+      width: 2.3em;
+      height: 1.25em;
+      cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+      background-color: var(--brand-teal);
+      border-color: var(--brand-teal);
+    }
+
+    /* Modal Live Card Preview */
+    .offer-preview-card {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .offer-preview-img-box {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      width: 100%;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+    .offer-preview-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Drag & Drop Upload Zone */
+    .dropzone-upload-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .dropzone-upload-box:hover, .dropzone-upload-box.dragover {
+      border-color: var(--brand-teal);
+      background: var(--brand-teal-light);
+    }
+
+    /* Preset Badge Chip */
+    .chip-badge-preset {
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-badge-preset:hover {
+      background: var(--brand-teal-light);
+      border-color: var(--brand-teal);
+      color: var(--brand-teal-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-brand">
+          <img src="assets/img/logo.png" alt="Skinfinity Derma Logo">
+        </a>
+      </div>
+
+      <div class="sidebar-body">
+        <div class="sidebar-section-title">Core Operations</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="index.html" class="nav-link"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+          <li class="nav-item"><a href="appointments.html" class="nav-link"><i class="bi bi-calendar2-check-fill text-success"></i><span>Appointments</span></a></li>
+          <li class="nav-item"><a href="patients.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Patients</span></a></li>
+          <li class="nav-item"><a href="enquiries.html" class="nav-link"><i class="bi bi-chat-left-dots-fill text-info"></i><span>Enquiries & Leads</span></a></li>
+          <li class="nav-item"><a href="memberships.html" class="nav-link"><i class="bi bi-award-fill text-warning"></i><span>VIP Memberships</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Catalog & Doctors</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="treatments.html" class="nav-link"><i class="bi bi-capsule"></i><span>Treatments</span></a></li>
+          <li class="nav-item"><a href="services.html" class="nav-link"><i class="bi bi-heart-pulse-fill text-danger"></i><span>Services</span></a></li>
+          <li class="nav-item"><a href="doctors.html" class="nav-link"><i class="bi bi-person-badge"></i><span>Doctors</span></a></li>
+          <li class="nav-item"><a href="locations.html" class="nav-link"><i class="bi bi-geo-alt-fill text-danger"></i><span>Locations</span></a></li>
+          <li class="nav-item"><a href="categories.html" class="nav-link"><i class="bi bi-folder2"></i><span>Categories</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Marketing & Media</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
+          <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="offers.html" class="nav-link active"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
+          <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
+          <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
+          <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
+          <li class="nav-item"><a href="media.html" class="nav-link"><i class="bi bi-folder-fill text-warning"></i><span>Media Library</span></a></li>
+          <li class="nav-item"><a href="before-after.html" class="nav-link"><i class="bi bi-layout-split"></i><span>Before & After</span></a></li>
+          <li class="nav-item"><a href="reviews.html" class="nav-link"><i class="bi bi-google"></i><span>Reviews</span></a></li>
+          <li class="nav-item"><a href="video-testimonials.html" class="nav-link"><i class="bi bi-play-btn-fill"></i><span>Video Stories</span></a></li>
+          <li class="nav-item"><a href="gallery.html" class="nav-link"><i class="bi bi-camera"></i><span>Gallery</span></a></li>
+        </ul>
+
+        <div class="sidebar-section-title">Administration & RBAC</div>
+        <ul class="sidebar-nav">
+          <li class="nav-item"><a href="users.html" class="nav-link"><i class="bi bi-people-fill text-primary"></i><span>Staff Accounts</span></a></li>
+          <li class="nav-item"><a href="roles.html" class="nav-link"><i class="bi bi-shield-lock-fill text-success"></i><span>Roles & Matrix</span></a></li>
+          <li class="nav-item"><a href="settings.html" class="nav-link"><i class="bi bi-gear"></i><span>Settings</span></a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-danger action-logout"><i class="bi bi-box-arrow-right text-danger"></i><span>Logout</span></a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <img src="assets/img/avatar-default.svg" alt="Admin" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <div class="sidebar-user-name">Staff User</div>
+            <div class="sidebar-user-role"><span class="badge-role-admin"><i class="bi bi-shield-check"></i> Clinic Admin</span></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="admin-main">
+      <!-- Top Navigation Bar -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button class="sidebar-toggle btn btn-sm btn-light d-lg-none" aria-label="Toggle Sidebar">
+            <i class="bi bi-list fs-5"></i>
+          </button>
+          <div class="header-breadcrumb">
+            <span class="text-muted">Marketing & Media</span>
+            <span class="divider">/</span>
+            <span class="active fw-semibold">Best Offers this Month</span>
+          </div>
+        </div>
+        <div class="header-right d-flex align-items-center gap-2">
+          <a href="http://localhost:3000#offers" target="_blank" class="btn btn-outline-teal btn-sm fw-semibold">
+            <i class="bi bi-box-arrow-up-right me-1.5"></i> View Live Site
+          </a>
+          <button class="btn btn-sm btn-light action-logout" title="Logout">
+            <i class="bi bi-box-arrow-right"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Container -->
+      <main class="admin-content p-4">
+        <!-- Page Title & Top Actions -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+          <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h1 class="h3 fw-bold text-slate-800 mb-0 font-serif">
+                Best Offers this Month
+              </h1>
+              <span class="badge bg-teal-subtle text-teal border border-teal-subtle font-semibold px-2.5 py-1 rounded-pill small">
+                <i class="bi bi-tag-fill me-1"></i> Live Homepage Offers
+              </span>
+            </div>
+            <p class="text-muted small mb-0">
+              Manage live homepage monthly packages, discounts, and promotional banners.
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-light border btn-sm fw-semibold" id="btn-refresh-offers" title="Reload from Database">
+              <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+            </button>
+            <button class="btn btn-teal btn-sm fw-bold px-3 shadow-sm" id="btn-add-offer">
+              <i class="bi bi-plus-lg me-1.5"></i> Add New Offer
+            </button>
+          </div>
+        </div>
+
+        <!-- Metric Summary Cards -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="metric-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Total Offers</div>
+                  <div class="fs-2 fw-black text-slate-900 mt-1" id="stat-total-offers">0</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Monthly Packages</div>
+                </div>
+                <div class="metric-icon-box bg-teal bg-opacity-10 text-teal">
+                  <i class="bi bi-tag-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Active on Site</div>
+                  <div class="fs-2 fw-black text-success mt-1" id="stat-active-offers">0</div>
+                  <div class="text-success small mt-0.5" style="font-size: 11px;"><i class="bi bi-check-circle me-0.5"></i> Live on Homepage</div>
+                </div>
+                <div class="metric-icon-box bg-success bg-opacity-10 text-success">
+                  <i class="bi bi-broadcast"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Inactive</div>
+                  <div class="fs-2 fw-black text-secondary mt-1" id="stat-inactive-offers">0</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Temporarily Hidden</div>
+                </div>
+                <div class="metric-icon-box bg-secondary bg-opacity-10 text-secondary">
+                  <i class="bi bi-pause-circle-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="metric-card">
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <div class="text-muted small fw-bold text-uppercase tracking-wider">Categories</div>
+                  <div class="fs-2 fw-black text-primary mt-1" id="stat-categories-count">5</div>
+                  <div class="text-muted small mt-0.5" style="font-size: 11px;">Skin, Hair, Laser, Body, Bridal</div>
+                </div>
+                <div class="metric-icon-box bg-primary bg-opacity-10 text-primary">
+                  <i class="bi bi-grid-3x3-gap-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Bar Card -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+          <div class="card-body p-3">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
+              <!-- Category Filter Pills -->
+              <div class="d-flex flex-wrap gap-2" id="category-filter-group">
+                <button type="button" class="filter-pill-btn active" data-category="All">
+                  <span>All</span>
+                  <span class="pill-badge" id="cat-count-all">0</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-category="Skin">
+                  <span>Skin</span>
+                  <span class="pill-badge" id="cat-count-skin">0</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-category="Hair">
+                  <span>Hair</span>
+                  <span class="pill-badge" id="cat-count-hair">0</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-category="Laser">
+                  <span>Laser</span>
+                  <span class="pill-badge" id="cat-count-laser">0</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-category="Body">
+                  <span>Body</span>
+                  <span class="pill-badge" id="cat-count-body">0</span>
+                </button>
+                <button type="button" class="filter-pill-btn" data-category="Bridal">
+                  <span>Bridal</span>
+                  <span class="pill-badge" id="cat-count-bridal">0</span>
+                </button>
+              </div>
+
+              <!-- Quick Search Input -->
+              <div class="d-flex align-items-center gap-2" style="min-width: 280px;">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-white border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input type="text" class="form-control border-start-0" id="quick-search-input" placeholder="Search offers...">
+                  <button class="btn btn-outline-secondary d-none" type="button" id="btn-clear-search">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SIMPLE & CLEAN TABLE VIEW (S.N., Image, Title, Status, Action) -->
+        <div class="table-container">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0" id="offers-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;" class="text-center">S.N.</th>
+                  <th style="width: 120px;">Image</th>
+                  <th>Title</th>
+                  <th style="width: 110px;" class="text-center">Status</th>
+                  <th style="width: 120px;" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="offers-table-body">
+                <tr>
+                  <td colspan="5" class="text-center py-5 text-muted">
+                    <div class="spinner-border spinner-border-sm text-teal me-2" role="status"></div>
+                    Loading offers from database...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create / Edit Offer Modal (Order field removed) -->
+  <div class="modal fade" id="offerModal" tabindex="-1" aria-labelledby="offerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content border-0 shadow-2xl rounded-4 overflow-hidden">
+        <div class="modal-header bg-slate-900 text-white py-3 px-4">
+          <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="offerModalLabel">
+            <i class="bi bi-tag-fill text-teal"></i>
+            <span id="modal-title-text">Add New Offer</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form id="offerForm">
+          <input type="hidden" id="offer-id" value="">
+          <div class="modal-body p-4 bg-slate-50/60">
+            <div class="row g-4">
+              <!-- Left Form Column -->
+              <div class="col-lg-7 space-y-3">
+                <div class="bg-white p-4 rounded-3 border">
+                  <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
+                    <i class="bi bi-card-heading text-teal me-1.5"></i> Offer Information
+                  </h6>
+
+                  <div class="row g-3">
+                    <!-- Title -->
+                    <div class="col-md-8">
+                      <label class="form-label small fw-bold text-slate-700">Offer Title <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control form-control-sm" id="offer-title" placeholder="e.g. Bridal Skin Preparation Luxury Package" required>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="col-md-4">
+                      <label class="form-label small fw-bold text-slate-700">Category <span class="text-danger">*</span></label>
+                      <select class="form-select form-select-sm" id="offer-category" required>
+                        <option value="Skin">Skin</option>
+                        <option value="Hair">Hair</option>
+                        <option value="Laser">Laser</option>
+                        <option value="Body">Body</option>
+                        <option value="Bridal">Bridal</option>
+                      </select>
+                    </div>
+
+                    <!-- Badge Text with Presets -->
+                    <div class="col-12">
+                      <label class="form-label small fw-bold text-slate-700">Badge Text</label>
+                      <input type="text" class="form-control form-control-sm mb-2" id="offer-badge" placeholder="e.g. Limited Period, Bridal Special, Instant Glow" value="Special Offer">
+                      <div class="d-flex flex-wrap gap-1.5">
+                        <span class="small text-muted me-1" style="font-size: 11px;">Suggestions:</span>
+                        <span class="chip-badge-preset" data-preset="Limited Period">Limited Period</span>
+                        <span class="chip-badge-preset" data-preset="Bridal Special">Bridal Special</span>
+                        <span class="chip-badge-preset" data-preset="Instant Glow">Instant Glow</span>
+                        <span class="chip-badge-preset" data-preset="Painless ICE">Painless ICE</span>
+                        <span class="chip-badge-preset" data-preset="Root Defense">Root Defense</span>
+                        <span class="chip-badge-preset" data-preset="Cellular Boost">Cellular Boost</span>
+                      </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                      <label class="form-label small fw-bold text-slate-700">Description / Highlights</label>
+                      <textarea class="form-control form-control-sm" id="offer-description" rows="3" placeholder="Brief summary of treatments and benefits included..."></textarea>
+                    </div>
+
+                    <!-- Link Text & Target URL -->
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold text-slate-700">CTA Button Text</label>
+                      <input type="text" class="form-control form-control-sm" id="offer-link-text" placeholder="e.g. Claim Offer, Book Consultation" value="Claim Offer">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold text-slate-700">Target URL / Anchor</label>
+                      <input type="text" class="form-control form-control-sm" id="offer-slug" placeholder="/contact-us#appointment_form" value="/contact-us#appointment_form">
+                    </div>
+
+                    <!-- Status Active (Display Order removed as requested) -->
+                    <div class="col-12 pt-1">
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="offer-status" checked>
+                        <label class="form-check-label small fw-bold text-slate-700" for="offer-status">Active on Homepage</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Banner Media Selector -->
+                <div class="bg-white p-4 rounded-3 border">
+                  <h6 class="fw-bold text-slate-800 mb-3 border-bottom pb-2">
+                    <i class="bi bi-image text-teal me-1.5"></i> Banner Image Asset
+                  </h6>
+
+                  <!-- Choose from Pre-downloaded 19 Assets -->
+                  <div class="mb-3">
+                    <label class="form-label small fw-bold text-slate-700">Select Preloaded Curated Asset:</label>
+                    <select class="form-select form-select-sm" id="preset-image-selector">
+                      <option value="">-- Choose preloaded offer asset --</option>
+                      <option value="/images/offers/skinfinity-offer-1.png">1. Free Doctor Skin &amp; Hair Consultation</option>
+                      <option value="/images/offers/skinfinity-offer-2.png">2. Full Body Laser Hair Reduction @ 30% OFF</option>
+                      <option value="/images/offers/skinfinity-offer-3.png">3. Signature Sugarcane HydraFacial MD @ ₹3,499</option>
+                      <option value="/images/offers/skinfinity-offer-4.png">4. GFC Regenerative Hair Regrowth Package</option>
+                      <option value="/images/offers/skinfinity-offer-5.png">5. Body Wellness Packages</option>
+                      <option value="/images/offers/skinfinity-offer-6.png">6. Bridal Skin Preparation Luxury Package</option>
+                      <option value="/images/offers/skinfinity-offer-7.png">7. Special Bridal Luxury Packages</option>
+                      <option value="/images/offers/skinfinity-offer-8.png">8. Medical Facial Offers</option>
+                      <option value="/images/offers/skinfinity-offer-9.png">9. Signature Facial Packages</option>
+                      <option value="/images/offers/skinfinity-offer-10.png">10. Fat Loss &amp; Skin Tightening Plan</option>
+                      <option value="/images/offers/skinfinity-offer-11.png">11. Festive Hair Care Packages</option>
+                      <option value="/images/offers/skinfinity-offer-12.png">12. Skinfinity All-In-One Festive Package</option>
+                      <option value="/images/offers/skinfinity-offer-13.png">13. Dermal Fillers Festive Packages</option>
+                      <option value="/images/offers/skinfinity-offer-14.png">14. Dermal Fillers Special Offers</option>
+                      <option value="/images/offers/skinfinity-offer-15.png">15. GFC Therapy Festive Offer</option>
+                      <option value="/images/offers/skinfinity-offer-16.png">16. Hair Fall Control Festive Packages</option>
+                      <option value="/images/offers/skinfinity-offer-17.png">17. US-FDA Laser Festive Offer</option>
+                      <option value="/images/offers/skinfinity-offer-18.png">18. Laser Hair Reduction Festive Packages</option>
+                      <option value="/images/offers/skinfinity-offer-19.png">19. Hair Regain Booster Exclusive Offers</option>
+                    </select>
+                  </div>
+
+                  <!-- Drag & Drop Zone -->
+                  <div class="dropzone-upload-box mb-2" id="offer-dropzone" style="cursor: pointer;">
+                    <div id="offer-dropzone-inner">
+                      <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
+                      <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
+                      <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
+                    </div>
+                    <input type="file" id="offer-image-file" class="d-none" accept="image/png, image/jpeg, image/webp, image/jpg">
+                  </div>
+
+                  <!-- Manual Image URL Input -->
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light text-muted small">Image Path:</span>
+                    <input type="text" class="form-control font-monospace" id="offer-image-url" placeholder="/images/offers/..." required>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Preview Column: LIVE HOMEPAGE CARD PREVIEW -->
+              <div class="col-lg-5">
+                <div class="bg-white p-4 rounded-3 border sticky-top" style="top: 1rem;">
+                  <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                    <h6 class="fw-bold text-slate-800 mb-0">
+                      <i class="bi bi-eye text-primary me-1.5"></i> Card Preview
+                    </h6>
+                    <span class="badge bg-slate-100 text-slate-600 font-monospace small">Live Preview</span>
+                  </div>
+
+                  <p class="text-muted small mb-3">
+                    Preview of how this offer card appears on the live homepage carousel:
+                  </p>
+
+                  <!-- Simulated Website Card -->
+                  <div class="offer-preview-card border shadow-sm mx-auto" style="max-width: 340px;">
+                    <div>
+                      <div class="offer-preview-img-box">
+                        <img id="sim-image" src="/images/offers/skinfinity-offer-1.png" alt="Card Preview" onerror="this.src='assets/img/placeholder.svg';">
+                        <!-- Badge Top-Left -->
+                        <div class="position-absolute top-2 start-2 bg-white rounded-pill px-2.5 py-0.5 shadow-sm border small fw-bold d-flex align-items-center gap-1" style="font-size: 10px; top: 10px; left: 10px;">
+                          <i class="bi bi-tag-fill text-warning"></i>
+                          <span id="sim-badge">Special Offer</span>
+                        </div>
+                        <!-- Category Tag Top-Right -->
+                        <div class="position-absolute top-2 end-2 bg-warning text-dark rounded-pill px-2.5 py-0.5 shadow-sm fw-black text-uppercase small" style="font-size: 10px; top: 10px; right: 10px;" id="sim-category">
+                          Skin
+                        </div>
+                      </div>
+
+                      <div class="p-3">
+                        <h6 class="fw-bold text-slate-900 font-serif mb-1 text-truncate" id="sim-title">
+                          Offer Title
+                        </h6>
+                        <p class="text-muted small mb-0 line-clamp-2" style="font-size: 12px; min-height: 36px;" id="sim-description">
+                          Description of treatment package and inclusions...
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="p-3 pt-0">
+                      <div class="pt-2 border-top">
+                        <button type="button" class="btn btn-teal btn-sm w-100 fw-bold d-flex align-items-center justify-content-center gap-2" id="sim-btn">
+                          <i class="bi bi-tag-fill"></i>
+                          <span id="sim-btn-text">Claim Offer</span>
+                          <i class="bi bi-arrow-right ms-auto"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer bg-white border-top py-3 px-4">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-teal px-4 fw-bold" id="btn-save-offer">
+              <i class="bi bi-check-circle-fill me-1.5"></i> Save Offer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Zoom Lightbox Modal -->
+  <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bg-transparent border-0 text-center">
+        <div class="modal-body p-0 position-relative">
+          <img id="zoom-image" src="" alt="Offer Banner" class="img-fluid rounded-4 shadow-2xl border border-white border-opacity-25" style="max-height: 82vh;">
+          <div class="mt-2 text-white fw-bold fs-5" id="zoom-title"></div>
+          <button type="button" class="btn btn-light btn-sm rounded-pill mt-3 px-4 fw-bold shadow" data-bs-dismiss="modal">Close Preview</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Scripts -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.8/dist/sweetalert2.all.min.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/offers.js"></script>
+</body>
+</html>

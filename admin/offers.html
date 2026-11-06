@@ -597,11 +597,13 @@
                   </div>
 
                   <!-- Drag & Drop Zone -->
-                  <div class="dropzone-upload-box mb-2" id="offer-dropzone">
-                    <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
-                    <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
-                    <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
-                    <input type="file" id="offer-image-file" class="d-none" accept="image/*">
+                  <div class="dropzone-upload-box mb-2" id="offer-dropzone" style="cursor: pointer;">
+                    <div id="offer-dropzone-inner">
+                      <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
+                      <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
+                      <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
+                    </div>
+                    <input type="file" id="offer-image-file" class="d-none" accept="image/png, image/jpeg, image/webp, image/jpg">
                   </div>
 
                   <!-- Manual Image URL Input -->

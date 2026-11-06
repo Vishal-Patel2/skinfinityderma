@@ -98,37 +98,35 @@ $(document).ready(function () {
       $('#offer-badge').val(text).trigger('input');
     });
 
-    // Dropzone upload events
-    const $dropzone = $('#offer-dropzone');
-    const $fileInput = $('#offer-image-file');
-
-    $dropzone.on('click', function () {
-      $fileInput.trigger('click');
+    // Dropzone upload events with reliable delegation
+    $(document).on('click', '#offer-dropzone', function (e) {
+      if ($(e.target).is('#offer-image-file')) return;
+      $('#offer-image-file').trigger('click');
     });
 
-    $dropzone.on('dragover dragenter', function (e) {
+    $(document).on('dragover dragenter', '#offer-dropzone', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.addClass('dragover');
+      $('#offer-dropzone').addClass('dragover');
     });
 
-    $dropzone.on('dragleave dragend', function (e) {
+    $(document).on('dragleave dragend', '#offer-dropzone', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.removeClass('dragover');
+      $('#offer-dropzone').removeClass('dragover');
     });
 
-    $dropzone.on('drop', function (e) {
+    $(document).on('drop', '#offer-dropzone', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      $dropzone.removeClass('dragover');
-      const files = e.originalEvent.dataTransfer.files;
-      if (files.length > 0) {
+      $('#offer-dropzone').removeClass('dragover');
+      const files = e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files;
+      if (files && files.length > 0) {
         handleImageUpload(files[0]);
       }
     });
 
-    $fileInput.on('change', function () {
+    $(document).on('change', '#offer-image-file', function () {
       if (this.files && this.files.length > 0) {
         handleImageUpload(this.files[0]);
       }
@@ -425,8 +423,8 @@ $(document).ready(function () {
 
   // Handle custom image file upload
   async function handleImageUpload(file) {
-    if (!file.type.startsWith('image/')) {
-      Swal.fire('Invalid File', 'Please upload an image file (PNG, JPG, WEBP).', 'warning');
+    if (!file || !file.type || !file.type.startsWith('image/')) {
+      Swal.fire('Invalid File', 'Please upload a valid image file (PNG, JPG, WEBP).', 'warning');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -435,35 +433,57 @@ $(document).ready(function () {
     }
 
     const formData = new FormData();
+    formData.append('image', file);
     formData.append('file', file);
     formData.append('folder', 'offers');
 
+    const defaultDropzoneHtml = `
+      <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
+      <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
+      <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
+    `;
+
+    const $inner = $('#offer-dropzone-inner').length ? $('#offer-dropzone-inner') : $('#offer-dropzone');
+    $inner.html('<div class="spinner-border spinner-border-sm text-teal me-2"></div> <span class="small text-slate-700">Uploading banner image...</span>');
+
     try {
-      const $dropzone = $('#offer-dropzone');
-      $dropzone.html('<div class="spinner-border spinner-border-sm text-teal me-2"></div> Uploading banner image...');
+      let res;
+      if (window.API && typeof window.API.uploadFile === 'function') {
+        res = await window.API.uploadFile(formData, 'offers');
+      } else if (window.API && typeof window.API.uploadImage === 'function') {
+        res = await window.API.uploadImage(file, 'offers');
+      } else {
+        const token = localStorage.getItem('token') || (window.API && window.API.getToken && window.API.getToken());
+        const resp = await fetch('/api/upload?folder=offers', {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          body: formData,
+        });
+        res = await resp.json();
+      }
 
-      const res = await API.uploadFile(formData);
-      $dropzone.html(`
-        <i class="bi bi-cloud-arrow-up text-teal fs-2 d-block mb-1"></i>
-        <div class="fw-semibold text-slate-800 small">Upload Fresh Custom Banner</div>
-        <div class="text-muted" style="font-size: 11px;">Drag &amp; drop file here or click to browse (PNG, JPG, WEBP)</div>
-        <input type="file" id="offer-image-file" class="d-none" accept="image/*">
-      `);
+      $inner.html(defaultDropzoneHtml);
+      $('#offer-image-file').val('');
 
-      if (res && (res.fileUrl || res.url)) {
-        const url = res.fileUrl || res.url;
-        $('#offer-image-url').val(url).trigger('input');
+      const uploadedUrl = res?.url || res?.fileUrl || res?.data?.file_url || res?.data?.url || res?.absoluteUrl;
+      if (uploadedUrl) {
+        $('#offer-image-url').val(uploadedUrl).trigger('input');
         $('#preset-image-selector').val('');
         Swal.fire({
           icon: 'success',
-          title: 'Image Uploaded!',
-          timer: 1200,
+          title: 'Banner Uploaded!',
+          text: 'Custom banner uploaded and preview updated.',
+          timer: 1500,
           showConfirmButton: false,
         });
+      } else {
+        throw new Error(res?.message || 'Server did not return a valid image URL');
       }
     } catch (err) {
       console.error('Image upload error:', err);
-      Swal.fire('Upload Failed', err.message || 'Could not upload image to server.', 'error');
+      $inner.html(defaultDropzoneHtml);
+      $('#offer-image-file').val('');
+      Swal.fire('Upload Failed', err.message || err.statusText || 'Could not upload image to server.', 'error');
     }
   }
 

@@ -114,13 +114,36 @@
     },
 
     // File Upload (Single)
-    uploadImage: function (file) {
+    uploadImage: function (file, folder) {
       const formData = new FormData();
       formData.append('image', file);
+      const url = folder ? `/upload?folder=${encodeURIComponent(folder)}` : '/upload';
       return this.request({
-        url: '/upload',
+        url: url,
         method: 'POST',
         data: formData,
+        contentType: false
+      });
+    },
+
+    // Universal File / FormData Upload
+    uploadFile: function (fileOrFormData, folder) {
+      let data = fileOrFormData;
+      let url = '/upload';
+      if (fileOrFormData instanceof FormData) {
+        data = fileOrFormData;
+        const f = folder || data.get('folder');
+        if (f) url = `/upload?folder=${encodeURIComponent(f)}`;
+      } else {
+        data = new FormData();
+        data.append('file', fileOrFormData);
+        data.append('image', fileOrFormData);
+        if (folder) url = `/upload?folder=${encodeURIComponent(folder)}`;
+      }
+      return this.request({
+        url: url,
+        method: 'POST',
+        data: data,
         contentType: false
       });
     },
