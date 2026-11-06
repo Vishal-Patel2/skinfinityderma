@@ -61,7 +61,21 @@ try {
 /** Resolves any image URL (backend uploads, static assets, external CDNs) cleanly. */
 export function mediaUrl<T>(src: T): T {
   if (typeof src === "string") {
-    return getImageUrl(src) as unknown as T;
+    const trimmed = src.trim();
+    // Only resolve strings that are actual media/image paths
+    if (
+      trimmed.startsWith("/uploads/") ||
+      trimmed.startsWith("uploads/") ||
+      trimmed.startsWith("/images/") ||
+      trimmed.startsWith("images/") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("data:") ||
+      /\.(jpg|jpeg|png|webp|svg|gif|avif|mp4|webm)$/i.test(trimmed)
+    ) {
+      return getImageUrl(trimmed) as unknown as T;
+    }
+    return src;
   }
   return src;
 }

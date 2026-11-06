@@ -101,8 +101,17 @@ export function getImageUrl(
     return `${BACKEND_ORIGIN}/uploads/${trimmed}`;
   }
 
-  // Fallback to ensuring leading slash
-  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  // If path contains file extension or starts with slash
+  if (trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  if (/\.(jpg|jpeg|png|webp|svg|gif|avif|mp4|webm)$/i.test(trimmed)) {
+    return `/${trimmed}`;
+  }
+
+  // Not an image or URL path — return fallback
+  return fallback;
 }
 
 /**
