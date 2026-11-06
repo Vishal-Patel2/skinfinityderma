@@ -25,39 +25,39 @@ const CITY_CATEGORIES: Record<"Noida" | "Gurgaon", CityCategoryGroup[]> = {
     {
       category: "Skin Treatments",
       links: [
-        { name: "Dermatologist Clinic in Noida", slug: "dermatologist-in-noida" },
-        { name: "Skin Clinic in Noida", slug: "skin-clinic-in-noida" },
         { name: "Acne & Pimple Treatment in Noida", slug: "acne-pimple-treatment-in-noida" },
-        { name: "Pigmentation Treatment in Noida", slug: "pigmentation-treatment-in-noida" },
-        { name: "HydraFacial Treatment in Noida", slug: "hydrafacial-in-noida" },
         { name: "Chemical Peel in Noida", slug: "chemical-peel-in-noida" },
         { name: "Dark Circle Treatment in Noida", slug: "dark-circle-treatment-in-noida" },
+        { name: "Dermatologist Clinic in Noida", slug: "dermatologist-in-noida" },
+        { name: "HydraFacial Treatment in Noida", slug: "hydrafacial-in-noida" },
+        { name: "Pigmentation Treatment in Noida", slug: "pigmentation-treatment-in-noida" },
         { name: "Skin Boosters in Noida", slug: "skin-boosters-in-noida" },
+        { name: "Skin Clinic in Noida", slug: "skin-clinic-in-noida" },
       ],
     },
     {
       category: "Hair & Laser Treatments",
       links: [
-        { name: "Laser Hair Reduction in Noida", slug: "laser-hair-reduction-in-noida" },
         { name: "Full Body Laser Reduction in Noida", slug: "full-body-laser-reduction-in-noida" },
-        { name: "Hair Fall Treatment in Noida", slug: "hair-fall-treatment-in-noida" },
-        { name: "PRP Hair Treatment in Noida", slug: "prp-treatment-in-noida" },
         { name: "GFC Treatment in Noida", slug: "gfc-treatment-in-noida" },
+        { name: "Hair Fall Treatment in Noida", slug: "hair-fall-treatment-in-noida" },
+        { name: "Laser Hair Reduction in Noida", slug: "laser-hair-reduction-in-noida" },
         { name: "Laser Tattoo Removal in Noida", slug: "laser-tattoo-removal-in-noida" },
+        { name: "PRP Hair Treatment in Noida", slug: "prp-treatment-in-noida" },
         { name: "Q-Switch Nd:YAG Laser in Noida", slug: "q-switch-laser-in-noida" },
       ],
     },
     {
       category: "Body & Wedding Packages",
       links: [
-        { name: "Body Contouring & Fat Loss in Noida", slug: "body-contouring-in-noida" },
-        { name: "Double Chin Reduction in Noida", slug: "double-chin-reduction-in-noida" },
-        { name: "HIFU Non-Surgical Face Lift in Noida", slug: "hifu-in-noida" },
         { name: "Anti Ageing Treatment in Noida", slug: "anti-ageing-treatment-in-noida" },
+        { name: "Body Contouring & Fat Loss in Noida", slug: "body-contouring-in-noida" },
+        { name: "Bridal Aesthetic Packages in Noida", slug: "bridal-packages-in-noida" },
+        { name: "Double Chin Reduction in Noida", slug: "double-chin-reduction-in-noida" },
+        { name: "Groom Grooming Packages in Noida", slug: "groom-packages-in-noida" },
+        { name: "HIFU Non-Surgical Face Lift in Noida", slug: "hifu-in-noida" },
         { name: "Lip Fillers in Noida", slug: "fillers-in-noida" },
         { name: "Thread Lifting in Noida", slug: "thread-lift-in-noida" },
-        { name: "Bridal Aesthetic Packages in Noida", slug: "bridal-packages-in-noida" },
-        { name: "Groom Grooming Packages in Noida", slug: "groom-packages-in-noida" },
       ],
     },
   ],
@@ -65,39 +65,39 @@ const CITY_CATEGORIES: Record<"Noida" | "Gurgaon", CityCategoryGroup[]> = {
     {
       category: "Skin Treatments",
       links: [
-        { name: "Dermatologist Clinic in Gurgaon", slug: "dermatologist-in-gurgaon" },
-        { name: "Skin Clinic in Gurgaon", slug: "skin-clinic-in-gurgaon" },
         { name: "Acne & Pimple Treatment in Gurgaon", slug: "acne-pimple-treatment-in-gurgaon" },
-        { name: "Pigmentation Treatment in Gurgaon", slug: "pigmentation-treatment-in-gurgaon" },
-        { name: "HydraFacials in Gurgaon", slug: "hydrafacial-in-gurgaon" },
         { name: "Chemical Peel in Gurgaon", slug: "chemical-peel-in-gurgaon" },
         { name: "Dark Circle Treatment in Gurgaon", slug: "dark-circle-treatment-in-gurgaon" },
+        { name: "Dermatologist Clinic in Gurgaon", slug: "dermatologist-in-gurgaon" },
+        { name: "HydraFacials in Gurgaon", slug: "hydrafacial-in-gurgaon" },
+        { name: "Pigmentation Treatment in Gurgaon", slug: "pigmentation-treatment-in-gurgaon" },
         { name: "Skin Boosters in Gurgaon", slug: "skin-boosters-in-gurgaon" },
+        { name: "Skin Clinic in Gurgaon", slug: "skin-clinic-in-gurgaon" },
       ],
     },
     {
       category: "Hair & Laser Treatments",
       links: [
-        { name: "Laser Hair Reduction in Gurgaon", slug: "laser-hair-reduction-in-gurgaon" },
         { name: "Full Body Laser Reduction in Gurgaon", slug: "full-body-laser-reduction-in-gurgaon" },
-        { name: "Hair Fall Treatment in Gurgaon", slug: "hair-fall-treatment-in-gurgaon" },
-        { name: "PRP Treatment in Gurgaon", slug: "prp-treatment-in-gurgaon" },
         { name: "GFC Treatment in Gurgaon", slug: "gfc-treatment-in-gurgaon" },
+        { name: "Hair Fall Treatment in Gurgaon", slug: "hair-fall-treatment-in-gurgaon" },
+        { name: "Laser Hair Reduction in Gurgaon", slug: "laser-hair-reduction-in-gurgaon" },
         { name: "Laser Tattoo Removal in Gurgaon", slug: "laser-tattoo-removal-in-gurgaon" },
+        { name: "PRP Treatment in Gurgaon", slug: "prp-treatment-in-gurgaon" },
         { name: "Q-Switch Nd:YAG Laser in Gurgaon", slug: "q-switch-laser-in-gurgaon" },
       ],
     },
     {
       category: "Body & Wedding Packages",
       links: [
-        { name: "Body Contouring in Gurgaon", slug: "body-contouring-in-gurgaon" },
-        { name: "Double Chin Reduction in Gurgaon", slug: "double-chin-reduction-in-gurgaon" },
-        { name: "HIFU in Gurgaon", slug: "hifu-in-gurgaon" },
         { name: "Anti Ageing Treatment in Gurgaon", slug: "anti-ageing-treatment-in-gurgaon" },
-        { name: "Fillers Treatment in Gurgaon", slug: "fillers-in-gurgaon" },
-        { name: "Thread Lifting in Gurgaon", slug: "thread-lift-in-gurgaon" },
+        { name: "Body Contouring in Gurgaon", slug: "body-contouring-in-gurgaon" },
         { name: "Bridal Aesthetic Packages in Gurgaon", slug: "bridal-packages-in-gurgaon" },
+        { name: "Double Chin Reduction in Gurgaon", slug: "double-chin-reduction-in-gurgaon" },
+        { name: "Fillers Treatment in Gurgaon", slug: "fillers-in-gurgaon" },
         { name: "Groom Grooming Packages in Gurgaon", slug: "groom-packages-in-gurgaon" },
+        { name: "HIFU in Gurgaon", slug: "hifu-in-gurgaon" },
+        { name: "Thread Lifting in Gurgaon", slug: "thread-lift-in-gurgaon" },
       ],
     },
   ],
@@ -280,7 +280,9 @@ export default function Footer() {
                         </span>
                       </div>
                       <ul className="space-y-2">
-                        {group.links.map((link, lIdx) => (
+                        {[...group.links]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((link, lIdx) => (
                           <li key={lIdx}>
                             <Link
                               href={`/${link.slug}`}
