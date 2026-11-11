@@ -232,6 +232,50 @@ router.get(
   })
 );
 
+function parseSlugLocation(slug) {
+  if (!slug) return { baseSlug: slug, cityName: '', locationSuffix: '' };
+  const normalized = slug.trim().toLowerCase();
+
+  const inMatch = normalized.match(/^(.*?)-in-([a-z0-9-]+)$/i);
+  if (inMatch) {
+    const baseSlug = inMatch[1];
+    const rawCity = inMatch[2];
+    const cityName = formatCity(rawCity);
+    return {
+      baseSlug,
+      cityName,
+      locationSuffix: `in ${cityName}`,
+    };
+  }
+
+  const cityMatch = normalized.match(/^(.*?)-(noida|gurugram|gurgaon)$/i);
+  if (cityMatch) {
+    const baseSlug = cityMatch[1];
+    const rawCity = cityMatch[2];
+    const cityName = formatCity(rawCity);
+    return {
+      baseSlug,
+      cityName,
+      locationSuffix: `in ${cityName}`,
+    };
+  }
+
+  return { baseSlug: normalized, cityName: '', locationSuffix: '' };
+}
+
+function formatCity(raw) {
+  if (!raw) return '';
+  const lower = raw.toLowerCase();
+  if (lower === 'noida') return 'Noida';
+  if (lower === 'gurugram') return 'Gurugram';
+  if (lower === 'gurgaon') return 'Gurgaon';
+  if (lower === 'delhi') return 'Delhi';
+  return raw
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
+
 /**
  * GET /api/public/treatments/:slug
  */
@@ -241,7 +285,7 @@ router.get(
     setPublicCache(res);
     const { slug } = req.params;
 
-    const row = await one(
+    let row = await one(
       `SELECT t.*, c.name AS category_name, c.slug AS category_slug
          FROM sid_treatments t
          LEFT JOIN sid_categories c ON c.id = t.category_id
@@ -250,6 +294,25 @@ router.get(
         LIMIT 1`,
       [slug, slug, slug]
     );
+
+    let locationSuffix = '';
+    if (!row) {
+      const parsed = parseSlugLocation(slug);
+      if (parsed.baseSlug && parsed.baseSlug !== slug) {
+        row = await one(
+          `SELECT t.*, c.name AS category_name, c.slug AS category_slug
+             FROM sid_treatments t
+             LEFT JOIN sid_categories c ON c.id = t.category_id
+            WHERE t.is_active = 1
+              AND (t.slug = ? OR t.legacy_id = ? OR JSON_CONTAINS(t.aliases, JSON_QUOTE(?)))
+            LIMIT 1`,
+          [parsed.baseSlug, parsed.baseSlug, parsed.baseSlug]
+        );
+        if (row && parsed.locationSuffix) {
+          locationSuffix = parsed.locationSuffix;
+        }
+      }
+    }
 
     if (!row) {
       throw new HttpError(404, 'Treatment not found');
@@ -267,11 +330,14 @@ router.get(
       gallery.push({ src: row.sub_image_3, caption: 'Sub-image 3' });
     }
 
+    const cleanBaseName = (row.name || '').replace(/\s+in\s+(Noida|Gurgaon|Gurugram|[A-Za-z]+)$/i, '').trim();
+    const displayName = locationSuffix ? `${cleanBaseName} ${locationSuffix}` : (row.name || cleanBaseName);
+
     const treatment = {
       id: row.legacy_id || String(row.id),
-      slug: row.slug,
+      slug: slug,
       aliases: parseJson(row.aliases, []),
-      name: row.name,
+      name: displayName,
       category: row.category_name || 'General Dermatology',
       categorySlug: row.category_slug,
       bodyArea: row.body_area || 'Full Body',

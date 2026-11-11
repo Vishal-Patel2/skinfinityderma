@@ -27,6 +27,7 @@ import {
 import { getDoctors } from "@/lib/api";
 import BrandJourneyRoadmap from "@/components/about/BrandJourneyRoadmap";
 import { useAuth } from "@/context/AuthContext";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 const TAB_ITEMS = {
   Machines: [
@@ -163,20 +164,6 @@ const AWARDS_LIST = [
     iconType: "award",
   },
 ];
-
-function SectionDivider() {
-  return (
-    <div className="w-full flex items-center justify-center py-1 bg-white">
-      <Image
-        src="/images/custom/section-divider.webp"
-        alt="section divider"
-        width={320}
-        height={34}
-        className="w-full max-w-[240px] sm:max-w-[280px] h-auto object-contain opacity-90 select-none pointer-events-none"
-      />
-    </div>
-  );
-}
 
 export default function AboutClinicInteractiveSections() {
   const { openAppointmentModal } = useAuth();

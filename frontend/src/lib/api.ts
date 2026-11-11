@@ -46,6 +46,7 @@ const TIMEOUT_MS = 6000;
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.skinfinityderma.com").replace(/\/+$/, "");
 
 import { getImageUrl, resolveGalleryList, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
+import { parseTreatmentSlug } from "@/utils/slugUtils";
 
 /* ------------------------------------------------------------------------- */
 /* Media URL handling                                                        */
@@ -238,7 +239,13 @@ export async function getTreatments(params: { category?: string; featured?: bool
 }
 
 export async function getTreatment(slug: string): Promise<{ treatment: RichTreatment; related: RichTreatment[] } | null> {
-  const r = await request<any>(`/treatments/${encodeURIComponent(slug)}`);
+  let r = await request<any>(`/treatments/${encodeURIComponent(slug)}`);
+  if (!r || !r.data) {
+    const { baseSlug } = parseTreatmentSlug(slug);
+    if (baseSlug && baseSlug !== slug) {
+      r = await request<any>(`/treatments/${encodeURIComponent(baseSlug)}`);
+    }
+  }
   if (!r || !r.data) return null;
   const { related, ...rest } = r.data;
   return { treatment: normalizeTreatment(rest), related: arr<any>(related).map(normalizeTreatment) };

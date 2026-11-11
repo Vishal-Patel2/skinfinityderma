@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import AboutClinicShowcase from "@/components/about/AboutClinicShowcase";
 import AboutClinicInteractiveSections from "@/components/about/AboutClinicInteractiveSections";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,8 @@ export default function AboutClinicPage() {
 
       {/* Exact Home Page About Section */}
       <AboutClinicShowcase />
+
+      <SectionDivider />
 
       {/* Clinic Images -> Our Journey -> Awards -> 5-Doctor Carousel -> Integrated Lab & Pharmacy -> Associated Partners */}
       <AboutClinicInteractiveSections />

@@ -21,6 +21,7 @@ import { DOCTORS, CLINIC_LOCATIONS, TESTIMONIALS } from "@/data/clinicData";
 import { API_BASE } from "@/lib/api";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 interface Props {
   params: {
@@ -266,8 +267,29 @@ export default async function DoctorProfilePage({ params }: Props) {
   const pool = allDoctors.length > 0 ? allDoctors : DOCTORS;
   const otherDoctors = pool.filter((d: any) => d.slug !== doctor.slug && d.id !== doctor.id && d.name !== doctor.name);
 
+  const doctorSchema = {
+    "@context": "https://schema.org",
+    "@type": "Physician",
+    name: doctor.name,
+    jobTitle: doctor.role,
+    description: doctor.bio,
+    image: doctor.image?.startsWith("http") ? doctor.image : `https://www.skinfinityderma.com${doctor.image}`,
+    medicalSpecialty: "Dermatology",
+    worksFor: {
+      "@type": "MedicalClinic",
+      name: "Skinfinity Derma Clinic",
+      url: "https://www.skinfinityderma.com",
+    },
+    knowsAbout: details.FocusAreas,
+    alumniOf: details.education,
+  };
+
   return (
     <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(doctorSchema) }}
+      />
       {/* Breadcrumb Banner */}
       <PageBreadcrumbBanner
         image="/images/breadcrumbbanner/about-us.webp"
@@ -453,8 +475,10 @@ export default async function DoctorProfilePage({ params }: Props) {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* Other Senior Doctors */}
-      <section className="py-14 bg-slate-50/70 border-t border-slate-100">
+      <section className="py-14 bg-slate-50/70">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <div>

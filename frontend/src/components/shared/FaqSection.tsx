@@ -70,8 +70,25 @@ export default function FaqSection() {
     };
   }, []);
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.slice(0, 10).map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.a,
+      },
+    })),
+  };
+
   return (
     <section className="py-10 lg:py-14 bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
 
@@ -114,9 +131,9 @@ export default function FaqSection() {
                             isOpen ? "text-brand-700" : "text-slate-400"
                           }`}
                         />
-                        <h2 className="text-sm sm:text-base font-serif font-bold text-slate-900 inline m-0 p-0 text-left">
+                        <h3 className="text-sm sm:text-base font-serif font-bold text-slate-900 inline m-0 p-0 text-left">
                           {faq.q}
-                        </h2>
+                        </h3>
                       </span>
                       <ChevronDown
                         className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ${

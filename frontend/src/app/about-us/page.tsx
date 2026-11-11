@@ -23,6 +23,7 @@ import BrandJourneyRoadmap from "@/components/about/BrandJourneyRoadmap";
 import DedicatedDoctorsCarousel from "@/components/about/DedicatedDoctorsCarousel";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const metadata: Metadata = {
   title: "About Dr. Ipshita Johri & Senior Dermatologists | Skinfinity Derma",
@@ -56,7 +57,7 @@ export default function AboutUsPage() {
       />
 
       {/* Hero Section */}
-      <section className="py-14 lg:py-20 bg-gradient-to-b from-brand-50/40 via-white to-white border-b border-slate-100">
+      <section className="pt-12 pb-10 lg:pt-16 lg:pb-14 bg-gradient-to-b from-brand-50/40 via-white to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
@@ -164,11 +165,15 @@ export default function AboutUsPage() {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* Our Journey – Interactive S-Curve Roadmap */}
       <BrandJourneyRoadmap />
 
+      <SectionDivider />
+
       {/* Awards & Recognitions */}
-      <section className="py-16 bg-white border-b border-slate-100">
+      <section className="py-12 lg:py-14 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3.5 py-1 rounded-full border border-amber-200">
@@ -193,8 +198,10 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      {/* Integrated Lab & Pharmacy Spotlight */}
-      <section className="py-16 bg-slate-900 text-white border-b border-slate-800">
+      <SectionDivider />
+
+      {/* Integrated Diagnostic Lab & Pharmacy Spotlight */}
+      <section className="py-12 lg:py-14 bg-slate-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             
@@ -238,8 +245,12 @@ export default function AboutUsPage() {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* Complete Doctor Team Carousel featuring Dr. Ipshita, Dr. Sukriti & Senior Dermatologists */}
       <DedicatedDoctorsCarousel />
+
+      <SectionDivider />
 
       {/* Appointment CTA */}
       <section className="py-16 bg-slate-900 text-white">

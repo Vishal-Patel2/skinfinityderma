@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { ChevronRight, Award, ShieldCheck, Sparkles } from "lucide-react";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 import ResultsGallery from "@/components/results/ResultsGallery";
+import SectionDivider from "@/components/shared/SectionDivider";
 import { getResults } from "@/lib/api";
 import { REAL_RESULTS } from "@/data/clinicData";
 
@@ -29,7 +30,7 @@ export default async function ResultsPage() {
   return (
     <div className="bg-white min-h-screen">
       {/* Top Breadcrumb */}
-      <div className="bg-slate-50 border-b border-slate-200/80 py-4">
+      <div className="bg-slate-50  py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs text-slate-500">
             <Link href="/" className="hover:text-[#005B41] transition-colors">Home</Link>
@@ -40,7 +41,7 @@ export default async function ResultsPage() {
       </div>
 
       {/* Hero Header */}
-      <section className="py-14 lg:py-16 bg-gradient-to-b from-emerald-50/40 via-white to-white border-b border-slate-100">
+      <section className="py-14 lg:py-16 bg-gradient-to-b from-emerald-50/40 via-white to-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
           <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#005B41] bg-emerald-50 px-3.5 py-1.5 rounded-full border border-emerald-200">
             <ShieldCheck className="w-4 h-4 text-[#005B41]" />
@@ -58,7 +59,7 @@ export default async function ResultsPage() {
       </section>
 
       {/* Main Interactive Results Gallery */}
-      <section className="py-16 bg-slate-50/70 border-b border-slate-200/80">
+      <section className="py-16 bg-slate-50/70 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ResultsGallery initialResults={initialResults} />
 
@@ -67,6 +68,8 @@ export default async function ResultsPage() {
           </p>
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* Bottom Booking Appointment Section */}
       <section className="py-16 bg-slate-950 text-white">

@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { ChevronRight, Tag, Sparkles, Calendar, ArrowRight } from "lucide-react";
 import { SPECIAL_OFFERS } from "@/data/clinicData";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const metadata: Metadata = {
   title: "Latest Offers & Bridal Packages | Skinfinity Derma",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default function LatestOffersPage() {
   return (
     <div className="bg-white">
-      <div className="bg-slate-50 border-b border-slate-200/80 py-4">
+      <div className="bg-slate-50  py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs text-slate-500">
             <Link href="/" className="hover:text-brand-700">Home</Link>
@@ -27,7 +28,7 @@ export default function LatestOffersPage() {
         </div>
       </div>
 
-      <section className="py-14 bg-gradient-to-b from-amber-50/40 via-white to-white border-b border-slate-100">
+      <section className="py-14 bg-gradient-to-b from-amber-50/40 via-white to-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
           <span className="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3.5 py-1 rounded-full border border-amber-200">
             Limited Period Privileges
@@ -41,7 +42,9 @@ export default function LatestOffersPage() {
         </div>
       </section>
 
-      <section className="py-16 bg-slate-50/60 border-b border-slate-100">
+      <SectionDivider />
+
+      <section className="py-16 bg-slate-50/60 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {SPECIAL_OFFERS.map((offer) => (
@@ -87,6 +90,8 @@ export default function LatestOffersPage() {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
 import TestimonialsSection from "@/components/home/TestimonialsSection";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const metadata: Metadata = {
   title: "Patient Testimonials & Reviews | Skinfinity Derma (4,500+ Reviews)",
@@ -27,6 +28,8 @@ export default function TestimonialsPage() {
       </div>
 
       <TestimonialsSection />
+
+      <SectionDivider />
 
       <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -6,6 +6,7 @@ import { getDoctorByAuthorName } from "@/data/clinicData";
 import { getTreatment, getBlog, getBlogs } from "@/lib/api";
 import TreatmentDetailView from "@/components/treatments/TreatmentDetailView";
 import BlogDetailView from "@/components/blog/BlogDetailView";
+import { parseTreatmentSlug, formatDynamicTreatmentName } from "@/utils/slugUtils";
 
 export const dynamicParams = true;
 export const revalidate = 0;
@@ -89,19 +90,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   // 2. Otherwise treatment
+  const parsed = parseTreatmentSlug(params.slug);
   const apiData = await getTreatment(params.slug);
-  const treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
+  let treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
+
+  if (treatment) {
+    const displayName = formatDynamicTreatmentName(treatment.name, parsed.locationSuffix);
+    treatment = {
+      ...treatment,
+      name: displayName,
+      slug: params.slug,
+    };
+  }
+
   const isGurgaon =
     params.slug.toLowerCase().includes("gurgaon") ||
     params.slug.toLowerCase().includes("gurugram");
   const isNoida =
     !isGurgaon && params.slug.toLowerCase().includes("noida");
-  const isLocation = isGurgaon || isNoida;
+  const isLocation = parsed.isLocation || isGurgaon || isNoida;
   const locationLabel = isGurgaon
-    ? "Gurgaon Golf Course Road"
+    ? (params.slug.toLowerCase().includes("gurugram") ? "Gurugram Golf Course Road" : "Gurgaon Golf Course Road")
     : isNoida
     ? "Noida Sector 36"
-    : "Noida & Gurgaon";
+    : (parsed.cityName ? `${parsed.cityName}` : "Noida & Gurgaon");
 
   const metaTitle = isLocation
     ? `${treatment.name} | Best Skin Clinic ${locationLabel} | Skinfinity Derma`
@@ -281,8 +293,21 @@ export default async function CatchAllSlugPage({ params }: Props) {
   }
 
   // 2. Otherwise Treatment Detail View
+  const parsed = parseTreatmentSlug(params.slug);
   const apiData = await getTreatment(params.slug);
-  const treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
+  let treatment = apiData?.treatment || getTreatmentBySlug(params.slug);
+
+  if (!treatment) {
+    notFound();
+  }
+
+  const displayName = formatDynamicTreatmentName(treatment.name, parsed.locationSuffix);
+  treatment = {
+    ...treatment,
+    name: displayName,
+    slug: params.slug,
+  };
+
   const isGurgaon =
     params.slug.toLowerCase().includes("gurgaon") ||
     params.slug.toLowerCase().includes("gurugram");

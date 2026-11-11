@@ -275,7 +275,7 @@ export default function BrandJourneyRoadmap() {
   const activeStep = BRAND_JOURNEY[activeIdx] || BRAND_JOURNEY[0];
 
   return (
-    <section className="py-10 lg:py-14 bg-gradient-to-b from-[#f9fbfb] via-white to-[#f4f9f8] overflow-hidden border-y border-slate-200/70">
+    <section className="py-10 lg:py-14 bg-gradient-to-b from-[#f9fbfb] via-white to-[#f4f9f8] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* ── SECTION HEADER ── */}
         <div className="text-center max-w-3xl mx-auto mb-10 lg:mb-14">

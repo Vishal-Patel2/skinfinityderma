@@ -32,6 +32,7 @@ import { getTreatments, getCategories } from "@/lib/api";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 function TreatmentsListingContent() {
   const searchParams = useSearchParams();
@@ -402,9 +403,9 @@ function TreatmentsListingContent() {
                     treatment.cardHighlights && treatment.cardHighlights.length > 0
                       ? treatment.cardHighlights
                       : [
-                          "US-FDA approved clinical protocol tailored by senior MD dermatologists.",
-                          "Zero downtime or minimal recovery with long-lasting aesthetic outcomes.",
-                          "Safe for Indian skin tones with personalized pre-and-post care guidance.",
+                          `Advanced clinical ${treatment.name} customized by senior dermatologists`,
+                          `Evidence-based protocol for ${treatment.category || "aesthetic dermatology"}`,
+                          `Personalized pre-and-post care calibrated for Indian skin tones`,
                         ];
 
                   return (
@@ -575,6 +576,8 @@ function TreatmentsListingContent() {
                 })}
               </div>
             )}
+
+            <SectionDivider />
 
             {/* Bottom Consultation Banner */}
             <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-[#093b3c] rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">

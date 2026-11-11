@@ -1585,29 +1585,6 @@ export function getTreatmentBySlug(slug: string): RichTreatment {
         id: slug,
         slug: slug,
         name: locationTreatmentName,
-        tags: Array.from(
-          new Set([...baseTreatment.tags, "US-FDA APPROVED", "MD DERMATOLOGIST LED", clinicTag])
-        ),
-        shortDesc: `Doctor-certified clinical protocol for ${cleanBaseName} in ${cityName} at Skinfinity Derma. US-FDA approved technologies with zero downtime.`,
-        fullDesc: `At Skinfinity Derma ${cityName}, our board-certified dermatologists provide tailored clinical protocols for ${cleanBaseName}. ${baseTreatment.fullDesc}`,
-        cardHighlights: [
-          `US-FDA approved clinical protocol for ${cleanBaseName} in ${cityName}`,
-          `Senior MD dermatologist consultation available at our ${cityName} clinic`,
-          "Personalized root-cause diagnosis with zero social downtime",
-        ],
-        faqs: [
-          ...(baseTreatment.faqs || []),
-          {
-            question: `Why choose Skinfinity Derma for ${cleanBaseName} in ${cityName}?`,
-            answer: `Skinfinity Derma is founded by celebrity dermatologist Dr. Ipshita Johri and operates NABH-grade clinics in ${cityName}. Every procedure is performed or directly supervised by board-certified MD dermatologists using genuine US-FDA technology.`,
-          },
-          {
-            question: `Where is the Skinfinity Derma clinic located in ${cityName}?`,
-            answer: isGurgaon
-              ? "Our Gurgaon clinic is centrally located at 2nd Floor, SP1, Sector 28, Golf Course Road, Gurugram (Near DLF Phase 1 & 2 Metro Station)."
-              : "Our Noida headquarters is located at Basement Floor, House B1, Sector 36, Near Logix City Centre Mall, Noida - 201303.",
-          },
-        ],
       };
     } else {
       return {

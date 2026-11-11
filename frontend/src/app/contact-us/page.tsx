@@ -14,6 +14,7 @@ import {
 import { CLINIC_LOCATIONS } from "@/data/clinicData";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const metadata: Metadata = {
   title: "Contact Skinfinity Derma | Noida & Gurgaon Clinic Locations",
@@ -37,7 +38,7 @@ export default function ContactUsPage() {
       />
 
       {/* Two Clinic Cards & Map Section */}
-      <section className="py-12 bg-slate-50/60 border-b border-slate-100">
+      <section className="py-12 bg-slate-50/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
@@ -202,6 +203,8 @@ export default function ContactUsPage() {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* Appointment Booking Section */}
       <section className="py-16 bg-slate-900 text-white">

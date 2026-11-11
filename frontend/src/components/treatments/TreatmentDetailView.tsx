@@ -30,6 +30,7 @@ import { useAuth } from "@/context/AuthContext";
 import AppointmentForm from "@/components/modals/AppointmentForm";
 import { getImageUrl, DEFAULT_FALLBACKS } from "@/utils/imageUrl";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 interface Props {
   treatment: RichTreatment;
@@ -69,8 +70,14 @@ export default function TreatmentDetailView({ treatment }: Props) {
     treatment.name.toLowerCase().includes("laser");
 
   const isNoida = treatment.slug?.toLowerCase().includes("noida") || treatment.name?.toLowerCase().includes("noida");
-  const isGurgaon = treatment.slug?.toLowerCase().includes("gurgaon") || treatment.name?.toLowerCase().includes("gurgaon");
-  const cityLocation = isGurgaon ? "Gurgaon" : (isNoida ? "Noida" : null);
+  const isGurgaon =
+    treatment.slug?.toLowerCase().includes("gurgaon") ||
+    treatment.slug?.toLowerCase().includes("gurugram") ||
+    treatment.name?.toLowerCase().includes("gurgaon") ||
+    treatment.name?.toLowerCase().includes("gurugram");
+  const cityLocation = isGurgaon
+    ? (treatment.slug?.toLowerCase().includes("gurugram") || treatment.name?.toLowerCase().includes("gurugram") ? "Gurugram" : "Gurgaon")
+    : (isNoida ? "Noida" : null);
 
   const whatsappMessage = encodeURIComponent(
     `Hello Skinfinity Derma, I would like to enquire about ${treatment.name} (Starting at ${treatment.priceFormatted}) and schedule a consultation.`
@@ -203,8 +210,29 @@ export default function TreatmentDetailView({ treatment }: Props) {
     .replace(/\s*by\s*Dr\.\s*Ipshita\s*Johri/gi, "")
     .trim();
 
+  const schemaJson = {
+    "@context": "https://schema.org",
+    "@type": "MedicalProcedure",
+    name: treatment.name,
+    description: treatment.explainedSubtitle || treatment.fullDesc || treatment.name,
+    procedureType: "NonSurgicalProcedure",
+    bodyLocation: treatment.bodyArea || "Skin",
+    preparation: treatment.beforeTreatment?.join(". ") || "Doctor consultation and skin analysis.",
+    followup: treatment.afterTreatment?.join(". ") || "Follow SPF and post-care guidelines.",
+    offers: treatment.price ? {
+      "@type": "Offer",
+      price: treatment.price,
+      priceCurrency: "INR",
+      availability: "https://schema.org/InStock"
+    } : undefined
+  };
+
   return (
     <div className="bg-white min-h-screen pb-24 lg:pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJson) }}
+      />
       {/* 1. COMMON TREATMENT BREADCRUMB BANNER (Fully Responsive for Mobile & Desktop) */}
       <PageBreadcrumbBanner
         image="/images/breadcrumbbanner/service.webp"
@@ -220,7 +248,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
       />
 
       {/* 2. TREATMENT OVERVIEW SECTION */}
-      <section className="py-8 sm:py-10 border-b border-slate-100">
+      <section className="py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Split Top Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
@@ -568,6 +596,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* 2. "How <Treatment> works?" 5-Step Visual Cards Section */}
       <section className="py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -635,7 +665,7 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
-
+      <SectionDivider />
 
       {/* 3. IDEAL FREQUENCY, IDEAL FOR / NOT IDEAL FOR & DOCTOR CONSULTATION CARD */}
       <section className="py-4 sm:py-6">
@@ -735,6 +765,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* 4. BEFORE TREATMENT & AFTER TREATMENT CARE SECTION */}
       <section className="py-6 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -775,6 +807,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* 5. WHAT OUR SATISFIED CUSTOMERS HAVE TO SAY */}
       <section className="py-8 sm:py-12">
@@ -835,6 +869,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* 6. FREQUENTLY ASKED QUESTIONS ACCORDION */}
       <section className="py-8 sm:py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -877,8 +913,10 @@ export default function TreatmentDetailView({ treatment }: Props) {
         </div>
       </section>
 
+      <SectionDivider />
+
       {/* 7. RELATED TREATMENTS WITH PRICES & ADD TO CART */}
-      <section className="py-10 bg-slate-50 border-t border-slate-200/70">
+      <section className="py-10 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -983,6 +1021,8 @@ export default function TreatmentDetailView({ treatment }: Props) {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* 8. APPOINTMENT BOOKING SECTION */}
       <section id="appointment_form" className="py-12 bg-slate-900 text-white">

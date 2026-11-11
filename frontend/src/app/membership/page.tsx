@@ -16,6 +16,7 @@ import {
 import { MEMBERSHIP_PLANS } from "@/data/clinicData";
 import { API_BASE } from "@/lib/api";
 import AppointmentForm from "@/components/modals/AppointmentForm";
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export default function MembershipPage() {
   const [plans, setPlans] = useState(MEMBERSHIP_PLANS);
@@ -39,7 +40,7 @@ export default function MembershipPage() {
   return (
     <div className="bg-white">
       {/* Breadcrumb Header */}
-      <div className="bg-slate-50 border-b border-slate-200/80 py-4">
+      <div className="bg-slate-50  py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs text-slate-500">
             <Link href="/" className="hover:text-brand-700">Home</Link>
@@ -50,7 +51,7 @@ export default function MembershipPage() {
       </div>
 
       {/* Hero */}
-      <section className="py-14 lg:py-20 bg-gradient-to-b from-amber-50/50 via-white to-white border-b border-slate-100">
+      <section className="py-14 lg:py-20 bg-gradient-to-b from-amber-50/50 via-white to-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/80 text-amber-900 text-xs font-bold border border-amber-300 mb-3">
             <Crown className="w-3.5 h-3.5 text-amber-600" />
@@ -66,7 +67,7 @@ export default function MembershipPage() {
       </section>
 
       {/* Pricing Cards with Distinct Visual Membership Passes */}
-      <section className="py-16 bg-slate-50/70 border-b border-slate-100">
+      <section className="py-16 bg-slate-50/70 ">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, idx) => (
@@ -157,6 +158,8 @@ export default function MembershipPage() {
           </div>
         </div>
       </section>
+
+      <SectionDivider />
 
       {/* Enrollment Booking Form */}
       <section id="enroll" className="py-16 bg-slate-900 text-white">

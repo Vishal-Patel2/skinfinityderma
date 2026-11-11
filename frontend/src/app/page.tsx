@@ -1,5 +1,4 @@
 import React from "react";
-import Image from "next/image";
 import { getBanners, getTrustBadges, getOffers } from "@/lib/api";
 import HeroBannerCarousel from "@/components/home/HeroBannerCarousel";
 import SkuCarouselSection from "@/components/tools/SkuCarouselSection";
@@ -12,21 +11,7 @@ import OffersSection from "@/components/home/OffersSection";
 import NewsMediaSection from "@/components/home/NewsMediaSection";
 import FaqSection from "@/components/shared/FaqSection";
 import AssociatedPartners from "@/components/home/AssociatedPartners";
-
-function SectionDivider() {
-  return (
-    <div className="w-full flex items-center justify-center py-1 bg-white">
-      <Image
-        src="/images/custom/section-divider.webp"
-        alt="section divider"
-        width={320}
-        height={34}
-        className="w-full max-w-[240px] sm:max-w-[280px] h-auto object-contain opacity-90 select-none pointer-events-none"
-        priority={false}
-      />
-    </div>
-  );
-}
+import SectionDivider from "@/components/shared/SectionDivider";
 
 export const dynamic = "force-dynamic";
 
