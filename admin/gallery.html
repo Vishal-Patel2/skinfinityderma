@@ -126,10 +126,9 @@
                 <label class="form-label small text-muted mb-1">Filter by Gallery Category</label>
                 <select id="filterGalleryCategory" class="form-select form-select-sm">
                   <option value="">All Categories</option>
-                  <option value="Facial Treatments">Facial Treatments</option>
-                  <option value="Laser Treatments">Laser Treatments</option>
-                  <option value="Hair Treatments">Hair Treatments</option>
-                  <option value="Clinic Ambience">Clinic Ambience</option>
+                  <option value="Clinic">Clinic Suites &amp; Ambience</option>
+                  <option value="Machines">US-FDA Machines &amp; Technology</option>
+                  <option value="Labs">Diagnostic Labs &amp; Pharmacy</option>
                 </select>
               </div>
 
@@ -223,8 +222,40 @@
             </div>
 
             <div class="mb-3">
-              <label for="galleryTitle" class="form-label">Image Title / Caption</label>
-              <input type="text" class="form-control" id="galleryTitle" placeholder="e.g. HydraFacial Vortex Infusion Procedure">
+              <label for="galleryTitle" class="form-label">Image Title / Headline <span class="required">*</span></label>
+              <input type="text" class="form-control" id="galleryTitle" placeholder="e.g. US-FDA Soprano Titanium Triple-Wavelength Laser" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="galleryDescription" class="form-label">Description / Clinical Specifications</label>
+              <textarea class="form-control" id="galleryDescription" rows="2" placeholder="e.g. Painless permanent hair reduction with -4°C ICE Plus continuous sapphire contact cooling..."></textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="galleryBadge" class="form-label">Badge / Subtitle Tag</label>
+                <input type="text" class="form-control" id="galleryBadge" placeholder="e.g. 755nm + 810nm + 1064nm, Gurgaon Sector 28">
+              </div>
+
+              <div class="col-md-4">
+                <label for="galleryLocation" class="form-label">Clinic Location</label>
+                <select id="galleryLocation" class="form-select">
+                  <option value="Noida & Gurgaon">Noida &amp; Gurgaon (Both)</option>
+                  <option value="Gurgaon">Gurgaon (Golf Course Rd)</option>
+                  <option value="Noida">Noida (Sector 36)</option>
+                </select>
+              </div>
+
+              <div class="col-md-4">
+                <label for="galleryCategory" class="form-label">Gallery Category</label>
+                <input type="text" class="form-control" id="galleryCategory" placeholder="e.g. Clinic, Machines, Labs..." list="galleryCategorySuggestions">
+                <datalist id="galleryCategorySuggestions">
+                  <option value="Clinic">
+                  <option value="Machines">
+                  <option value="Labs">
+                  <option value="Doctor Procedures">
+                </datalist>
+              </div>
             </div>
 
             <div class="mb-3">
@@ -232,25 +263,12 @@
               <input type="text" class="form-control" id="galleryAltText" placeholder="Describe the procedure or clinic setting shown...">
             </div>
 
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label for="galleryCategory" class="form-label">Gallery Category</label>
-                <input type="text" class="form-control" id="galleryCategory" placeholder="e.g. Facial Treatments, Laser, Ambience..." list="galleryCategorySuggestions">
-                <datalist id="galleryCategorySuggestions">
-                  <option value="Facial Treatments">
-                  <option value="Laser Treatments">
-                  <option value="Hair Treatments">
-                  <option value="Clinic Ambience">
-                </datalist>
-              </div>
-
-              <div class="col-md-6">
-                <label for="galleryTreatment" class="form-label">Associated Treatment (Optional)</label>
-                <select id="galleryTreatment" class="form-select">
-                  <option value="">None / General</option>
-                  <!-- Populated dynamically -->
-                </select>
-              </div>
+            <div class="mb-3">
+              <label for="galleryTreatment" class="form-label">Associated Treatment (Optional)</label>
+              <select id="galleryTreatment" class="form-select">
+                <option value="">None / General Clinic</option>
+                <!-- Populated dynamically -->
+              </select>
             </div>
 
             <div class="row g-3">

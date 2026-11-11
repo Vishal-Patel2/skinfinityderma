@@ -162,7 +162,9 @@ $(document).ready(function () {
 
     // Cover Image
     if (coverImageSrc) {
-      $('#previewCardImg').attr('src', coverImageSrc);
+      $('#previewCardImg').attr('src', window.API ? window.API.resolveImageUrl(coverImageSrc) : coverImageSrc);
+    } else {
+      $('#previewCardImg').attr('src', 'assets/img/avatar-default.svg');
     }
   }
 
@@ -309,13 +311,14 @@ $(document).ready(function () {
         const uploadFile = new File([compressed.blob || file], cleanBase + '.jpg', { type: 'image/jpeg' });
 
         const uploadRes = await window.API.uploadTreatmentImage(uploadFile, treatmentId || '');
-        if (uploadRes && uploadRes.url) {
+        if (uploadRes && (uploadRes.filename || uploadRes.url)) {
+          const storedName = uploadRes.filename || uploadRes.url.split('/').pop();
           mediaGallery.push({
             type: 'image',
-            src: uploadRes.url,
+            src: storedName,
             caption: cleanBase.replace(/[-_]/g, ' ')
           });
-          if (!coverImageSrc) coverImageSrc = uploadRes.url;
+          if (!coverImageSrc) coverImageSrc = storedName;
           successCount++;
         } else {
           if (window.App && window.App.toast) {

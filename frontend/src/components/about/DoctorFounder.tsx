@@ -280,9 +280,9 @@ export default function DoctorFounder() {
         </div>
 
         {/* Clinical Team Section with Mobile Carousel + Desktop 4-Column Grid */}
-        <div className="pt-4">
+        <div className="pt-8 sm:pt-12">
           {/* Divider */}
-          <div className="w-full flex items-center justify-center py-3 mb-4">
+          <div className="w-full flex items-center justify-center py-6 sm:py-8 mb-6 sm:mb-8 select-none pointer-events-none">
             <Image
               src="/images/custom/section-divider.webp"
               alt="section divider"

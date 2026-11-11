@@ -506,6 +506,46 @@ router.get(
 );
 
 /**
+ * GET /api/public/gallery
+ */
+router.get(
+  '/gallery',
+  asyncHandler(async (req, res) => {
+    setPublicCache(res);
+    const { category, location } = req.query;
+    let sql = 'SELECT * FROM sid_gallery_items WHERE is_active = 1';
+    const params = [];
+
+    if (category && category !== 'All') {
+      sql += ' AND category = ?';
+      params.push(category);
+    }
+    if (location && location !== 'All') {
+      sql += ' AND (location = ? OR location = "Noida & Gurgaon" OR location IS NULL)';
+      params.push(location);
+    }
+
+    sql += ' ORDER BY display_order ASC, id DESC';
+    const rows = await query(sql, params);
+
+    res.json({
+      success: true,
+      data: rows.map((r) => ({
+        id: r.id,
+        image: r.image,
+        title: r.title,
+        description: r.description || '',
+        category: r.category || 'Clinic',
+        badge: r.badge || '',
+        location: r.location || 'Noida & Gurgaon',
+        altText: r.alt_text || r.title,
+        displayOrder: r.display_order,
+      })),
+    });
+  })
+);
+
+/**
  * GET /api/public/offers
  */
 router.get(
@@ -545,21 +585,22 @@ router.get(
 router.get(
   '/memberships',
   asyncHandler(async (req, res) => {
-    setPublicCache(res);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     const rows = await query(
-      `SELECT * FROM sid_membership_plans WHERE is_active = 1 ORDER BY display_order ASC`
+      `SELECT * FROM sid_membership_plans WHERE is_active = 1 ORDER BY display_order ASC, id ASC`
     );
     res.json({
       success: true,
       data: rows.map((m) => ({
         id: m.slug || String(m.id),
+        planId: m.id,
         slug: m.slug,
         name: m.name,
         price: m.price ? `₹${Number(m.price).toLocaleString('en-IN')}` : m.price_formatted,
         rawPrice: Number(m.price),
-        period: m.period,
-        validity: m.validity,
-        tagline: m.tagline,
+        period: m.period || '/ year',
+        validity: m.validity || '12 Months Validity',
+        tagline: m.tagline || '',
         popular: Boolean(m.is_popular),
         features: parseJson(m.features, []),
         cardBg: m.card_bg,
@@ -567,7 +608,8 @@ router.get(
         badgeStyle: m.badge_style,
         buttonStyle: m.button_style,
         accentText: m.accent_text,
-        subscribersCount: m.subscribers_count,
+        displayOrder: m.display_order || 0,
+        subscribersCount: m.subscribers_count || 0,
       })),
     });
   })

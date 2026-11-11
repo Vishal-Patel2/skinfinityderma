@@ -47,6 +47,7 @@
         <ul class="sidebar-nav">
           <li class="nav-item"><a href="homepage.html" class="nav-link"><i class="bi bi-window-stack text-success"></i><span>Website Pages CMS</span></a></li>
           <li class="nav-item"><a href="banners.html" class="nav-link"><i class="bi bi-images"></i><span>Banners</span></a></li>
+          <li class="nav-item"><a href="offers.html" class="nav-link"><i class="bi bi-gift-fill text-warning"></i><span>Best Offers this Month</span></a></li>
           <li class="nav-item"><a href="pages.html" class="nav-link"><i class="bi bi-file-earmark-text text-primary"></i><span>Dynamic Pages</span></a></li>
           <li class="nav-item"><a href="coupons.html" class="nav-link"><i class="bi bi-tag-fill text-warning"></i><span>Offers & Coupons</span></a></li>
           <li class="nav-item"><a href="blogs.html" class="nav-link"><i class="bi bi-journal-text text-info"></i><span>Articles & Blogs</span></a></li>
@@ -251,26 +252,54 @@
                 <input type="text" class="form-control" id="planValidity" value="12 Months Validity" required>
               </div>
 
-              <div class="col-md-8">
+              <div class="col-md-6">
                 <label class="form-label small fw-bold">Tagline / Value Proposition</label>
                 <input type="text" class="form-control" id="planTagline" placeholder="Our most popular comprehensive aesthetic rejuvenation tier.">
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label small fw-bold">Theme Style</label>
                 <select class="form-select" id="planTheme">
                   <option value="gold">Gold Metallic</option>
-                  <option value="platinum">Platinum Emerald</option>
+                  <option value="platinum">Platinum Emerald (Teal)</option>
                   <option value="silver">Silver Charcoal</option>
+                  <option value="rosegold">Rose Gold Luxe</option>
+                  <option value="sapphire">Royal Sapphire Blue</option>
                 </select>
               </div>
+              <div class="col-md-3">
+                <label class="form-label small fw-bold">Display Order</label>
+                <input type="number" class="form-control" id="planDisplayOrder" value="1" min="1" max="99">
+              </div>
 
+              <!-- Individual Benefits Manager -->
               <div class="col-12">
-                <label class="form-label small fw-bold d-flex justify-content-between align-items-center">
-                  <span>Included Perks & Features (One per line) *</span>
-                  <span class="badge bg-light text-muted">Bullet list format</span>
-                </label>
-                <textarea class="form-control" id="planFeatures" rows="5" placeholder="1 Complimentary Sugarcane HydraFacial&#10;15% Flat Discount on all Lasers&#10;Priority Doctor Booking&#10;Free Skin Health Analysis" required></textarea>
-                <div class="form-text small">Each line entered here will appear as a checkmarked clinical perk on the public membership page.</div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <label class="form-label small fw-bold mb-0">Plan Benefits & Privileges (6–7 points) *</label>
+                    <div class="text-muted" style="font-size: 0.8rem;">Every package must have its own distinct, checkmarked perks</div>
+                  </div>
+                  <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-primary-subtle text-primary fw-bold" id="benefitCountBadge">0 Benefits</span>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddBenefitRow">
+                      <i class="bi bi-plus-circle me-1"></i> Add Benefit
+                    </button>
+                  </div>
+                </div>
+
+                <div id="benefitRowsContainer" class="d-flex flex-column gap-2 mb-2 p-2 bg-light rounded-3 border" style="max-height: 280px; overflow-y: auto;">
+                  <!-- Dynamically rendered individual benefit inputs -->
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                  <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>Saved to MySQL and rendered dynamically on the public membership page.</span>
+                  <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted" id="btnToggleBulkFeatures">
+                    <i class="bi bi-textarea-t me-1"></i>Paste Multi-line Perks
+                  </button>
+                </div>
+                <div id="bulkFeaturesWrap" style="display: none;" class="mt-2 p-2 bg-white rounded border">
+                  <textarea class="form-control form-control-sm mb-2" id="planFeaturesBulk" rows="4" placeholder="Paste multiple perks here (one per line)..."></textarea>
+                  <button type="button" class="btn btn-sm btn-primary" id="btnApplyBulkFeatures"><i class="bi bi-check2 me-1"></i>Apply to Benefits List</button>
+                </div>
               </div>
 
               <div class="col-md-6">

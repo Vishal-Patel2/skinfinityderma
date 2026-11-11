@@ -281,7 +281,7 @@ export default function BrandJourneyRoadmap() {
         <div className="text-center max-w-3xl mx-auto mb-10 lg:mb-14">
           <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-[#2b7a75] bg-[#2b7a75]/10 px-4 py-1.5 rounded-full border border-[#2b7a75]/25">
             <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>Our Journey: 9 Years of Excellence</span>
+            <span>Our Journey: 10 Years of Clinical Excellence</span>
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 mt-3 font-serif leading-tight">
             A Decade of{" "}

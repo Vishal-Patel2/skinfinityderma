@@ -123,7 +123,15 @@
         return trimmed;
       }
 
-      const normalizedPath = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+      let normalizedPath = trimmed;
+      if (trimmed.startsWith('/images/') || trimmed.startsWith('images/')) {
+        normalizedPath = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+      } else if (trimmed.startsWith('/uploads/') || trimmed.startsWith('uploads/')) {
+        normalizedPath = trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+      } else {
+        // Pure filename stored in DB (e.g. "banner-d-123.png")
+        normalizedPath = '/uploads/' + trimmed.replace(/^\/+/, '');
+      }
 
       // Handle running from non-backend origin (e.g. Next.js on port 3000)
       let backendOrigin = '';
@@ -143,11 +151,10 @@
       return normalizedPath;
     },
 
-    // File Upload (Single) - Guaranteed query string routing for Multer
+    // File Upload (Single) - Guaranteed single file to prevent duplicate files
     uploadImage: function (file, folder) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('image', file);
       const targetFolder = folder || 'general';
       const url = `/upload?folder=${encodeURIComponent(targetFolder)}`;
       return this.request({
@@ -166,7 +173,6 @@
       if (!(fileOrFormData instanceof FormData)) {
         data = new FormData();
         data.append('file', fileOrFormData);
-        data.append('image', fileOrFormData);
       }
       return this.request({
         url: url,
@@ -180,7 +186,6 @@
     uploadTreatmentImage: function (file, treatmentId) {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('image', file);
       const url = treatmentId 
         ? `/upload?treatmentId=${encodeURIComponent(treatmentId)}&folder=treatments` 
         : '/upload?folder=treatments';

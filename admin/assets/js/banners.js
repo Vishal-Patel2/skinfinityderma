@@ -59,9 +59,9 @@ $(document).ready(function () {
     $('#bannerDesktopDropzone').addClass('d-none');
     $('#bannerDesktopPreviewWrap').removeClass('d-none');
 
-    uploadBannerFile(file, 'banners/desktop', function (url, name) {
-      $('#bannerDesktopImageUrl').val(url);
-      $('#bannerDesktopPreviewImg').attr('src', window.API.resolveImageUrl(url));
+    uploadBannerFile(file, 'banners', function (filename, name) {
+      $('#bannerDesktopImageUrl').val(filename);
+      $('#bannerDesktopPreviewImg').attr('src', window.API.resolveImageUrl(filename));
       $('#bannerDesktopFileName').text(name || file.name);
     });
   });
@@ -78,9 +78,9 @@ $(document).ready(function () {
     $('#bannerMobileDropzone').addClass('d-none');
     $('#bannerMobilePreviewWrap').removeClass('d-none');
 
-    uploadBannerFile(file, 'banners/mobile', function (url, name) {
-      $('#bannerMobileImageUrl').val(url);
-      $('#bannerMobilePreviewImg').attr('src', window.API.resolveImageUrl(url));
+    uploadBannerFile(file, 'banners', function (filename, name) {
+      $('#bannerMobileImageUrl').val(filename);
+      $('#bannerMobilePreviewImg').attr('src', window.API.resolveImageUrl(filename));
       $('#bannerMobileFileName').text(name || file.name);
     });
   });
@@ -118,9 +118,10 @@ $(document).ready(function () {
 
     window.API.uploadImage(file, folder || 'banners')
       .done(function (res) {
-        if (res.success && res.url) {
+        if (res.success && (res.filename || res.url)) {
           window.App.toast('success', 'Image uploaded successfully');
-          onSuccess(res.url, file.name);
+          const storedName = res.filename || res.url.split('/').pop();
+          onSuccess(storedName, file.name);
         } else {
           window.App.toast('error', res.message || 'Upload failed');
         }

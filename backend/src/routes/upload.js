@@ -1,4 +1,5 @@
 const express = require('express');
+const fs = require('fs');
 const { requirePermission } = require('../middleware/auth');
 const { asyncHandler, HttpError } = require('../middleware/error');
 const config = require('../config/env');
@@ -56,14 +57,30 @@ async function removeImageFromTreatment(treatmentId, targetPath) {
 /**
  * POST /api/upload
  * Single file upload. Accepts 'file', 'image', or any field name.
+ * Cleans up any duplicate files automatically.
  */
 router.post(
   '/',
   requirePermission('media.create'),
   uploadMiddleware.any(),
   asyncHandler(async (req, res) => {
-    const file = req.files && req.files.length ? req.files[0] : req.file;
-    if (!file) throw new HttpError(400, 'No file uploaded');
+    const files = req.files || (req.file ? [req.file] : []);
+    if (!files || !files.length) throw new HttpError(400, 'No file uploaded');
+
+    const file = files[0];
+
+    // Clean up any extraneous duplicate files if multiple were sent in a single upload
+    if (files.length > 1) {
+      for (let i = 1; i < files.length; i++) {
+        try {
+          if (files[i].path && fs.existsSync(files[i].path)) {
+            fs.unlinkSync(files[i].path);
+          }
+        } catch (err) {
+          console.warn('Could not remove extra file:', err.message);
+        }
+      }
+    }
 
     const formatted = formatUploadResponse(file, req);
 
@@ -72,7 +89,7 @@ router.post(
       {
         filename: formatted.filename,
         originalName: formatted.originalName,
-        url: formatted.url,
+        url: formatted.relativeUrl,
         mimeType: formatted.mimeType,
         size: formatted.size,
         altText: req.body?.altText || formatted.originalName,

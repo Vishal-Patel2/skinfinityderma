@@ -26,6 +26,7 @@ import { FRANCHISE_DATA, BRAND_JOURNEY } from "@/data/clinicData";
 import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import SectionDivider from "@/components/shared/SectionDivider";
 import { postEnquiry } from "@/lib/api";
+import BrandJourneyRoadmap from "@/components/about/BrandJourneyRoadmap";
 
 const LAUNCH_STEPS = [
  {
@@ -311,115 +312,8 @@ export default function FranchisePage() {
 
  <SectionDivider />
 
- {/* 4. 10-Year Clinical Journey Timeline */}
- <section className="py-12 lg:py-16 bg-white ">
- <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
- 
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
- <div>
- <span className="text-xs font-semibold uppercase tracking-wider text-[#008081] bg-teal-50 px-3.5 py-1 rounded-full border border-teal-100">
- 10+ Years of Growth
- </span>
- <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mt-2 font-serif leading-tight">
- Our 10-Year Clinical &amp; Expansion Journey
- </h2>
- <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
- From our flagship in Noida to Delhi NCR’s award-winning clinical network—explore the foundation behind our franchise network.
- </p>
- </div>
-
- {/* Milestone Previous / Next controls */}
- <div className="flex items-center gap-2 self-start md:self-auto">
- <button
- onClick={() => setActiveMilestone((prev) => (prev > 0 ? prev - 1 : BRAND_JOURNEY.length - 1))}
- className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-[#008081] hover:text-[#008081] text-slate-700 flex items-center justify-center transition-colors shadow-xs"
- aria-label="Previous milestone"
- >
- <ChevronLeft className="w-4 h-4" />
- </button>
- <button
- onClick={() => setActiveMilestone((prev) => (prev < BRAND_JOURNEY.length - 1 ? prev + 1 : 0))}
- className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:border-[#008081] hover:text-[#008081] text-slate-700 flex items-center justify-center transition-colors shadow-xs"
- aria-label="Next milestone"
- >
- <ChevronRight className="w-4 h-4" />
- </button>
- </div>
- </div>
-
- {/* Clean Stepper Tabs for All 6 Milestones */}
- <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-8">
- {BRAND_JOURNEY.map((m, idx) => {
- const isActive = idx === activeMilestone;
- return (
- <button
- key={m.year}
- type="button"
- onClick={() => setActiveMilestone(idx)}
- className={`p-3 rounded-2xl text-center transition-all border ${
- isActive
- ? "bg-[#008081] text-white border-[#008081] shadow-sm"
- : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
- }`}
- >
- <span className={`block text-lg font-bold font-serif leading-none ${isActive ? "text-white" : "text-slate-900"}`}>
- {m.year}
- </span>
- <span className={`block text-[11px] font-medium mt-1 truncate ${isActive ? "text-teal-100" : "text-slate-500"}`}>
- {m.badge}
- </span>
- </button>
- );
- })}
- </div>
-
- {/* Active Milestone Card */}
- <div className="bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs">
- <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
- 
- <div className="lg:col-span-7 space-y-3">
- <div className="flex items-center gap-3">
- <span className="text-2xl sm:text-3xl font-extrabold font-serif text-[#008081]">
- {currentMilestone.year}
- </span>
- <span className="text-xs font-semibold px-3 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700">
- {currentMilestone.badge}
- </span>
- </div>
-
- <h3 className="text-xl sm:text-2xl font-bold font-serif text-slate-900">
- {currentMilestone.title}
- </h3>
-
- <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
- {currentMilestone.description}
- </p>
- </div>
-
- <div className="lg:col-span-5 flex justify-center">
- {currentMilestone.image === "google-badge" ? (
- <div className="w-56 h-48 rounded-2xl bg-white border border-slate-200 p-6 flex flex-col items-center justify-center text-center shadow-xs">
- <span className="text-3xl font-bold text-slate-900 font-serif">4.5 / 5.0</span>
- <span className="text-xs font-semibold text-[#008081] mt-1">Google Verified Rating</span>
- <span className="text-[11px] text-slate-500 mt-0.5">4,500+ Clinical Reviews</span>
- </div>
- ) : (
- <div className="relative w-full max-w-sm h-48 sm:h-52 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100">
- <Image
- src={currentMilestone.image || "/images/custom/clinic-reception.jpg"}
- alt={currentMilestone.title}
- fill
- className="object-cover"
- />
- </div>
- )}
- </div>
-
- </div>
- </div>
-
- </div>
- </section>
+ {/* 4.Our Journey – Interactive S-Curve Roadmap */}
+ <BrandJourneyRoadmap />
 
  <SectionDivider />
 
@@ -433,8 +327,8 @@ export default function FranchisePage() {
  </span>
  <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mt-2 font-serif leading-tight">
  Structured Investment Frameworks{" "}
- <span className="font-semibold text-slate-700 whitespace-nowrap">
- (₹1.5Cr – ₹2Cr)
+ <span className="inline-block whitespace-nowrap font-medium text-slate-700">
+ (₹1.5&nbsp;Cr&nbsp;–&nbsp;₹2&nbsp;Cr)
  </span>
  </h2>
  <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
@@ -540,8 +434,9 @@ export default function FranchisePage() {
  <span className="text-xs font-semibold uppercase tracking-wider text-[#008081] bg-teal-50 px-3.5 py-1 rounded-full border border-teal-100">
  Turnkey Execution
  </span>
- <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mt-2 font-serif leading-tight">
- From Agreement to First Patient in 60–90 Days
+ <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 mt-2 font-serif leading-tight max-w-2xl mx-auto">
+ From Agreement to First Patient <br className="hidden sm:inline" />
+ in <span className="inline-block whitespace-nowrap">60–90 Days</span>
  </h2>
  <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
  Our seasoned project management team oversees every architectural, clinical, and operational milestone so your center opens seamlessly.

@@ -44,22 +44,11 @@ const MODULE_DIRECTORIES = [
 ];
 
 /**
- * Initialize all approved module upload directories
+ * Initialize uploads directory
  */
 function initUploadDirectories() {
   if (!fs.existsSync(uploadsRoot)) {
     fs.mkdirSync(uploadsRoot, { recursive: true });
-  }
-
-  for (const sub of MODULE_DIRECTORIES) {
-    const full = path.join(uploadsRoot, sub);
-    if (!fs.existsSync(full)) {
-      try {
-        fs.mkdirSync(full, { recursive: true });
-      } catch (err) {
-        console.warn(`Could not create directory ${sub}:`, err.message);
-      }
-    }
   }
 }
 

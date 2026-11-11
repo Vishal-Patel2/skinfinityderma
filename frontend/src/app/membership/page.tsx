@@ -1,172 +1,121 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import React from "react";
 import { Metadata } from "next";
-import { 
-  Crown, 
-  Sparkles, 
-  CheckCircle2, 
-  ArrowRight, 
-  ChevronRight, 
-  ShieldCheck, 
-  Gift, 
-  Star 
-} from "lucide-react";
-import { MEMBERSHIP_PLANS } from "@/data/clinicData";
-import { API_BASE } from "@/lib/api";
-import AppointmentForm from "@/components/modals/AppointmentForm";
-import SectionDivider from "@/components/shared/SectionDivider";
+import MembershipClientView from "@/components/membership/MembershipClientView";
+import { getMemberships } from "@/lib/api";
+import { MEMBERSHIP_PLANS, MembershipPlan } from "@/data/clinicData";
 
-export default function MembershipPage() {
-  const [plans, setPlans] = useState(MEMBERSHIP_PLANS);
-  const [selectedPlan, setSelectedPlan] = useState("gold");
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    let active = true;
-    fetch(`${API_BASE}/memberships`)
-      .then((res) => res.json())
-      .then((json) => {
-        if (active && json && json.success && Array.isArray(json.data) && json.data.length > 0) {
-          setPlans(json.data);
+export const metadata: Metadata = {
+  title: "VIP Membership Club | Skinfinity Derma Privilege Passes",
+  description:
+    "Join the Skinfinity Derma Privilege Club. Access exclusive aesthetic privileges, complimentary US-FDA medi-facials, flat discounts on laser treatments, injectable aesthetics, and priority dermatologist concierge care.",
+  alternates: {
+    canonical: "/membership",
+  },
+  openGraph: {
+    title: "VIP Membership Club | Skinfinity Derma Privilege Passes",
+    description:
+      "Exclusive annual aesthetic privilege passes. Complimentary medical facials, laser discounts, priority doctor consultations across Noida & Gurgaon clinics.",
+    url: "https://www.skinfinityderma.com/membership",
+    siteName: "Skinfinity Derma",
+  },
+};
+
+const THEME_STYLES: Record<string, { passGradient: string; cardBg: string; badgeStyle: string; buttonStyle: string; accentText: string; color: string }> = {
+  gold: {
+    passGradient: "from-amber-600 via-yellow-500 to-amber-700",
+    cardBg: "bg-gradient-to-br from-amber-50/80 via-white to-yellow-50/60 border-amber-400",
+    badgeStyle: "bg-amber-500 text-slate-950 border-amber-400",
+    buttonStyle: "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black",
+    accentText: "text-amber-700",
+    color: "border-amber-400 bg-gradient-to-b from-amber-50/60 via-white to-amber-50/30",
+  },
+  platinum: {
+    passGradient: "from-[#042f2e] via-[#008081] to-emerald-900",
+    cardBg: "bg-gradient-to-br from-teal-50/80 via-white to-emerald-50/60 border-[#008081]",
+    badgeStyle: "bg-[#008081] text-white border-teal-600",
+    buttonStyle: "bg-gradient-to-r from-[#042f2e] via-[#008081] to-teal-800 hover:opacity-95 text-white",
+    accentText: "text-[#008081]",
+    color: "border-[#008081] bg-gradient-to-b from-teal-50/60 via-white to-emerald-50/30",
+  },
+  silver: {
+    passGradient: "from-slate-700 via-slate-600 to-slate-800",
+    cardBg: "bg-gradient-to-br from-slate-50 via-white to-slate-100/80 border-slate-300",
+    badgeStyle: "bg-slate-200 text-slate-800 border-slate-300",
+    buttonStyle: "bg-slate-800 hover:bg-slate-900 text-white",
+    accentText: "text-slate-700",
+    color: "border-slate-300 bg-gradient-to-b from-slate-50 via-white to-slate-50/70",
+  },
+  rosegold: {
+    passGradient: "from-rose-600 via-pink-500 to-rose-700",
+    cardBg: "bg-gradient-to-br from-rose-50/80 via-white to-pink-50/60 border-rose-300",
+    badgeStyle: "bg-rose-500 text-white border-rose-400",
+    buttonStyle: "bg-gradient-to-r from-rose-500 to-pink-600 hover:opacity-95 text-white",
+    accentText: "text-rose-600",
+    color: "border-rose-300 bg-gradient-to-b from-rose-50/60 via-white to-rose-50/30",
+  },
+  sapphire: {
+    passGradient: "from-blue-900 via-indigo-700 to-blue-950",
+    cardBg: "bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 border-blue-400",
+    badgeStyle: "bg-blue-600 text-white border-blue-500",
+    buttonStyle: "bg-gradient-to-r from-blue-700 to-indigo-800 hover:opacity-95 text-white",
+    accentText: "text-blue-700",
+    color: "border-blue-400 bg-gradient-to-b from-blue-50/60 via-white to-blue-50/30",
+  },
+};
+
+export default async function MembershipPage() {
+  let plans: MembershipPlan[] = MEMBERSHIP_PLANS;
+
+  try {
+    const apiPlans = await getMemberships();
+    if (Array.isArray(apiPlans) && apiPlans.length > 0) {
+      plans = apiPlans.map((p) => {
+        const slug = (p.slug || String(p.id) || "").toLowerCase();
+        let matchedTheme = "gold";
+        if (slug.includes("silver")) matchedTheme = "silver";
+        else if (slug.includes("platinum")) matchedTheme = "platinum";
+        else if (slug.includes("rose")) matchedTheme = "rosegold";
+        else if (slug.includes("blue") || slug.includes("sapphire")) matchedTheme = "sapphire";
+
+        const preset = THEME_STYLES[matchedTheme] || THEME_STYLES.gold;
+
+        let featuresList: string[] = [];
+        if (Array.isArray(p.features)) {
+          featuresList = p.features;
+        } else if (typeof p.features === "string") {
+          try {
+            featuresList = JSON.parse(p.features);
+          } catch {
+            featuresList = p.features.split("\n").map((s: string) => s.trim()).filter(Boolean);
+          }
         }
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
 
-  return (
-    <div className="bg-white">
-      {/* Breadcrumb Header */}
-      <div className="bg-slate-50  py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-xs text-slate-500">
-            <Link href="/" className="hover:text-brand-700">Home</Link>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="text-slate-900 font-semibold">Premium Membership Tiers</span>
-          </nav>
-        </div>
-      </div>
+        const isPopular = Boolean(p.popular || p.is_popular || p.isPopular);
 
-      {/* Hero */}
-      <section className="py-14 lg:py-20 bg-gradient-to-b from-amber-50/50 via-white to-white ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100/80 text-amber-900 text-xs font-bold border border-amber-300 mb-3">
-            <Crown className="w-3.5 h-3.5 text-amber-600" />
-            <span>Skinfinity Derma Privilege Club</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 font-serif">
-            VIP Aesthetic & Skin Health Memberships
-          </h1>
-          <p className="text-sm text-slate-600 mt-3 leading-relaxed">
-            Invest in year-round clinical radiance. Enjoy complimentary signature medi-facials, priority doctor consultations, and exclusive discounts on US-FDA lasers and injectables.
-          </p>
-        </div>
-      </section>
+        return {
+          id: p.slug || String(p.id),
+          name: p.name || "Privilege Plan",
+          price: p.price || (p.rawPrice ? `₹${Number(p.rawPrice).toLocaleString("en-IN")}` : "₹9,999"),
+          period: p.period || "/ year",
+          validity: p.validity || "12 Months Validity",
+          tagline: p.tagline || "",
+          popular: isPopular,
+          color: p.color || preset.color,
+          passGradient: p.passGradient || p.pass_gradient || preset.passGradient,
+          cardBg: p.cardBg || p.card_bg || preset.cardBg,
+          badgeStyle: p.badgeStyle || p.badge_style || preset.badgeStyle,
+          buttonStyle: p.buttonStyle || p.button_style || preset.buttonStyle,
+          accentText: p.accentText || p.accent_text || preset.accentText,
+          features: featuresList,
+        };
+      });
+    }
+  } catch (err) {
+    console.error("Error fetching memberships for SSR:", err);
+    plans = MEMBERSHIP_PLANS;
+  }
 
-      {/* Pricing Cards with Distinct Visual Membership Passes */}
-      <section className="py-16 bg-slate-50/70 ">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan, idx) => (
-              <div
-                key={plan.id}
-                className={`rounded-3xl p-6 sm:p-7 border-2 shadow-lg transition-all flex flex-col justify-between relative overflow-hidden ${
-                  plan.cardBg || "bg-white border-slate-200"
-                }`}
-              >
-                <div className="space-y-5">
-                  {/* Visual Luxury Membership Pass Card */}
-                  <div
-                    className={`rounded-2xl p-5 bg-gradient-to-br ${
-                      plan.passGradient || "from-slate-700 to-slate-900 text-white"
-                    } shadow-md relative overflow-hidden`}
-                  >
-                    <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none" />
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-90">
-                        SKINFINITY PRIVILEGE PASS
-                      </span>
-                      <Crown className="w-4 h-4 opacity-90" />
-                    </div>
-
-                    <div className="my-3">
-                      <span
-                        className={`inline-block text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full border mb-1.5 ${
-                          plan.badgeStyle || "bg-white/20 text-white border-white/30"
-                        }`}
-                      >
-                        {plan.popular ? "Most Popular Tier" : `Tier 0${idx + 1} Pass`}
-                      </span>
-                      <h3 className="text-xl font-extrabold font-serif tracking-tight">
-                        {plan.name}
-                      </h3>
-                    </div>
-
-                    <div className="pt-3 border-t border-white/20 flex items-end justify-between">
-                      <div>
-                        <span className="block text-[9px] uppercase tracking-widest opacity-75">
-                          Annual Membership Fee
-                        </span>
-                        <span className="text-2xl font-black font-serif">{plan.price}</span>
-                        <span className="text-[11px] opacity-80 ml-1">{plan.period}</span>
-                      </div>
-                      <span className="text-[10px] font-mono tracking-widest opacity-85">
-                        •••• {2026 + idx * 111}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed">{plan.tagline}</p>
-
-                  <div className="space-y-2.5 pt-2 border-t border-slate-200/70">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block">
-                      Included Member Privileges:
-                    </span>
-                    {plan.features.map((f, i) => (
-                      <div key={i} className="flex items-start gap-2.5 text-xs text-slate-700">
-                        <CheckCircle2
-                          className={`w-4 h-4 shrink-0 mt-0.5 ${
-                            plan.id === "gold"
-                              ? "text-amber-600"
-                              : plan.id === "platinum"
-                              ? "text-emerald-700"
-                              : "text-slate-600"
-                          }`}
-                        />
-                        <span>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-6 mt-6 border-t border-slate-200/70">
-                  <a
-                    href="#enroll"
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`w-full py-3.5 px-4 rounded-xl text-xs text-center block transition-all shadow-sm ${
-                      plan.buttonStyle || "bg-brand-700 hover:bg-brand-800 text-white font-bold"
-                    }`}
-                  >
-                    Enroll in {plan.name}
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <SectionDivider />
-
-      {/* Enrollment Booking Form */}
-      <section id="enroll" className="py-16 bg-slate-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <AppointmentForm initialTreatment="General Dermatologist Consultation" />
-        </div>
-      </section>
-    </div>
-  );
+  return <MembershipClientView initialPlans={plans} />;
 }

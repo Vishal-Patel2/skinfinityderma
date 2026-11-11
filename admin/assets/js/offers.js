@@ -465,7 +465,7 @@ $(document).ready(function () {
       $inner.html(defaultDropzoneHtml);
       $('#offer-image-file').val('');
 
-      const uploadedUrl = res?.url || res?.fileUrl || res?.data?.file_url || res?.data?.url || res?.absoluteUrl;
+      const uploadedUrl = res?.filename || (res?.url ? res.url.split('/').pop() : (res?.fileUrl || res?.data?.url || ''));
       if (uploadedUrl) {
         $('#offer-image-url').val(uploadedUrl).trigger('input');
         $('#preset-image-selector').val('');

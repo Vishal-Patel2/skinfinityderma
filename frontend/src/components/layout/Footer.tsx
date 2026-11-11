@@ -326,6 +326,7 @@ export default function Footer() {
               <li><Link href="/about-us" className="hover:text-white transition-colors">About Dr. Ipshita Johri</Link></li>
               <li><Link href="/about-clinic" className="hover:text-white transition-colors">About Clinic &amp; Lab</Link></li>
               <li><Link href="/results" className="hover:text-white transition-colors">Real Results Gallery</Link></li>
+              <li><Link href="/gallery" className="hover:text-white transition-colors">Clinical &amp; Machine Gallery</Link></li>
               <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
               <li><Link href="/testimonials" className="hover:text-white transition-colors">Patient Testimonials</Link></li>
               <li><Link href="/contact-us" className="hover:text-white transition-colors">Contact Us</Link></li>

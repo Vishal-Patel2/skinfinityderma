@@ -29,7 +29,7 @@ $(document).ready(function () {
     API.uploadImage(file, 'doctors')
       .then(res => {
         Swal.close();
-        const fileUrl = res.url || (res.data ? res.data.url : res.fileUrl);
+        const fileUrl = res.filename || (res.url ? res.url.split('/').pop() : (res.data ? res.data.url : ''));
         $('#doctorPhotoUrl').val(fileUrl);
         $('#doctorPhotoPreviewImg').attr('src', API.resolveImageUrl(fileUrl));
         window.App.toast('success', 'Photo uploaded successfully.');
@@ -143,7 +143,7 @@ $(document).ready(function () {
       const photoSrc = doc.photo || doc.image || '/images/doctors/dr-ipshita-johri.webp';
       const photoHtml = `
         <div class="doctor-portrait-box">
-          <img src="${photoSrc}" alt="${doc.name}" onerror="this.src='/images/doctors/dr-ipshita-johri.webp'">
+          <img src="${API.resolveImageUrl(photoSrc)}" alt="${doc.name}" onerror="this.src='/images/doctors/dr-ipshita-johri.webp'">
         </div>
       `;
 

@@ -7,38 +7,20 @@ const { query, one } = require('../config/db');
 // Root uploads directory from configuration (e.g. Render Persistent Disk mount or local ./uploads)
 const uploadsRoot = path.resolve(config.uploadsDir);
 
-// Standardized categories
+// Standardized core category folders
 const ALLOWED_CATEGORIES = [
   'banners',
-  'banners/desktop',
-  'banners/mobile',
   'treatments',
-  'treatments/covers',
-  'treatments/gallery',
-  'treatments/thumbnails',
   'doctors',
-  'doctors/profiles',
-  'doctors/certificates',
   'blogs',
-  'blogs/featured',
-  'blogs/content',
-  'articles',
-  'products',
   'offers',
   'gallery',
   'patients',
-  'patients/before-after',
-  'patients/documents',
-  'patients/profiles',
-  'branches',
   'website',
-  'website/logo',
-  'users',
-  'temp',
 ];
 
 /**
- * Ensure all approved upload directories exist on disk
+ * Ensure the uploads and primary category directories exist on disk
  */
 function ensureDirectories() {
   if (!fs.existsSync(uploadsRoot)) {
@@ -49,9 +31,7 @@ function ensureDirectories() {
     if (!fs.existsSync(full)) {
       try {
         fs.mkdirSync(full, { recursive: true });
-      } catch (err) {
-        console.warn(`Could not create category directory ${cat}:`, err.message);
-      }
+      } catch {}
     }
   }
 }
@@ -60,7 +40,7 @@ function ensureDirectories() {
 ensureDirectories();
 
 /**
- * Sanitize and validate category/folder
+ * Sanitize category/folder string
  */
 function sanitizeCategory(folder) {
   if (!folder || typeof folder !== 'string') return '';
@@ -70,15 +50,15 @@ function sanitizeCategory(folder) {
     .replace(/[^a-z0-9_\-\/]/gi, '')
     .toLowerCase();
 
-  // If matches an allowed category prefix or exact match
-  const matched = ALLOWED_CATEGORIES.find((c) => c === clean || clean.startsWith(c + '/'));
-  return matched || clean;
+  const root = clean.split('/')[0];
+  const matched = ALLOWED_CATEGORIES.find((c) => c === root || c === clean);
+  return matched || root || '';
 }
 
 /**
- * Generate a clean, sanitized and unique filename
+ * Generate a clean, unique filename without prepending folder/category names
  */
-function generateFilename(originalName, prefix = '') {
+function generateFilename(originalName) {
   const ext = path.extname(originalName || '').toLowerCase() || '.jpg';
   const rawBase = path.basename(originalName || 'image', ext);
   const cleanBase = rawBase
@@ -87,13 +67,9 @@ function generateFilename(originalName, prefix = '') {
     .replace(/^-|-$/g, '')
     .toLowerCase() || 'image';
 
-  const cleanPrefix = prefix
-    ? prefix.replace(/[^a-z0-9_-]/gi, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-'
-    : '';
-
   const timestamp = Date.now();
   const rand = Math.floor(Math.random() * 9000) + 1000;
-  return `${cleanPrefix}${cleanBase}-${timestamp}-${rand}${ext}`;
+  return `${cleanBase}-${timestamp}-${rand}${ext}`;
 }
 
 /**
@@ -275,87 +251,107 @@ async function countFileReferences(fileUrlOrPath) {
  * Safely delete a physical file from disk
  */
 async function deleteManagedFile(fileUrlOrPath, options = {}) {
-  const { force = false, deleteFromMediaTable = true } = options;
+  const { deleteFromMediaTable = true } = options;
 
-  if (!fileUrlOrPath || isExternalUrl(fileUrlOrPath)) {
-    return { success: false, reason: 'External or invalid path', path: fileUrlOrPath };
+  if (!fileUrlOrPath || typeof fileUrlOrPath !== 'string') {
+    return { success: false, reason: 'Empty path', path: fileUrlOrPath };
   }
 
-  const absPath = resolveSafeUploadPath(fileUrlOrPath);
-  if (!absPath) {
-    return { success: false, reason: 'Path outside approved upload directories', path: fileUrlOrPath };
-  }
-
-  if (!force) {
-    const { totalReferences, referencesByTable } = await countFileReferences(fileUrlOrPath);
-    const otherReferences = totalReferences - (referencesByTable['sid_media_files'] ? 1 : 0);
-    if (otherReferences > 0) {
-      return {
-        success: false,
-        reason: 'File is actively referenced by other records',
-        references: referencesByTable,
-        path: fileUrlOrPath,
-      };
+  // If it's an external URL (not our local host / domain) or static asset, skip disk deletion
+  if (
+    fileUrlOrPath.startsWith('http://') ||
+    fileUrlOrPath.startsWith('https://') ||
+    fileUrlOrPath.startsWith('/images/') ||
+    fileUrlOrPath.startsWith('images/') ||
+    fileUrlOrPath.startsWith('data:')
+  ) {
+    try {
+      const parsed = new URL(fileUrlOrPath);
+      if (parsed.pathname.includes('/uploads/')) {
+        fileUrlOrPath = path.basename(parsed.pathname);
+      } else {
+        return { success: false, reason: 'External or static asset', path: fileUrlOrPath };
+      }
+    } catch {
+      return { success: false, reason: 'External or static asset', path: fileUrlOrPath };
     }
   }
 
+  const filename = path.basename(fileUrlOrPath.trim());
+  if (!filename || !filename.includes('.')) {
+    return { success: false, reason: 'Invalid filename', path: fileUrlOrPath };
+  }
+
+  // Candidate locations on disk
+  const candidates = [
+    path.join(uploadsRoot, filename),
+    path.join(uploadsRoot, 'banners', filename),
+    path.join(uploadsRoot, 'banners', 'desktop', filename),
+    path.join(uploadsRoot, 'banners', 'mobile', filename),
+    path.join(uploadsRoot, 'treatments', filename),
+    path.join(uploadsRoot, 'doctors', filename),
+    path.join(uploadsRoot, 'offers', filename),
+    path.join(uploadsRoot, 'blogs', filename),
+    path.join(uploadsRoot, 'gallery', filename),
+    path.join(uploadsRoot, 'patients', filename),
+    path.join(uploadsRoot, 'articles', filename),
+  ];
+
+  const safeRel = normalizeToUploadRel(fileUrlOrPath);
+  if (safeRel) {
+    candidates.unshift(path.join(uploadsRoot, safeRel));
+  }
+
   let fileUnlinked = false;
-  if (fs.existsSync(absPath)) {
+  for (const candidate of candidates) {
     try {
-      fs.unlinkSync(absPath);
-      fileUnlinked = true;
-      console.log('🗑️ ImageStorageService: Physically deleted file:', absPath);
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        fs.unlinkSync(candidate);
+        fileUnlinked = true;
+        console.log('🗑️ Physically deleted file from folder:', candidate);
+      }
     } catch (err) {
-      console.error('❌ ImageStorageService: Failed to delete file:', absPath, err.message);
-      return { success: false, reason: 'Deletion error: ' + err.message, path: absPath };
+      console.warn('Could not delete candidate file:', candidate, err.message);
     }
   }
 
   if (deleteFromMediaTable) {
     try {
-      const rel = normalizeToUploadRel(fileUrlOrPath);
-      const filename = path.basename(rel);
-      await query('DELETE FROM sid_media_files WHERE filename = ? OR url LIKE ?', [filename, `%${rel}%`]);
+      await query('DELETE FROM sid_media_files WHERE filename = ? OR url LIKE ?', [
+        filename,
+        `%${filename}%`,
+      ]);
     } catch {
       // Ignore
     }
   }
 
-  return { success: true, fileUnlinked, path: absPath };
+  return { success: fileUnlinked, fileUnlinked, filename };
 }
 
 /**
- * Multer Storage Engine configured for ImageStorageService
- * Reads folder from req.query FIRST, then falls back to req.body.folder
+ * Multer Storage Engine configured for category folders
+ * Saves banner images into uploads/banners/, treatment images into uploads/treatments/, etc.
  */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Priority: query param > route default > fallback treatments
     const rawFolder = req.query.folder || (req.body && req.body.folder) || '';
     const category = sanitizeCategory(rawFolder);
 
     let targetDir = uploadsRoot;
     if (category) {
       targetDir = path.join(uploadsRoot, category);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
     }
-    // Store resolved target on file object so route handler knows exact subfolder
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
     file.targetCategory = category;
     file.targetDir = targetDir;
     cb(null, targetDir);
   },
   filename: (req, file, cb) => {
-    const treatmentId = req.query.treatmentId || (req.body && req.body.treatmentId);
-    let prefix = '';
-    if (treatmentId) {
-      prefix = `treatment-${treatmentId}`;
-    } else if (file.targetCategory) {
-      const parts = file.targetCategory.split('/');
-      prefix = parts[parts.length - 1];
-    }
-    const filename = generateFilename(file.originalname, prefix);
+    const filename = generateFilename(file.originalname);
     cb(null, filename);
   },
 });
@@ -409,27 +405,21 @@ async function recordMediaMetadata(fileInfo, userId = null) {
  * Build unified response object for uploaded file
  */
 function formatUploadResponse(file, req) {
-  // If destination set targetCategory, use it; otherwise infer from path
-  let relCategory = file.targetCategory;
-  if (!relCategory) {
-    const relFromUploads = path.relative(uploadsRoot, file.path).replace(/\\/g, '/');
-    const parts = relFromUploads.split('/');
-    relCategory = parts.length > 1 ? parts.slice(0, -1).join('/') : '';
-  }
-
+  const filename = file.filename;
+  const relCategory = file.targetCategory || '';
   const relativeUrl = relCategory
-    ? `/uploads/${relCategory}/${file.filename}`
-    : `/uploads/${file.filename}`;
-
+    ? `/uploads/${relCategory}/${filename}`
+    : `/uploads/${filename}`;
   const absoluteUrl = getAbsolutePublicUrl(relativeUrl);
 
   return {
     success: true,
-    url: relativeUrl,
-    absoluteUrl,
-    filename: file.filename,
+    filename: filename,
+    url: filename, // Returns pure filename for database storage
+    category: relCategory,
+    relativeUrl: relativeUrl,
+    absoluteUrl: absoluteUrl,
     originalName: file.originalname,
-    category: relCategory || 'general',
     size: file.size,
     mimeType: file.mimetype,
   };

@@ -292,9 +292,10 @@
 
         // Upload to server using Centralized API
         window.API.uploadImage(file, targetFolder).done(function (res) {
-          if (res.success && res.url) {
-            $hidden.val(res.url);
-            $preview.attr('src', window.API.resolveImageUrl(res.url));
+          if (res.success && (res.filename || res.url)) {
+            const storedName = res.filename || res.url.split('/').pop();
+            $hidden.val(storedName);
+            $preview.attr('src', window.API.resolveImageUrl(storedName));
             App.toast('success', 'Image uploaded successfully');
           }
         }).fail(function (xhr) {

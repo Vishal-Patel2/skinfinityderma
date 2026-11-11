@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -19,120 +19,20 @@ import {
   HeartHandshake,
   Cpu,
   FileCheck2,
+  MapPin,
+  Sparkles,
+  Maximize2,
 } from "lucide-react";
 import {
   DOCTORS,
   ASSOCIATED_PARTNERS,
 } from "@/data/clinicData";
-import { getDoctors } from "@/lib/api";
+import { getDoctors, getGallery } from "@/lib/api";
+import { GalleryItem } from "@/types/gallery.types";
+import GalleryLightbox from "@/components/gallery/GalleryLightbox";
 import BrandJourneyRoadmap from "@/components/about/BrandJourneyRoadmap";
 import { useAuth } from "@/context/AuthContext";
 import SectionDivider from "@/components/shared/SectionDivider";
-
-const TAB_ITEMS = {
-  Machines: [
-    {
-      src: "/images/treatments/banner-laser.webp",
-      title: "US-FDA Soprano Titanium Triple-Wavelength Laser",
-      tag: "755nm + 810nm + 1064nm",
-      desc: "Painless permanent hair reduction with -4°C ICE Plus continuous sapphire contact cooling, calibrated for Indian skin tones.",
-    },
-    {
-      src: "/images/clinic/interior-4.jpg",
-      title: "Q-Switched Nd:YAG 1064nm Nanosecond Laser",
-      tag: "Melasma & Pigment Toning",
-      desc: "Photoacoustic melanin shattering technology for stubborn melasma, sun spots, carbon laser peels, and epidermal brightening.",
-    },
-    {
-      src: "/images/treatments/banner-acne.webp",
-      title: "Gold-Insulated Fractional MNRF Platform",
-      tag: "Collagen Scar Remodeling",
-      desc: "Precision microneedling radiofrequency system that delivers controlled dermal thermal energy for deep acne scar elevation.",
-    },
-    {
-      src: "/images/treatments/banner-hydrafacial.webp",
-      title: "Vortex-Fusion Sugarcane HydraFacial MD System",
-      tag: "Hydro-Dermabrasion & LED",
-      desc: "Medical vacuum extraction and botanical glycolic-hyaluronic infusion platform with integrated phototherapy.",
-    },
-    {
-      src: "/images/results/facial-after.jpg",
-      title: "4D HIFU SMAS Ultrasound Lifting System",
-      tag: "1.5mm • 3.0mm • 4.5mm Depth",
-      desc: "Non-surgical focused ultrasound targeting the foundational SMAS layer for jawline contouring and double-chin reduction.",
-    },
-    {
-      src: "/images/clinic/interior-2.jpg",
-      title: "200x Digital Video Dermoscope & Trichoscope",
-      tag: "AI-Assisted Diagnostics",
-      desc: "High-magnification polarized optical analyzer for follicular unit density mapping and epidermal pigment depth grading.",
-    },
-  ],
-  Labs: [
-    {
-      src: "/images/clinic/interior-6.jpg",
-      title: "On-Site Orange Health Pathology Collection Lab",
-      tag: "NABL Certified Diagnostics",
-      desc: "Same-day hormonal, PCOS, thyroid (T3/T4/TSH), ferritin, and vitamin D3/B12 blood panels to diagnose internal root causes.",
-    },
-    {
-      src: "/images/treatments/banner-hairloss.webp",
-      title: "Sterile Autologous GFC & PRP Cellular Lab",
-      tag: "Closed-System Centrifugation",
-      desc: "Hospital-grade laminar hygiene zone for isolating 10x concentrated autologous growth factors from patient blood samples.",
-    },
-    {
-      src: "/images/clinic/interior-2.jpg",
-      title: "Wood's Lamp & Microscopic Trichology Lab",
-      tag: "Root-Cause Evaluation",
-      desc: "Differentiates epidermal vs. dermal melasma and evaluates hair bulb anagen-to-telogen ratios prior to treatment.",
-    },
-    {
-      src: "/images/clinic/interior-1.jpg",
-      title: "In-House Cold-Chain Dermatological Pharmacy",
-      tag: "100% Batch-Verified Actives",
-      desc: "Temperature-controlled storage for authentic Allergan biologics, peptide serums, medical peels, and prescription topicals.",
-    },
-  ],
-  Clinic: [
-    {
-      src: "/images/custom/clinic-reception.jpg",
-      title: "Luxury Flagship Reception & Welcome Lounge",
-      tag: "Noida & Gurgaon Clinics",
-      desc: "Warm architectural finishes, sanitized private seating, and seamless digital patient check-in.",
-    },
-    {
-      src: "/images/clinic/interior-1.jpg",
-      title: "Private US-FDA Laser & Peel Suites",
-      tag: "Sterile Operatory",
-      desc: "Dedicated single-patient procedure suites with disposable hygiene kits and hospital-grade sterilization.",
-    },
-    {
-      src: "/images/clinic/interior-2.jpg",
-      title: "Confidential MD Dermatologist Chambers",
-      tag: "Doctor Consultation",
-      desc: "Sound-insulated clinical examination chambers for 1-on-1 consultations and digital dermoscopy.",
-    },
-    {
-      src: "/images/clinic/interior-5.jpg",
-      title: "Signature Medi-Facial & Rejuvenation Studio",
-      tag: "Calm Aesthetic Suite",
-      desc: "Ergonomic treatment beds and soothing ambiance for HydraFacials, Korean Glass Skin protocols, and LED therapy.",
-    },
-    {
-      src: "/images/clinic/interior-4.jpg",
-      title: "Minor Dermatosurgery & Injectable Suite",
-      tag: "CMO Licensed Facility",
-      desc: "Aseptic minor procedure room for cannula subcision, Botox, dermal fillers, thread lifts, and mole/wart excisions.",
-    },
-    {
-      src: "/images/clinic/interior-6.jpg",
-      title: "Post-Procedure Recovery & Counselling Lounge",
-      tag: "Patient Care",
-      desc: "Dedicated post-care bay where patients receive SPF protection and personalized home-regimen guidance.",
-    },
-  ],
-};
 
 const AWARDS_LIST = [
   {
@@ -165,9 +65,21 @@ const AWARDS_LIST = [
   },
 ];
 
-export default function AboutClinicInteractiveSections() {
+interface AboutClinicInteractiveSectionsProps {
+  initialGallery?: GalleryItem[];
+}
+
+export default function AboutClinicInteractiveSections({
+  initialGallery,
+}: AboutClinicInteractiveSectionsProps = {}) {
   const { openAppointmentModal } = useAuth();
-  const [activeTab, setActiveTab] = useState<"Machines" | "Labs" | "Clinic">("Machines");
+  const [activeTab, setActiveTab] = useState<"All" | "Machines" | "Labs" | "Clinic">("All");
+  const [selectedLocation, setSelectedLocation] = useState<"All" | "Gurgaon" | "Noida">("All");
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(initialGallery ?? []);
+  const [isGalleryLoading, setIsGalleryLoading] = useState(!initialGallery?.length);
+  const [galleryError, setGalleryError] = useState(false);
+
   const doctorScrollRef = useRef<HTMLDivElement>(null);
   const [isDocPaused, setIsDocPaused] = useState(false);
 
@@ -190,6 +102,35 @@ export default function AboutClinicInteractiveSections() {
   }, []);
 
   useEffect(() => {
+    let isActive = true;
+
+    const loadGallery = async () => {
+      try {
+        setGalleryError(false);
+        const items = await getGallery();
+
+        if (!isActive) return;
+
+        // The API is the source of truth. An empty response stays empty;
+        // no hardcoded/demo gallery items are inserted.
+        setGalleryItems(Array.isArray(items) ? items : []);
+      } catch (error) {
+        if (!isActive) return;
+        console.error("Unable to load clinic gallery:", error);
+        setGalleryError(true);
+      } finally {
+        if (isActive) setIsGalleryLoading(false);
+      }
+    };
+
+    loadGallery();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isDocPaused) return;
     const timer = setInterval(() => {
       const el = doctorScrollRef.current;
@@ -209,15 +150,42 @@ export default function AboutClinicInteractiveSections() {
   const scrollDocRight = () =>
     doctorScrollRef.current?.scrollBy({ left: 320, behavior: "smooth" });
 
-  const activeItems = TAB_ITEMS[activeTab];
+  const activeItems = useMemo<GalleryItem[]>(() => {
+    return galleryItems.filter((item) => {
+      const category = (item.category || "").toLowerCase();
+      const location = (item.location || "").toLowerCase();
+
+      const matchesCategory =
+        activeTab === "All" || category === activeTab.toLowerCase();
+
+      const matchesLocation =
+        selectedLocation === "All" ||
+        !location ||
+        location.includes(selectedLocation.toLowerCase()) ||
+        location.includes("both") ||
+        location.includes("noida & gurgaon") ||
+        location.includes("gurgaon & noida");
+
+      return matchesCategory && matchesLocation;
+    });
+  }, [galleryItems, activeTab, selectedLocation]);
 
   return (
     <div className="bg-white">
-      {/* ── 1. INTERACTIVE TABBED SECTION: MACHINES, LABS, AND CLINIC ── */}
+
+      
+      
+
+      {/* ── 1. OUR JOURNEY – INTERACTIVE S-CURVE ROADMAP ── */}
+      <BrandJourneyRoadmap />
+
+      <SectionDivider />
+
+      {/* ── 2. DYNAMIC CLINIC GALLERY ── */}
       <section className="py-14 lg:py-20 bg-slate-50/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-8">
-            <div>
+            <div className="max-w-3xl">
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3.5 py-1 rounded-full border border-brand-200">
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Clinical Infrastructure Explorer</span>
@@ -226,28 +194,31 @@ export default function AboutClinicInteractiveSections() {
                 Explore Our <span className="text-brand-700">Machines, Labs &amp; Clinic</span>
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-2xl">
-                Switch between tabs below to inspect our US-FDA approved medical machines, on-site pathology &amp; GFC laboratories, and luxury procedure suites in Noida &amp; Gurgaon.
+                Explore our clinical machines, diagnostic laboratories, and clinic facilities across Noida and Gurgaon.
               </p>
             </div>
 
-            {/* Clean Responsive Tab Switcher: Machines | Labs | Clinic */}
-            <div className="inline-flex p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm self-start lg:self-auto">
-              {(
-                [
-                  { id: "Machines", label: "Machines", icon: Cpu },
-                  { id: "Labs", label: "Labs", icon: FlaskConical },
-                  { id: "Clinic", label: "Clinic", icon: Building2 },
-                ] as const
-              ).map(({ id, label, icon: TabIcon }) => {
+            <div className="inline-flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm self-start lg:self-auto">
+              {([
+                { id: "All", label: "All", icon: Sparkles },
+                { id: "Machines", label: "Machines", icon: Cpu },
+                { id: "Labs", label: "Labs", icon: FlaskConical },
+                { id: "Clinic", label: "Clinic", icon: Building2 },
+              ] as const).map(({ id, label, icon: TabIcon }) => {
                 const isActive = activeTab === id;
+
                 return (
                   <button
                     key={id}
                     type="button"
-                    onClick={() => setActiveTab(id)}
-                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all ${
+                    onClick={() => {
+                      setActiveTab(id);
+                      setLightboxIndex(null);
+                    }}
+                    aria-pressed={isActive}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors ${
                       isActive
-                        ? "bg-[#008081] text-white shadow-md"
+                        ? "bg-[#008081] text-white"
                         : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                     }`}
                   >
@@ -259,43 +230,153 @@ export default function AboutClinicInteractiveSections() {
             </div>
           </div>
 
-          {/* Tab Content Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeItems.map((item, i) => (
-              <div
-                key={`${activeTab}-${i}`}
-                className="group relative rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-500 aspect-[4/3] bg-slate-100 flex flex-col justify-end p-6"
-              >
-                <Image
-                  src={item.src}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent" />
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200/80 pt-4 mb-6">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <MapPin className="w-4 h-4 text-[#008081]" />
+              <span className="font-medium">Filter by facility:</span>
+              {(["All", "Gurgaon", "Noida"] as const).map((location) => (
+                <button
+                  key={location}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLocation(location);
+                    setLightboxIndex(null);
+                  }}
+                  aria-pressed={selectedLocation === location}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                    selectedLocation === location
+                      ? "bg-[#008081] text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  {location === "All" ? "Both Centers" : `${location} Clinic`}
+                </button>
+              ))}
+            </div>
 
-                <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm text-brand-800 text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                  {item.tag}
-                </span>
-
-                <div className="relative z-10 text-white">
-                  <h3 className="text-base font-bold font-serif leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-200 mt-1.5 leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
+            <p className="text-xs text-slate-500" aria-live="polite">
+              Showing{" "}
+              <strong className="text-slate-900">{activeItems.length}</strong>{" "}
+              {activeItems.length === 1 ? "photograph" : "photographs"}
+            </p>
           </div>
+
+          {isGalleryLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Loading gallery">
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="aspect-[4/3] rounded-3xl bg-slate-200 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : galleryError ? (
+            <div className="rounded-3xl border border-rose-200 bg-rose-50 px-6 py-12 text-center">
+              <h3 className="text-base font-bold text-slate-800 font-serif">
+                Gallery could not be loaded
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Please try again in a moment.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsGalleryLoading(true);
+                  setGalleryError(false);
+                  getGallery()
+                    .then((items) => setGalleryItems(Array.isArray(items) ? items : []))
+                    .catch((error) => {
+                      console.error("Unable to reload clinic gallery:", error);
+                      setGalleryError(true);
+                    })
+                    .finally(() => setIsGalleryLoading(false));
+                }}
+                className="mt-4 rounded-full bg-[#008081] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#006d6e]"
+              >
+                Retry
+              </button>
+            </div>
+          ) : activeItems.length === 0 ? (
+            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
+              <Building2 className="mx-auto mb-3 h-10 w-10 text-slate-400" />
+              <h3 className="text-base font-bold text-slate-800 font-serif">
+                No Gallery Images Found
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                No published gallery images match the selected category and location.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab("All");
+                  setSelectedLocation("All");
+                }}
+                className="mt-4 rounded-full bg-[#008081] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#006d6e]"
+              >
+                Reset Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {activeItems.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setLightboxIndex(index)}
+                  aria-label={`View gallery image: ${item.title}`}
+                  className="group relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-slate-200/90 bg-slate-200 text-left shadow-sm transition-all duration-300 hover:border-[#008081] hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[#008081] focus-visible:ring-offset-2"
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.altText || item.title}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                  />
+
+                  <span className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+
+                  <span className="absolute left-4 right-4 top-4 flex items-start justify-between gap-2">
+                    <span className="max-w-[70%] truncate rounded-full border border-white/60 bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-800">
+                      {item.badge || item.category || "Clinic"}
+                    </span>
+                    {item.location && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-white">
+                        <MapPin className="h-3 w-3 text-teal-300" />
+                        {item.location}
+                      </span>
+                    )}
+                  </span>
+
+                  <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white bg-white/90 text-[#008081] shadow-lg">
+                      <Maximize2 className="h-5 w-5" />
+                    </span>
+                  </span>
+
+                  <span className="absolute inset-x-0 bottom-0 p-5">
+                    <span className="block font-serif text-base font-bold leading-snug text-white transition-colors group-hover:text-teal-200">
+                      {item.title}
+                    </span>
+                    {item.description && (
+                      <span className="mt-1.5 line-clamp-2 block text-xs leading-relaxed text-slate-200">
+                        {item.description}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <GalleryLightbox
+            items={activeItems}
+            index={lightboxIndex}
+            onIndexChange={setLightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+          />
         </div>
       </section>
-
-      <SectionDivider />
-
-      {/* ── 2. OUR JOURNEY – INTERACTIVE S-CURVE ROADMAP ── */}
-      <BrandJourneyRoadmap />
 
       <SectionDivider />
 
@@ -536,6 +617,8 @@ export default function AboutClinicInteractiveSections() {
                       : "bg-slate-50/70 border-slate-200/90 hover:bg-white hover:border-brand-300 hover:shadow-lg"
                   }`}
                 >
+
+
                   <div className="space-y-2.5">
                     <span
                       className={`inline-block text-[10px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full ${

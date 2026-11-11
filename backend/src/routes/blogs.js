@@ -1,10 +1,30 @@
 const express = require('express');
+const path = require('path');
 const { query, one } = require('../config/db');
 const { requirePermission } = require('../middleware/auth');
 const { audit } = require('../middleware/audit');
 const { asyncHandler, HttpError } = require('../middleware/error');
 const { slugify } = require('../utils/slug');
 const { parseJson } = require('../utils/helpers');
+const { deleteUploadedFile } = require('./upload');
+
+function cleanFilename(val) {
+  if (!val || typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    try {
+      const u = new URL(trimmed);
+      if (u.pathname.includes('/uploads/')) return path.basename(u.pathname);
+    } catch {}
+    return trimmed;
+  }
+  if (trimmed.startsWith('/images/') || trimmed.startsWith('images/')) {
+    return trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+  }
+  return path.basename(trimmed);
+}
 
 const router = express.Router();
 
@@ -107,6 +127,8 @@ router.post(
       throw new HttpError(409, `An article with slug "${cleanSlug}" already exists.`);
     }
 
+    const cleanImg = cleanFilename(featuredImage) || '/images/treatments/banner-acne.webp';
+
     const r = await query(
       `INSERT INTO sid_blogs (
         slug, title, excerpt, content, featured_image, category, meta_title, meta_description, meta_keywords, canonical_url, author_name, tags, is_published, published_at
@@ -116,7 +138,7 @@ router.post(
         title.trim(),
         excerpt || null,
         content || null,
-        featuredImage || '/images/treatments/banner-acne.webp',
+        cleanImg,
         category || 'Dermatology Tips',
         metaTitle || null,
         metaDescription || null,
@@ -158,6 +180,11 @@ router.put(
     if (!existing) throw new HttpError(404, 'Article not found');
 
     const cleanSlug = slug ? slugify(slug) : existing.slug;
+    const cleanImg = featuredImage !== undefined ? cleanFilename(featuredImage) : existing.featured_image;
+
+    if (featuredImage !== undefined && existing.featured_image && existing.featured_image !== cleanImg) {
+      await deleteUploadedFile(existing.featured_image);
+    }
 
     await query(
       `UPDATE sid_blogs SET
@@ -181,7 +208,7 @@ router.put(
         cleanSlug,
         excerpt !== undefined ? excerpt : existing.excerpt,
         content !== undefined ? content : existing.content,
-        featuredImage !== undefined ? featuredImage : existing.featured_image,
+        cleanImg,
         category || null,
         metaTitle !== undefined ? metaTitle : existing.meta_title,
         metaDescription !== undefined ? metaDescription : existing.meta_description,
@@ -213,10 +240,13 @@ router.delete(
   requirePermission('blogs.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const existing = await one('SELECT title FROM sid_blogs WHERE id = ?', [id]);
+    const existing = await one('SELECT title, featured_image FROM sid_blogs WHERE id = ?', [id]);
     if (!existing) throw new HttpError(404, 'Article not found');
 
     await query('DELETE FROM sid_blogs WHERE id = ?', [id]);
+    if (existing.featured_image) {
+      await deleteUploadedFile(existing.featured_image);
+    }
 
     await audit(req, {
       action: 'delete',

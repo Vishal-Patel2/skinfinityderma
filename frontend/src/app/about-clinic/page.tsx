@@ -4,6 +4,7 @@ import PageBreadcrumbBanner from "@/components/shared/PageBreadcrumbBanner";
 import AboutClinicShowcase from "@/components/about/AboutClinicShowcase";
 import AboutClinicInteractiveSections from "@/components/about/AboutClinicInteractiveSections";
 import SectionDivider from "@/components/shared/SectionDivider";
+import { getGallery } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AboutClinicPage() {
+export default async function AboutClinicPage() {
+  const galleryItems = await getGallery();
+
   return (
     <div className="bg-white">
       {/* Breadcrumb Banner */}
@@ -34,7 +37,7 @@ export default function AboutClinicPage() {
       <SectionDivider />
 
       {/* Clinic Images -> Our Journey -> Awards -> 5-Doctor Carousel -> Integrated Lab & Pharmacy -> Associated Partners */}
-      <AboutClinicInteractiveSections />
+      <AboutClinicInteractiveSections initialGallery={galleryItems || undefined} />
     </div>
   );
 }

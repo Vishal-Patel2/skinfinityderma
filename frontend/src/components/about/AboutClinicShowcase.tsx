@@ -159,7 +159,7 @@ export default function AboutClinicShowcase() {
   return (
     <section
       ref={sectionRef}
-      className="relative py-12 lg:py-16 bg-gradient-to-b from-white via-slate-50/60 to-white overflow-hidden"
+      className="relative pt-12 pb-14 sm:pb-16 lg:pt-16 lg:pb-20 bg-gradient-to-b from-white via-slate-50/60 to-white overflow-hidden"
     >
       {/* Subtle background decoration */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-brand-50/40 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />

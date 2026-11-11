@@ -4,6 +4,7 @@ import React from "react";
 import { Phone, Calendar, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import WhatsAppButton from "./WhatsAppButton";
 
 export default function FloatingActions() {
   const { openAppointmentModal } = useAuth();
@@ -42,9 +43,8 @@ export default function FloatingActions() {
         </div>
       )}
 
-      {/* 2. MOBILE BOTTOM STICKY ACTION BAR: EXACTLY TWO BUTTONS (Call Clinic & Book Appointment) */}
+      {/* 2. MOBILE BOTTOM STICKY ACTION BAR: Call Clinic & Book Appointment */}
       <div className="fixed bottom-0 inset-x-0 z-40 lg:hidden bg-white/95 backdrop-blur-md border-t border-slate-200/90 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3">
-        {/* Button 1: Call Clinic */}
         <a
           href="tel:+919871941444"
           className="flex-1 flex items-center justify-center gap-2 py-3 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-800 text-xs sm:text-sm font-bold border border-slate-200/80 transition-all active:scale-[0.98]"
@@ -54,7 +54,6 @@ export default function FloatingActions() {
           <span className="whitespace-nowrap">Call Clinic</span>
         </a>
 
-        {/* Button 2: Book Appointment */}
         <button
           type="button"
           onClick={openAppointmentModal}
@@ -66,19 +65,8 @@ export default function FloatingActions() {
         </button>
       </div>
 
-      {/* 3. DESKTOP FLOATING WHATSAPP BUTTON (Unchanged on Desktop) */}
-      <div className="hidden lg:block fixed bottom-6 right-6 z-40">
-        <a
-          href="https://wa.me/918591110110?text=Hello%20Skinfinity%20Derma,%20I%20would%20like%20to%20inquire%20about%20a%20consultation"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2.5 bg-emerald-600 text-white px-4 py-3 rounded-full shadow-2xl hover:bg-emerald-700 hover:scale-105 transition-all duration-300 font-semibold text-xs border border-emerald-400/40"
-          aria-label="Chat on WhatsApp with Skinfinity Derma Clinic"
-        >
-          <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-          <span>Chat on WhatsApp</span>
-        </a>
-      </div>
+      {/* 3. DESKTOP FLOATING WHATSAPP BUTTON (With Noida/Gurgaon branch routing) */}
+      <WhatsAppButton className="hidden lg:flex" />
     </>
   );
 }

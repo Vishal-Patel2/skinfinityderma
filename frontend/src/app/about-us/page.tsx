@@ -57,7 +57,7 @@ export default function AboutUsPage() {
       />
 
       {/* Hero Section */}
-      <section className="pt-12 pb-10 lg:pt-16 lg:pb-14 bg-gradient-to-b from-brand-50/40 via-white to-white">
+      <section className="pt-12 pb-16 sm:pb-20 lg:pt-16 lg:pb-24 bg-gradient-to-b from-brand-50/40 via-white to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
@@ -198,7 +198,7 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <SectionDivider />
+      
 
       {/* Integrated Diagnostic Lab & Pharmacy Spotlight */}
       <section className="py-12 lg:py-14 bg-slate-900 text-white">
@@ -245,7 +245,7 @@ export default function AboutUsPage() {
         </div>
       </section>
 
-      <SectionDivider />
+     
 
       {/* Complete Doctor Team Carousel featuring Dr. Ipshita, Dr. Sukriti & Senior Dermatologists */}
       <DedicatedDoctorsCarousel />

@@ -92,12 +92,12 @@ $(document).ready(function () {
           </div>
           <div class="gallery-card-body">
             <div class="gallery-card-title text-truncate" title="${item.title || 'Untitled'}">${item.title || 'Untitled Image'}</div>
-            <div class="gallery-card-meta mb-1">
-              <span class="badge badge-pill-soft">${item.category || 'General'}</span>
+            <div class="gallery-card-meta mb-1 d-flex gap-1 flex-wrap">
+              <span class="badge bg-teal-subtle text-teal border border-teal-subtle">${item.category || 'Clinic'}</span>
+              ${item.badge ? `<span class="badge bg-light text-dark border">${item.badge}</span>` : ''}
+              ${item.location ? `<span class="badge bg-secondary-subtle text-secondary">${item.location}</span>` : ''}
             </div>
-            <div class="gallery-card-meta text-truncate">
-              <i class="bi bi-capsule me-1 text-muted"></i>${item.treatmentName || 'General Clinic'}
-            </div>
+            ${item.description ? `<p class="small text-muted mb-1 text-truncate-2" style="font-size: 11px; line-height: 1.35;">${item.description}</p>` : ''}
           </div>
           <div class="gallery-card-footer">
             <div class="form-check form-switch m-0">
@@ -200,18 +200,25 @@ $(document).ready(function () {
   });
 
   // Edit Gallery Item
-  $(document).on('click', '.btn-edit', function () {
-    const id = $(this).data('id');
-    const item = galleryData.find(g => g.id === id);
-    if (!item) return;
+  $(document).on('click', '.btn-edit', function (e) {
+    e.preventDefault();
+    const id = $(this).attr('data-id') || $(this).data('id');
+    const item = galleryData.find(g => String(g.id) === String(id));
+    if (!item) {
+      console.warn('Gallery item not found in local cache for id:', id);
+      return;
+    }
 
     $('#galleryId').val(item.id);
-    $('#galleryTitle').val(item.title);
+    $('#galleryTitle').val(item.title || '');
+    $('#galleryDescription').val(item.description || '');
+    $('#galleryBadge').val(item.badge || '');
+    $('#galleryLocation').val(item.location || 'Noida & Gurgaon');
     $('#galleryAltText').val(item.altText || '');
     $('#galleryCategory').val(item.category || '');
     $('#galleryTreatment').val(item.treatmentId || '');
     $('#galleryDisplayOrder').val(item.displayOrder || 1);
-    $('#galleryIsActive').prop('checked', item.isActive);
+    $('#galleryIsActive').prop('checked', Boolean(item.isActive));
 
     $('#galleryImageUrl').val(item.image || '');
     if (item.image) {
@@ -240,8 +247,11 @@ $(document).ready(function () {
     const payload = {
       image: image,
       title: $('#galleryTitle').val().trim(),
+      description: $('#galleryDescription').val().trim(),
+      badge: $('#galleryBadge').val().trim(),
+      location: $('#galleryLocation').val(),
       altText: $('#galleryAltText').val().trim(),
-      category: $('#galleryCategory').val().trim() || 'General',
+      category: $('#galleryCategory').val().trim() || 'Clinic',
       treatmentId: $('#galleryTreatment').val() || '',
       displayOrder: parseInt($('#galleryDisplayOrder').val()) || 1,
       isActive: $('#galleryIsActive').is(':checked')
@@ -268,7 +278,7 @@ $(document).ready(function () {
 
   // Toggle Active
   $(document).on('change', '.btn-toggle-gallery-status', function () {
-    const id = $(this).data('id');
+    const id = $(this).attr('data-id') || $(this).data('id');
     const isChecked = $(this).is(':checked');
 
     window.API.toggleGalleryStatus(id)
@@ -282,10 +292,10 @@ $(document).ready(function () {
   });
 
   // Delete Gallery Item
-  $(document).on('click', '.btn-delete', function () {
-    const id = $(this).data('id');
-    const item = galleryData.find(g => g.id === id);
-    if (!item) return;
+  $(document).on('click', '.btn-delete', function (e) {
+    e.preventDefault();
+    const id = $(this).attr('data-id') || $(this).data('id');
+    if (!id) return;
 
     window.App.confirm(
       'Delete Image?',
@@ -300,8 +310,9 @@ $(document).ready(function () {
               loadGallery();
             }
           })
-          .fail(function () {
-            window.App.toast('error', 'Error deleting image');
+          .fail(function (xhr) {
+            const msg = xhr.responseJSON ? xhr.responseJSON.message : 'Error deleting image';
+            window.App.toast('error', msg);
           });
       }
     });

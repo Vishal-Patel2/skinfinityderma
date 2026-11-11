@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const { query, one, tx } = require('../config/db');
 const { requirePermission } = require('../middleware/auth');
 const { audit } = require('../middleware/audit');
@@ -6,6 +7,29 @@ const { asyncHandler, HttpError } = require('../middleware/error');
 const { slugify } = require('../utils/slug');
 const { parseJson } = require('../utils/helpers');
 const { deleteUploadedFile, removeImageFromTreatment } = require('./upload');
+
+/**
+ * Safely extracts only the filename for database storage, preserving static /images/ or external URLs
+ */
+function cleanFilename(val) {
+  if (!val || typeof val !== 'string') return null;
+  const trimmed = val.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return trimmed;
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    try {
+      const u = new URL(trimmed);
+      if (u.pathname.includes('/uploads/')) {
+        return path.basename(u.pathname);
+      }
+    } catch {}
+    return trimmed;
+  }
+  if (trimmed.startsWith('/images/') || trimmed.startsWith('images/')) {
+    return trimmed.startsWith('/') ? trimmed : '/' + trimmed;
+  }
+  return path.basename(trimmed);
+}
 
 const router = express.Router();
 
@@ -267,10 +291,13 @@ router.post(
     const { desktopImage, mobileImage, displayOrder = 1, isActive = 1 } = req.body;
     if (!desktopImage) throw new HttpError(400, 'Desktop banner image is required');
 
+    const cleanDesktop = cleanFilename(desktopImage);
+    const cleanMobile = cleanFilename(mobileImage);
+
     const r = await query(
       `INSERT INTO sid_banners (desktop_image, mobile_image, display_order, is_active)
        VALUES (?, ?, ?, ?)`,
-      [desktopImage, mobileImage || null, displayOrder, isActive ? 1 : 0]
+      [cleanDesktop, cleanMobile, displayOrder, isActive ? 1 : 0]
     );
 
     await audit(req, { action: 'create', entity: 'banners', entityId: r.insertId, summary: `Added banner #${r.insertId}` });
@@ -305,14 +332,14 @@ router.put(
     const b = await one('SELECT * FROM sid_banners WHERE id = ?', [id]);
     if (!b) throw new HttpError(404, 'Banner not found');
 
-    const nextDesktop = desktopImage !== undefined ? desktopImage : b.desktop_image;
-    const nextMobile = mobileImage !== undefined ? mobileImage : b.mobile_image;
+    const nextDesktop = desktopImage !== undefined ? cleanFilename(desktopImage) : b.desktop_image;
+    const nextMobile = mobileImage !== undefined ? cleanFilename(mobileImage) : b.mobile_image;
 
     // If an image was replaced, safely clean up the old file
-    if (desktopImage !== undefined && b.desktop_image && b.desktop_image !== desktopImage) {
+    if (desktopImage !== undefined && b.desktop_image && b.desktop_image !== nextDesktop) {
       await deleteUploadedFile(b.desktop_image);
     }
-    if (mobileImage !== undefined && b.mobile_image && b.mobile_image !== mobileImage) {
+    if (mobileImage !== undefined && b.mobile_image && b.mobile_image !== nextMobile) {
       await deleteUploadedFile(b.mobile_image);
     }
 
@@ -518,6 +545,8 @@ router.post(
     const doctorSlug = slug || slugify(name);
     const locs = availableLocations || (clinicCity ? clinicCity.split(',').map((s) => s.trim()) : ['Noida']);
 
+    const cleanImg = cleanFilename(image || photo) || '/images/doctors/dr-ipshita-johri.jpg';
+
     const r = await query(
       `INSERT INTO sid_doctors (name, slug, role, qualifications, specialty, experience, image, bio, consultation_fee, available_locations, availability, display_order, is_active)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -528,7 +557,7 @@ router.post(
         qualifications || null,
         specialty || specialization || 'General Dermatology',
         experience || '5+ Years',
-        image || photo || '/images/doctors/dr-ipshita-johri.jpg',
+        cleanImg,
         bio || fullBio || shortBio || null,
         consultationFee,
         JSON.stringify(locs),
@@ -553,7 +582,7 @@ router.put(
     const d = await one('SELECT * FROM sid_doctors WHERE id = ?', [id]);
     if (!d) throw new HttpError(404, 'Doctor not found');
 
-    const newImg = image || photo || d.image;
+    const newImg = image !== undefined || photo !== undefined ? cleanFilename(image || photo) : d.image;
     if (newImg && d.image && d.image !== newImg) {
       await deleteUploadedFile(d.image);
     }
@@ -830,6 +859,16 @@ router.post(
       finalGallery.push({ src: subImage3, caption: 'Sub-image 3' });
     }
 
+    const cleanBanner = cleanFilename(featuredImage || bannerImage || null);
+    const cleanSub1 = cleanFilename(subImage1 || null);
+    const cleanSub2 = cleanFilename(subImage2 || null);
+    const cleanSub3 = cleanFilename(subImage3 || null);
+    const cleanOg = cleanFilename(ogImage || null);
+    const cleanedGallery = finalGallery.map((g) => {
+      if (typeof g === 'string') return { src: cleanFilename(g), caption: '' };
+      return { ...g, src: cleanFilename(g.src) };
+    });
+
     // Extract YouTube ID if full URL provided
     let ytId = youtubeVideoId || null;
     if (!ytId && videoUrl) {
@@ -867,12 +906,12 @@ router.post(
         emiMonths ? parseInt(emiMonths, 10) : null,
         emiMonthly ? Number(emiMonthly) : null,
         cardHighlights ? JSON.stringify(cardHighlights) : null,
-        featuredImage || bannerImage || null, // All media optional!
+        cleanBanner, // All media optional & clean filename!
         imageAltText || null,
-        subImage1 || null,
-        subImage2 || null,
-        subImage3 || null,
-        finalGallery.length ? JSON.stringify(finalGallery) : null,
+        cleanSub1,
+        cleanSub2,
+        cleanSub3,
+        cleanedGallery.length ? JSON.stringify(cleanedGallery) : null,
         videoUrl || null,
         videoTitle || null,
         videoThumbnail || null,
@@ -892,7 +931,7 @@ router.post(
         seoDescription || null,
         seoKeywords || null,
         canonicalUrl || null,
-        ogImage || null,
+        cleanOg,
         isFeatured ? 1 : 0,
         isActive ? 1 : 0,
         displayOrder,
@@ -941,14 +980,19 @@ router.put(
       });
     }
 
-    // Process new images
-    const newBanner = body.featuredImage !== undefined ? (body.featuredImage || null) : (body.bannerImage !== undefined ? (body.bannerImage || null) : t.banner_image);
-    const newSub1 = body.subImage1 !== undefined ? (body.subImage1 || null) : t.sub_image_1;
-    const newSub2 = body.subImage2 !== undefined ? (body.subImage2 || null) : t.sub_image_2;
-    const newSub3 = body.subImage3 !== undefined ? (body.subImage3 || null) : t.sub_image_3;
+    // Process new images with clean filenames
+    const rawBanner = body.featuredImage !== undefined ? body.featuredImage : (body.bannerImage !== undefined ? body.bannerImage : t.banner_image);
+    const newBanner = cleanFilename(rawBanner);
+    const newSub1 = body.subImage1 !== undefined ? cleanFilename(body.subImage1) : t.sub_image_1;
+    const newSub2 = body.subImage2 !== undefined ? cleanFilename(body.subImage2) : t.sub_image_2;
+    const newSub3 = body.subImage3 !== undefined ? cleanFilename(body.subImage3) : t.sub_image_3;
 
     let finalGallery = body.galleryImages !== undefined ? body.galleryImages : parseJson(t.gallery_images, []);
     if (!Array.isArray(finalGallery)) finalGallery = [];
+    finalGallery = finalGallery.map((g) => {
+      if (typeof g === 'string') return { src: cleanFilename(g), caption: '' };
+      return { ...g, src: cleanFilename(g.src) };
+    });
 
     // Track active new images
     const newImages = new Set();
@@ -963,8 +1007,9 @@ router.put(
 
     // Physically delete removed uploaded images from server folder
     for (const oldSrc of oldImages) {
-      if (oldSrc && !newImages.has(oldSrc)) {
-        deleteUploadedFile(oldSrc);
+      const cleanOld = cleanFilename(oldSrc);
+      if (cleanOld && !newImages.has(cleanOld) && !newImages.has(oldSrc)) {
+        await deleteUploadedFile(oldSrc);
       }
     }
 
@@ -1133,6 +1178,8 @@ router.delete(
   asyncHandler(async (req, res) => {
     const { id } = req.params;
     const t = await one('SELECT banner_image, sub_image_1, sub_image_2, sub_image_3, gallery_images FROM sid_treatments WHERE id = ?', [id]);
+    await query('DELETE FROM sid_treatments WHERE id = ?', [id]);
+
     if (t) {
       const imagesToDelete = [t.banner_image, t.sub_image_1, t.sub_image_2, t.sub_image_3];
       const gal = parseJson(t.gallery_images, []);
@@ -1142,12 +1189,11 @@ router.delete(
           if (s) imagesToDelete.push(s);
         });
       }
-      imagesToDelete.forEach((src) => {
-        if (src) deleteUploadedFile(src);
-      });
+      for (const src of imagesToDelete) {
+        if (src) await deleteUploadedFile(src);
+      }
     }
 
-    await query('DELETE FROM sid_treatments WHERE id = ?', [id]);
     res.json({ success: true, message: 'Treatment and all associated media files deleted successfully' });
   })
 );
@@ -1506,6 +1552,9 @@ router.post(
 
     if (!treatmentName || !afterImage) throw new HttpError(400, 'Treatment / Case title and After image are required');
 
+    const cleanBefore = cleanFilename(beforeImage);
+    const cleanAfter = cleanFilename(afterImage);
+
     const r = await query(
       `INSERT INTO sid_before_after_cases (
         patient_name, treatment, treatment_id, description, before_image, after_image,
@@ -1516,8 +1565,8 @@ router.post(
         treatmentName,
         treatmentId ? parseInt(treatmentId, 10) : null,
         finalDesc || null,
-        beforeImage || null,
-        afterImage,
+        cleanBefore,
+        cleanAfter,
         finalType || null,
         timeframe || '6 Weeks',
         hasPatientConsent ? 1 : 0,
@@ -1545,6 +1594,16 @@ router.put(
     const finalDesc = body.description !== undefined ? body.description : (body.caption !== undefined ? body.caption : b.description);
     const finalType = body.resultsType !== undefined ? body.resultsType : (body.categoryOrConcern !== undefined ? body.categoryOrConcern : b.results_type);
 
+    const nextBefore = body.beforeImage !== undefined ? cleanFilename(body.beforeImage) : b.before_image;
+    const nextAfter = body.afterImage !== undefined ? cleanFilename(body.afterImage) : b.after_image;
+
+    if (body.beforeImage !== undefined && b.before_image && b.before_image !== nextBefore) {
+      await deleteUploadedFile(b.before_image);
+    }
+    if (body.afterImage !== undefined && b.after_image && b.after_image !== nextAfter) {
+      await deleteUploadedFile(b.after_image);
+    }
+
     await query(
       `UPDATE sid_before_after_cases
           SET patient_name = ?, treatment = ?, treatment_id = ?, description = ?,
@@ -1556,8 +1615,8 @@ router.put(
         treatmentName,
         body.treatmentId !== undefined ? (body.treatmentId ? parseInt(body.treatmentId, 10) : null) : b.treatment_id,
         finalDesc,
-        body.beforeImage !== undefined ? body.beforeImage : b.before_image,
-        body.afterImage !== undefined ? body.afterImage : b.after_image,
+        nextBefore,
+        nextAfter,
         finalType,
         body.timeframe !== undefined ? body.timeframe : b.timeframe,
         body.hasPatientConsent !== undefined ? (body.hasPatientConsent ? 1 : 0) : b.has_patient_consent,
@@ -1590,7 +1649,12 @@ router.delete(
   requirePermission('before_after.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const item = await one('SELECT before_image, after_image FROM sid_before_after_cases WHERE id = ?', [id]);
     await query('DELETE FROM sid_before_after_cases WHERE id = ?', [id]);
+    if (item) {
+      if (item.before_image) await deleteUploadedFile(item.before_image);
+      if (item.after_image) await deleteUploadedFile(item.after_image);
+    }
     res.json({ success: true, message: 'Transformation case deleted' });
   })
 );
@@ -1610,6 +1674,9 @@ router.get(
         id: String(g.id),
         image: g.image,
         title: g.title,
+        description: g.description || '',
+        badge: g.badge || '',
+        location: g.location || '',
         altText: g.alt_text,
         category: g.category,
         treatmentId: g.treatment_id ? String(g.treatment_id) : null,
@@ -1624,13 +1691,26 @@ router.post(
   '/gallery',
   requirePermission('gallery.create'),
   asyncHandler(async (req, res) => {
-    const { image, title, altText, category, treatmentId, displayOrder = 1, isActive = 1 } = req.body;
+    const { image, title, description, badge, location, altText, category, treatmentId, displayOrder = 1, isActive = 1 } = req.body;
     if (!image) throw new HttpError(400, 'Image is required');
 
+    const cleanImg = cleanFilename(image);
+
     const r = await query(
-      `INSERT INTO sid_gallery_items (image, title, alt_text, category, treatment_id, display_order, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [image, title || null, altText || title || null, category || 'Clinic Ambiance', treatmentId ? parseInt(treatmentId, 10) : null, displayOrder, isActive ? 1 : 0]
+      `INSERT INTO sid_gallery_items (image, title, description, badge, location, alt_text, category, treatment_id, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        cleanImg,
+        title || null,
+        description || null,
+        badge || null,
+        location || null,
+        altText || title || null,
+        category || 'Clinic',
+        treatmentId ? parseInt(treatmentId, 10) : null,
+        displayOrder,
+        isActive ? 1 : 0
+      ]
     );
 
     res.status(201).json({ success: true, id: String(r.insertId), message: 'Gallery item added' });
@@ -1642,15 +1722,23 @@ router.put(
   requirePermission('gallery.edit'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { image, title, altText, category, treatmentId, displayOrder, isActive } = req.body;
+    const { image, title, description, badge, location, altText, category, treatmentId, displayOrder, isActive } = req.body;
     const g = await one('SELECT * FROM sid_gallery_items WHERE id = ?', [id]);
     if (!g) throw new HttpError(404, 'Gallery item not found');
 
+    const cleanImg = image !== undefined ? cleanFilename(image) : g.image;
+    if (image !== undefined && g.image && g.image !== cleanImg) {
+      await deleteUploadedFile(g.image);
+    }
+
     await query(
-      `UPDATE sid_gallery_items SET image = ?, title = ?, alt_text = ?, category = ?, treatment_id = ?, display_order = ?, is_active = ? WHERE id = ?`,
+      `UPDATE sid_gallery_items SET image = ?, title = ?, description = ?, badge = ?, location = ?, alt_text = ?, category = ?, treatment_id = ?, display_order = ?, is_active = ? WHERE id = ?`,
       [
-        image || g.image,
+        cleanImg,
         title !== undefined ? title : g.title,
+        description !== undefined ? description : g.description,
+        badge !== undefined ? badge : g.badge,
+        location !== undefined ? location : g.location,
         altText !== undefined ? altText : g.alt_text,
         category !== undefined ? category : g.category,
         treatmentId !== undefined ? (treatmentId ? parseInt(treatmentId, 10) : null) : g.treatment_id,
@@ -1682,7 +1770,9 @@ router.delete(
   requirePermission('gallery.delete'),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const g = await one('SELECT image FROM sid_gallery_items WHERE id = ?', [id]);
     await query('DELETE FROM sid_gallery_items WHERE id = ?', [id]);
+    if (g && g.image) await deleteUploadedFile(g.image);
     res.json({ success: true, message: 'Gallery item deleted' });
   })
 );
@@ -1962,6 +2052,56 @@ router.post(
 /* 12. VIP MEMBERSHIPS CRUD                                                   */
 /* ========================================================================== */
 
+const MEMBERSHIP_THEME_PRESETS = {
+  gold: {
+    cardBg: 'bg-gradient-to-br from-amber-50/80 via-white to-yellow-50/60 border-amber-400',
+    passGradient: 'from-amber-600 via-yellow-500 to-amber-700',
+    badgeStyle: 'bg-amber-500 text-slate-950 border-amber-400',
+    buttonStyle: 'bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-black',
+    accentText: 'text-amber-700',
+  },
+  platinum: {
+    cardBg: 'bg-gradient-to-br from-teal-50/80 via-white to-emerald-50/60 border-[#008081]',
+    passGradient: 'from-[#042f2e] via-[#008081] to-emerald-900',
+    badgeStyle: 'bg-[#008081] text-white border-teal-600',
+    buttonStyle: 'bg-gradient-to-r from-[#042f2e] via-[#008081] to-teal-800 hover:opacity-95 text-white',
+    accentText: 'text-[#008081]',
+  },
+  silver: {
+    cardBg: 'bg-gradient-to-br from-slate-50 via-white to-slate-100/80 border-slate-300',
+    passGradient: 'from-slate-700 via-slate-600 to-slate-800',
+    badgeStyle: 'bg-slate-200 text-slate-800 border-slate-300',
+    buttonStyle: 'bg-slate-800 hover:bg-slate-900 text-white',
+    accentText: 'text-slate-700',
+  },
+  rosegold: {
+    cardBg: 'bg-gradient-to-br from-rose-50/80 via-white to-pink-50/60 border-rose-300',
+    passGradient: 'from-rose-600 via-pink-500 to-rose-700',
+    badgeStyle: 'bg-rose-500 text-white border-rose-400',
+    buttonStyle: 'bg-gradient-to-r from-rose-500 to-pink-600 hover:opacity-95 text-white',
+    accentText: 'text-rose-600',
+  },
+  sapphire: {
+    cardBg: 'bg-gradient-to-br from-blue-50/80 via-white to-indigo-50/60 border-blue-400',
+    passGradient: 'from-blue-900 via-indigo-700 to-blue-950',
+    badgeStyle: 'bg-blue-600 text-white border-blue-500',
+    buttonStyle: 'bg-gradient-to-r from-blue-700 to-indigo-800 hover:opacity-95 text-white',
+    accentText: 'text-blue-700',
+  },
+};
+
+function resolveThemeStyles(theme, custom = {}) {
+  const key = (theme || 'gold').toLowerCase();
+  const preset = MEMBERSHIP_THEME_PRESETS[key] || MEMBERSHIP_THEME_PRESETS.gold;
+  return {
+    cardBg: custom.cardBg || preset.cardBg,
+    passGradient: custom.passGradient || preset.passGradient,
+    badgeStyle: custom.badgeStyle || preset.badgeStyle,
+    buttonStyle: custom.buttonStyle || preset.buttonStyle,
+    accentText: custom.accentText || preset.accentText,
+  };
+}
+
 router.get(
   '/memberships',
   requirePermission('treatments.view'),
@@ -1975,9 +2115,9 @@ router.get(
         name: m.name,
         price: Number(m.price),
         priceFormatted: m.price ? `₹${Number(m.price).toLocaleString('en-IN')}` : m.price_formatted,
-        period: m.period,
-        validity: m.validity,
-        tagline: m.tagline,
+        period: m.period || '/ year',
+        validity: m.validity || '12 Months Validity',
+        tagline: m.tagline || '',
         isPopular: Boolean(m.is_popular),
         features: parseJson(m.features, []),
         cardBg: m.card_bg,
@@ -1985,7 +2125,7 @@ router.get(
         badgeStyle: m.badge_style,
         buttonStyle: m.button_style,
         accentText: m.accent_text,
-        displayOrder: m.display_order,
+        displayOrder: m.display_order || 0,
         isActive: Boolean(m.is_active),
         subscribersCount: m.subscribers_count || 0,
         createdAt: m.created_at,
@@ -1999,16 +2139,70 @@ router.post(
   '/memberships',
   requirePermission('treatments.create'),
   asyncHandler(async (req, res) => {
-    const { name, slug, price, priceFormatted, period = '/ year', validity = '12 Months Validity', tagline, isPopular = 0, features = [], displayOrder = 0, isActive = 1 } = req.body;
+    const {
+      name,
+      slug,
+      price,
+      priceFormatted,
+      period = '/ year',
+      validity = '12 Months Validity',
+      tagline,
+      isPopular = 0,
+      features = [],
+      displayOrder = 0,
+      isActive = 1,
+      theme = 'gold',
+      cardBg,
+      passGradient,
+      badgeStyle,
+      buttonStyle,
+      accentText,
+      subscribersCount = 0,
+    } = req.body;
+
     if (!name) throw new HttpError(400, 'Plan name is required');
     const finalSlug = slug || slugify(name);
     const numPrice = Number(price) || 0;
     const finalPriceFormatted = priceFormatted || `₹${numPrice.toLocaleString('en-IN')}`;
 
+    const styles = resolveThemeStyles(theme, { cardBg, passGradient, badgeStyle, buttonStyle, accentText });
+
+    let finalFeatures = [];
+    if (Array.isArray(features)) {
+      finalFeatures = features;
+    } else if (typeof features === 'string') {
+      try {
+        finalFeatures = JSON.parse(features);
+      } catch {
+        finalFeatures = features.split('\n').map((s) => s.trim()).filter(Boolean);
+      }
+    }
+
     const result = await query(
-      `INSERT INTO sid_membership_plans (slug, name, price, price_formatted, period, validity, tagline, is_popular, features, display_order, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [finalSlug, name, numPrice, finalPriceFormatted, period, validity, tagline || null, isPopular ? 1 : 0, JSON.stringify(Array.isArray(features) ? features : [features]), Number(displayOrder) || 0, isActive ? 1 : 0]
+      `INSERT INTO sid_membership_plans (
+        slug, name, price, price_formatted, period, validity, tagline,
+        is_popular, features, card_bg, pass_gradient, badge_style, button_style,
+        accent_text, display_order, is_active, subscribers_count
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        finalSlug,
+        name,
+        numPrice,
+        finalPriceFormatted,
+        period,
+        validity,
+        tagline || null,
+        isPopular ? 1 : 0,
+        JSON.stringify(finalFeatures),
+        styles.cardBg,
+        styles.passGradient,
+        styles.badgeStyle,
+        styles.buttonStyle,
+        styles.accentText,
+        Number(displayOrder) || 0,
+        isActive ? 1 : 0,
+        Number(subscribersCount) || 0,
+      ]
     );
 
     res.status(201).json({ success: true, message: 'Membership plan created', data: { id: String(result.insertId) } });
@@ -2027,6 +2221,30 @@ router.put(
     const numPrice = body.price !== undefined ? Number(body.price) : Number(existing.price);
     const formatted = body.priceFormatted || (body.price !== undefined ? `₹${numPrice.toLocaleString('en-IN')}` : existing.price_formatted);
 
+    let styles = null;
+    if (body.theme) {
+      styles = resolveThemeStyles(body.theme, {
+        cardBg: body.cardBg,
+        passGradient: body.passGradient,
+        badgeStyle: body.badgeStyle,
+        buttonStyle: body.buttonStyle,
+        accentText: body.accentText,
+      });
+    }
+
+    let finalFeatures = undefined;
+    if (body.features !== undefined) {
+      if (Array.isArray(body.features)) {
+        finalFeatures = JSON.stringify(body.features);
+      } else if (typeof body.features === 'string') {
+        try {
+          finalFeatures = JSON.stringify(JSON.parse(body.features));
+        } catch {
+          finalFeatures = JSON.stringify(body.features.split('\n').map((s) => s.trim()).filter(Boolean));
+        }
+      }
+    }
+
     await query(
       `UPDATE sid_membership_plans SET
         name = COALESCE(?, name),
@@ -2038,6 +2256,11 @@ router.put(
         tagline = COALESCE(?, tagline),
         is_popular = COALESCE(?, is_popular),
         features = COALESCE(?, features),
+        card_bg = COALESCE(?, card_bg),
+        pass_gradient = COALESCE(?, pass_gradient),
+        badge_style = COALESCE(?, badge_style),
+        button_style = COALESCE(?, button_style),
+        accent_text = COALESCE(?, accent_text),
         display_order = COALESCE(?, display_order),
         is_active = COALESCE(?, is_active),
         subscribers_count = COALESCE(?, subscribers_count)
@@ -2051,7 +2274,12 @@ router.put(
         body.validity || null,
         body.tagline || null,
         body.isPopular !== undefined ? (body.isPopular ? 1 : 0) : null,
-        body.features !== undefined ? JSON.stringify(body.features) : null,
+        finalFeatures !== undefined ? finalFeatures : null,
+        styles ? styles.cardBg : (body.cardBg || null),
+        styles ? styles.passGradient : (body.passGradient || null),
+        styles ? styles.badgeStyle : (body.badgeStyle || null),
+        styles ? styles.buttonStyle : (body.buttonStyle || null),
+        styles ? styles.accentText : (body.accentText || null),
         body.displayOrder !== undefined ? Number(body.displayOrder) : null,
         body.isActive !== undefined ? (body.isActive ? 1 : 0) : null,
         body.subscribersCount !== undefined ? Number(body.subscribersCount) : null,
@@ -2691,6 +2919,8 @@ router.post(
       finalOrder = (maxRow && maxRow.m != null ? Number(maxRow.m) : 0) + 1;
     }
 
+    const cleanImg = cleanFilename(image);
+
     const result = await query(
       `INSERT INTO sid_offers
         (title, badge, category, description, image, link_text, slug, coupon_id, valid_from, valid_to, display_order, is_active)
@@ -2700,7 +2930,7 @@ router.post(
         badge.trim(),
         category.trim(),
         description ? description.trim() : null,
-        image.trim(),
+        cleanImg,
         linkText ? linkText.trim() : 'Claim Offer',
         slug ? slug.trim() : '/contact-us#appointment_form',
         couponId || null,
@@ -2750,7 +2980,7 @@ router.put(
       ? displayOrder
       : existing.display_order;
 
-    const newImg = image.trim();
+    const newImg = cleanFilename(image);
     if (newImg && existing.image && existing.image !== newImg) {
       await deleteUploadedFile(existing.image);
     }

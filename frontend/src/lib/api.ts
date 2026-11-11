@@ -316,6 +316,11 @@ export async function getGallery(): Promise<any[] | null> {
   return r && Array.isArray(r.data) ? r.data : null;
 }
 
+export async function getMemberships(): Promise<any[] | null> {
+  const r = await request<any[]>("/memberships", { revalidate: 0 });
+  return r && Array.isArray(r.data) ? r.data : null;
+}
+
 export async function getHomepageData(): Promise<HomepageData | null> {
   const r = await request<HomepageData>("/homepage");
   return r && r.data ? r.data : null;

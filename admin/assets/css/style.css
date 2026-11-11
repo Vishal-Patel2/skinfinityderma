@@ -1526,6 +1526,16 @@ div.swal2-title {
   border: 1px solid #0d9488;
 }
 
+.vip-pass-rosegold {
+  background: linear-gradient(135deg, #881337 0%, #be123c 50%, #4c0519 100%);
+  border: 1px solid #fb7185;
+}
+
+.vip-pass-sapphire {
+  background: linear-gradient(135deg, #1e1b4b 0%, #1d4ed8 50%, #0f172a 100%);
+  border: 1px solid #60a5fa;
+}
+
 .vip-pass-chip {
   width: 36px;
   height: 28px;
